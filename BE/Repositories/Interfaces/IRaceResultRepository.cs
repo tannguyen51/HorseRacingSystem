@@ -7,4 +7,6 @@ namespace HorseRacing.Repositories.Interfaces;
 public interface IRaceResultRepository
 {
     Task<RaceResult?> GetByRaceIdAsync(Guid raceId);
+    Task AddAsync(RaceResult raceResult);
+    Task UpdateAsync(RaceResult raceResult);
 }

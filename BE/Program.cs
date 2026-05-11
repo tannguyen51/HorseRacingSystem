@@ -53,12 +53,29 @@ builder.Services.AddScoped<IJockeyInvitationRepository, JockeyInvitationReposito
 builder.Services.AddScoped<IPredictionRepository, PredictionRepository>();
 builder.Services.AddScoped<IRaceResultRepository, RaceResultRepository>();
 builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
+builder.Services.AddScoped<IRoundRepository, RoundRepository>();
+builder.Services.AddScoped<IRefereeRepository, RefereeRepository>();
+builder.Services.AddScoped<IRefereeAssignmentRepository, RefereeAssignmentRepository>();
+builder.Services.AddScoped<IHealthCheckRepository, HealthCheckRepository>();
+builder.Services.AddScoped<IViolationRecordRepository, ViolationRecordRepository>();
+builder.Services.AddScoped<IRaceReportRepository, RaceReportRepository>();
+builder.Services.AddScoped<IUserRegistrationRepository, UserRegistrationRepository>();
+builder.Services.AddScoped<IRaceManagementRepository, RaceManagementRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
 builder.Services.AddScoped<IJockeyService, JockeyService>();
 builder.Services.AddScoped<IRaceService, RaceService>();
 builder.Services.AddScoped<IPredictionService, PredictionService>();
+builder.Services.AddScoped<ITournamentService, TournamentService>();
+builder.Services.AddScoped<IRoundService, RoundService>();
+builder.Services.AddScoped<IRaceManagementService, RaceManagementService>();
+builder.Services.AddScoped<IRefereeService, RefereeService>();
+builder.Services.AddScoped<IRefereeHtmlCheckService, RefereeHealthCheckService>();
+builder.Services.AddScoped<IViolationRecordService, ViolationRecordService>();
+builder.Services.AddScoped<IRaceReportService, RaceReportService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ILiveResultService, LiveResultService>();
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

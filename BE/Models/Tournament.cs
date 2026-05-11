@@ -18,5 +18,14 @@ public class Tournament
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 
+    [MaxLength(1000)]
+    public string? Description { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+
+    public ICollection<Round> Rounds { get; set; } = new List<Round>();
     public ICollection<Race> Races { get; set; } = new List<Race>();
 }

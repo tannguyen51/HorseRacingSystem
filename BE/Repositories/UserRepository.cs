@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HorseRacing.Data;
 using HorseRacing.Models;
@@ -25,9 +27,29 @@ public class UserRepository : IUserRepository
         return _db.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    public Task<User?> GetByIdAsync(Guid userId)
+    {
+        return _db.Users
+            .Include(u => u.Horses)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    public Task<List<User>> GetAllAsync()
+    {
+        return _db.Users
+            .Include(u => u.Horses)
+            .ToListAsync();
+    }
+
     public Task AddAsync(User user)
     {
         _db.Users.Add(user);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(User user)
+    {
+        _db.Users.Update(user);
         return Task.CompletedTask;
     }
 }

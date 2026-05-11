@@ -20,6 +20,10 @@ public class Horse
     [Required]
     public Guid OwnerId { get; set; }
 
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+    [MaxLength(1000)]
+    public string? ApprovalNote { get; set; }
+
     public User? Owner { get; set; }
 
     public ICollection<RaceEntry> RaceEntries { get; set; } = new List<RaceEntry>();

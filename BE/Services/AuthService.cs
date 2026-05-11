@@ -47,7 +47,9 @@ public class AuthService : IAuthService
             Id = Guid.NewGuid(),
             Email = request.Email,
             Role = request.Role,
-            FullName = request.FullName
+            FullName = request.FullName,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
@@ -59,7 +61,8 @@ public class AuthService : IAuthService
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                LicenseNumber = request.LicenseNumber
+                LicenseNumber = request.LicenseNumber,
+                ApprovalStatus = ApprovalStatus.Pending
             };
             await _jockeys.AddAsync(jockey);
         }
@@ -84,6 +87,10 @@ public class AuthService : IAuthService
         if (user == null)
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+        }
+        if (!user.IsActive)
+        {
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status403Forbidden, "User is deactivated.");
         }
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);

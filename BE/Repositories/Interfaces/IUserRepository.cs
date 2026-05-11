@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HorseRacing.Models;
 
@@ -8,5 +9,8 @@ public interface IUserRepository
 {
     Task<bool> EmailExistsAsync(string email);
     Task<User?> GetByEmailAsync(string email);
+    Task<User?> GetByIdAsync(Guid userId);
+    Task<List<User>> GetAllAsync();
     Task AddAsync(User user);
+    Task UpdateAsync(User user);
 }

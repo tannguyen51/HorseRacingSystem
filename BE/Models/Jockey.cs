@@ -19,6 +19,10 @@ public class Jockey
     [MaxLength(100)]
     public string? LicenseNumber { get; set; }
 
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+    [MaxLength(1000)]
+    public string? ApprovalNote { get; set; }
+
     public ICollection<RaceEntry> RaceEntries { get; set; } = new List<RaceEntry>();
     public ICollection<JockeyInvitation> Invitations { get; set; } = new List<JockeyInvitation>();
 }
