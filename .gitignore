@@ -1,0 +1,16 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# User/IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Logs
+*.log
+
+BE/Migrations/

@@ -1,0 +1,40 @@
+using System;
+
+namespace HorseRacing.Models;
+
+public enum UserRole
+{
+    HorseOwner = 1,
+    Jockey = 2,
+    Spectator = 3,
+    Admin = 4
+}
+
+public enum RaceStatus
+{
+    Scheduled = 1,
+    InProgress = 2,
+    Finished = 3,
+    Cancelled = 4
+}
+
+public enum RegistrationStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3
+}
+
+public enum JockeyInvitationStatus
+{
+    Pending = 1,
+    Accepted = 2,
+    Declined = 3
+}
+
+public enum PredictionStatus
+{
+    Pending = 1,
+    Won = 2,
+    Lost = 3
+}
