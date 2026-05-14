@@ -1,0 +1,26 @@
+# Build outputs
+**/bin/
+**/obj/
+# Build
+BE/bin/
+BE/obj/
+
+
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+# User/IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Logs
+*.log
+
+BE/Migrations/
