@@ -36,10 +36,10 @@ function Header() {
       </nav>
 
       <div className="site-header__actions">
-        <Link className="ghost-button" to="/auth">
+        <Link className="ghost-button" to="/login">
           Login
         </Link>
-        <Link className="primary-button" to="/auth">
+        <Link className="primary-button" to="/register">
           Register
         </Link>
       </div>
