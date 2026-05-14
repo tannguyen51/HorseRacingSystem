@@ -21,14 +21,29 @@ public class JockeyRepository : IJockeyRepository
         return _db.Jockeys.AnyAsync(j => j.Id == jockeyId);
     }
 
+    public Task<Jockey?> GetByIdAsync(Guid jockeyId)
+    {
+        return _db.Jockeys
+            .Include(j => j.User)
+            .FirstOrDefaultAsync(j => j.Id == jockeyId);
+    }
+
     public Task<Jockey?> GetByUserIdAsync(Guid userId)
     {
-        return _db.Jockeys.FirstOrDefaultAsync(j => j.UserId == userId);
+        return _db.Jockeys
+            .Include(j => j.User)
+            .FirstOrDefaultAsync(j => j.UserId == userId);
     }
 
     public Task AddAsync(Jockey jockey)
     {
         _db.Jockeys.Add(jockey);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(Jockey jockey)
+    {
+        _db.Jockeys.Update(jockey);
         return Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HorseRacing.Models;
 
@@ -9,6 +10,12 @@ public interface IRaceEntryRepository
     Task<bool> ExistsAsync(Guid raceId, Guid horseId);
     Task<RaceEntry?> GetByIdWithHorseAsync(Guid entryId, Guid raceId);
     Task<RaceEntry?> GetByRaceHorseAsync(Guid raceId, Guid horseId);
-    Task<System.Collections.Generic.List<RaceEntry>> GetByJockeyAsync(Guid jockeyId);
+    Task<RaceEntry?> GetByRaceAndHorseAsync(Guid raceId, Guid horseId);
+    Task<List<RaceEntry>> GetByJockeyAsync(Guid jockeyId);
+    Task<List<RaceEntry>> GetByHorseAsync(Guid horseId);
+    Task<List<RaceEntry>> GetByRaceAsync(Guid raceId);
     Task AddAsync(RaceEntry entry);
+    Task UpdateAsync(RaceEntry entry);
+    Task DeleteAsync(Guid id);
+    Task<RaceEntry?> GetByIdAsync(Guid id);
 }

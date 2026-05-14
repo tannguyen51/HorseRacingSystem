@@ -13,11 +13,18 @@ public class ApplicationDbContext : DbContext
     public DbSet<Horse> Horses => Set<Horse>();
     public DbSet<Jockey> Jockeys => Set<Jockey>();
     public DbSet<Tournament> Tournaments => Set<Tournament>();
+    public DbSet<Round> Rounds => Set<Round>();
     public DbSet<Race> Races => Set<Race>();
     public DbSet<RaceEntry> RaceEntries => Set<RaceEntry>();
     public DbSet<JockeyInvitation> JockeyInvitations => Set<JockeyInvitation>();
     public DbSet<Prediction> Predictions => Set<Prediction>();
     public DbSet<RaceResult> RaceResults => Set<RaceResult>();
+    public DbSet<Referee> Referees => Set<Referee>();
+    public DbSet<RefereeAssignment> RefereeAssignments => Set<RefereeAssignment>();
+    public DbSet<HorseHealthCheck> HorseHealthChecks => Set<HorseHealthCheck>();
+    public DbSet<ViolationRecord> ViolationRecords => Set<ViolationRecord>();
+    public DbSet<RaceReport> RaceReports => Set<RaceReport>();
+    public DbSet<UserRegistration> UserRegistrations => Set<UserRegistration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -129,6 +136,111 @@ public class ApplicationDbContext : DbContext
             .HasOne(rr => rr.WinningHorse)
             .WithMany()
             .HasForeignKey(rr => rr.WinningHorseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // BE2 Model Configurations
+        modelBuilder.Entity<Round>()
+            .HasMany(r => r.Races)
+            .WithOne(race => race.Round)
+            .HasForeignKey(race => race.RoundId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Tournament>()
+            .HasMany(t => t.Rounds)
+            .WithOne(r => r.Tournament)
+            .HasForeignKey(r => r.TournamentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referee>()
+            .HasOne(r => r.User)
+            .WithOne()
+            .HasForeignKey<Referee>(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RefereeAssignment>()
+            .HasOne(a => a.Race)
+            .WithMany(r => r.RefereeAssignments)
+            .HasForeignKey(a => a.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RefereeAssignment>()
+            .HasOne(a => a.Referee)
+            .WithMany(r => r.Assignments)
+            .HasForeignKey(a => a.RefereeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RefereeAssignment>()
+            .Property(a => a.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<HorseHealthCheck>()
+            .HasOne(h => h.Horse)
+            .WithMany()
+            .HasForeignKey(h => h.HorseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseHealthCheck>()
+            .HasOne(h => h.Race)
+            .WithMany(r => r.HealthChecks)
+            .HasForeignKey(h => h.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseHealthCheck>()
+            .HasOne(h => h.Referee)
+            .WithMany()
+            .HasForeignKey(h => h.RefereeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseHealthCheck>()
+            .Property(h => h.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<ViolationRecord>()
+            .HasOne(v => v.Race)
+            .WithMany(r => r.Violations)
+            .HasForeignKey(v => v.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ViolationRecord>()
+            .HasOne(v => v.RaceEntry)
+            .WithMany()
+            .HasForeignKey(v => v.RaceEntryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ViolationRecord>()
+            .HasOne(v => v.Referee)
+            .WithMany()
+            .HasForeignKey(v => v.RefereeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ViolationRecord>()
+            .Property(v => v.ViolationType)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<RaceReport>()
+            .HasOne(r => r.Race)
+            .WithMany(race => race.Reports)
+            .HasForeignKey(r => r.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RaceReport>()
+            .HasOne(r => r.Referee)
+            .WithMany()
+            .HasForeignKey(r => r.RefereeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserRegistration>()
+            .Property(u => u.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<UserRegistration>()
+            .Property(u => u.RequestedRole)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<UserRegistration>()
+            .HasOne(u => u.ReviewedByUser)
+            .WithMany()
+            .HasForeignKey(u => u.ReviewedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -46,7 +46,8 @@ public class HorseService : IHorseService
             Id = Guid.NewGuid(),
             Name = request.Name,
             Age = request.Age,
-            OwnerId = ownerId
+            OwnerId = ownerId,
+            ApprovalStatus = ApprovalStatus.Pending
         };
 
         await _horses.AddAsync(horse);

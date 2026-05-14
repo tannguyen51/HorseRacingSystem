@@ -41,11 +41,4 @@ public class RacesController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
-    [HttpGet("/api/tournaments")]
-    [AllowAnonymous]
-    public async Task<ActionResult> GetTournaments()
-    {
-        var result = await _raceService.GetTournamentsAsync();
-        return StatusCode(result.StatusCode, result.Result);
-    }
 }

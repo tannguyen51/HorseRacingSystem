@@ -8,7 +8,7 @@ public class ServiceResult<T>
     public int StatusCode { get; }
     public ApiResult<T> Result { get; }
 
-    private ServiceResult(int statusCode, ApiResult<T> result)
+    public ServiceResult(int statusCode, ApiResult<T> result)
     {
         StatusCode = statusCode;
         Result = result;
@@ -20,6 +20,16 @@ public class ServiceResult<T>
     }
 
     public static ServiceResult<T> Fail(int statusCode, string message)
+    {
+        return new ServiceResult<T>(statusCode, ApiResult<T>.Fail(message));
+    }
+
+    public static ServiceResult<T> Success(T data, int statusCode = StatusCodes.Status200OK)
+    {
+        return new ServiceResult<T>(statusCode, ApiResult<T>.Ok(data));
+    }
+
+    public static ServiceResult<T> Error(string message, int statusCode = StatusCodes.Status500InternalServerError)
     {
         return new ServiceResult<T>(statusCode, ApiResult<T>.Fail(message));
     }

@@ -11,4 +11,9 @@ public interface IRaceRepository
     Task<List<Race>> GetAllAsync();
     Task<Race?> GetByIdAsync(Guid raceId);
     Task<Race?> GetByIdWithEntriesAsync(Guid raceId);
+    Task<List<Race>> GetByTournamentAsync(Guid tournamentId);
+    Task<List<Race>> GetByRoundAsync(Guid roundId);
+    Task AddAsync(Race race);
+    Task UpdateAsync(Race race);
+    Task DeleteAsync(Guid raceId);
 }

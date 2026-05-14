@@ -22,4 +22,16 @@ public class RaceResultRepository : IRaceResultRepository
             .Include(r => r.WinningHorse)
             .FirstOrDefaultAsync(r => r.RaceId == raceId);
     }
+
+    public Task AddAsync(RaceResult raceResult)
+    {
+        _db.RaceResults.Add(raceResult);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(RaceResult raceResult)
+    {
+        _db.RaceResults.Update(raceResult);
+        return Task.CompletedTask;
+    }
 }

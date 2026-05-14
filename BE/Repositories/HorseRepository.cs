@@ -23,6 +23,13 @@ public class HorseRepository : IHorseRepository
         return _db.Horses.Where(h => h.OwnerId == ownerId).ToListAsync();
     }
 
+    public Task<Horse?> GetByIdAsync(Guid horseId)
+    {
+        return _db.Horses
+            .Include(h => h.Owner)
+            .FirstOrDefaultAsync(h => h.Id == horseId);
+    }
+
     public Task<Horse?> GetOwnedHorseAsync(Guid horseId, Guid ownerId)
     {
         return _db.Horses.FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
@@ -31,6 +38,12 @@ public class HorseRepository : IHorseRepository
     public Task AddAsync(Horse horse)
     {
         _db.Horses.Add(horse);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(Horse horse)
+    {
+        _db.Horses.Update(horse);
         return Task.CompletedTask;
     }
 
