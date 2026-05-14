@@ -1,7 +1,17 @@
 # Build outputs
 **/bin/
 **/obj/
+# Build
+BE/bin/
+BE/obj/
 
+
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
 # User/IDE files
 .vs/
 .vscode/
