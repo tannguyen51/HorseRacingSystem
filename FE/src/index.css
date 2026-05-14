@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Spectral:wght@400;500;600;700&display=swap");
+
+:root {
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "Sora", system-ui, sans-serif;
+  color: #dbe2ef;
+  background-color: #04070f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, rgba(27, 37, 69, 0.7), transparent 55%),
+    linear-gradient(180deg, #050910 0%, #070d18 60%, #04070f 100%);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Spectral", "Times New Roman", serif;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+button,
+input,
+select {
+  font-family: "Sora", system-ui, sans-serif;
+}

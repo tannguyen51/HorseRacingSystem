@@ -1,0 +1,71 @@
+.tournament-list-page {
+  display: grid;
+  gap: 32px;
+}
+
+.page-header h1 {
+  color: #f8f4e6;
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.page-header p {
+  color: #98a1b3;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+  background: rgba(10, 16, 28, 0.8);
+  border: 1px solid rgba(231, 198, 120, 0.15);
+  color: #f8f4e6;
+  padding: 12px 16px;
+  border-radius: 12px;
+  min-width: 240px;
+}
+
+.card-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.tournament-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+}
+
+.tournament-card h3 {
+  margin: 12px 0 8px;
+  color: #f8f4e6;
+}
+
+.tournament-card p {
+  color: #98a1b3;
+  margin: 0 0 6px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prize {
+  color: #f2d28b;
+  font-weight: 600;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+}
