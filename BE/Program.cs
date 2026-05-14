@@ -61,6 +61,8 @@ builder.Services.AddScoped<IViolationRecordRepository, ViolationRecordRepository
 builder.Services.AddScoped<IRaceReportRepository, RaceReportRepository>();
 builder.Services.AddScoped<IUserRegistrationRepository, UserRegistrationRepository>();
 builder.Services.AddScoped<IRaceManagementRepository, RaceManagementRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
@@ -76,6 +78,8 @@ builder.Services.AddScoped<IViolationRecordService, ViolationRecordService>();
 builder.Services.AddScoped<IRaceReportService, RaceReportService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ILiveResultService, LiveResultService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

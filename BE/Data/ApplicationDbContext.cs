@@ -25,6 +25,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ViolationRecord> ViolationRecords => Set<ViolationRecord>();
     public DbSet<RaceReport> RaceReports => Set<RaceReport>();
     public DbSet<UserRegistration> UserRegistrations => Set<UserRegistration>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -242,5 +244,52 @@ public class ApplicationDbContext : DbContext
             .WithMany()
             .HasForeignKey(u => u.ReviewedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Notification Model Configuration
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Type)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Category)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => n.UserId);
+
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => n.IsRead);
+
+        // AuditLog Model Configuration
+        modelBuilder.Entity<AuditLog>()
+            .HasOne(a => a.Admin)
+            .WithMany()
+            .HasForeignKey(a => a.AdminId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AuditLog>()
+            .HasOne(a => a.AffectedUser)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AuditLog>()
+            .Property(a => a.Action)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.AdminId);
+
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.EntityType);
+
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(a => a.CreatedAt);
     }
 }
