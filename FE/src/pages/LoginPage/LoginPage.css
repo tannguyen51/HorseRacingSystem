@@ -135,6 +135,16 @@
   font-size: 14px;
 }
 
+.form-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(216, 103, 103, 0.12);
+  border: 1px solid rgba(216, 103, 103, 0.3);
+  color: #ffb3b3;
+  font-size: 13px;
+}
+
 .link-accent {
   color: #e7c678;
   text-decoration: none;

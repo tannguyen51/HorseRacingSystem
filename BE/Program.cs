@@ -43,6 +43,15 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+var frontendOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173" };
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy.WithOrigins(frontendOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJockeyRepository, JockeyRepository>();
@@ -107,6 +116,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("Frontend");
 
 app.UseSwagger();
 app.UseSwaggerUI();

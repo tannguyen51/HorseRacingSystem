@@ -165,6 +165,26 @@
   font-size: 14px;
 }
 
+.form-error,
+.form-success {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.form-error {
+  background: rgba(216, 103, 103, 0.12);
+  border: 1px solid rgba(216, 103, 103, 0.3);
+  color: #ffb3b3;
+}
+
+.form-success {
+  background: rgba(120, 216, 154, 0.12);
+  border: 1px solid rgba(120, 216, 154, 0.3);
+  color: #a6f2c7;
+}
+
 .link-accent {
   color: #e7c678;
   text-decoration: none;
