@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../services/authApi";
 import "./LoginPage.css";
 
 const ROLES = [
@@ -11,6 +13,35 @@ const ROLES = [
 
 function LoginPage() {
   const [selectedRole, setSelectedRole] = useState("horse_owner");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await login({ email, password });
+      localStorage.setItem("authToken", response.token);
+      localStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          userId: response.userId,
+          email: response.email,
+          role: response.role,
+        }),
+      );
+      navigate("/");
+    } catch (error) {
+      setErrorMessage(error.message || "Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="auth-page login-page">
@@ -20,7 +51,7 @@ function LoginPage() {
       </section>
 
       <div className="auth-card single-card">
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           <h2>Sign In</h2>
 
           <div className="form-group">
@@ -32,6 +63,8 @@ function LoginPage() {
               type="email"
               placeholder="you@stable.com"
               className="form-input"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </div>
@@ -45,6 +78,8 @@ function LoginPage() {
               type="password"
               placeholder="••••••••"
               className="form-input"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </div>
@@ -67,8 +102,14 @@ function LoginPage() {
             </select>
           </div>
 
-          <button type="submit" className="primary-button btn-block">
-            Sign In
+          {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
+
+          <button
+            type="submit"
+            className="primary-button btn-block"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Signing In..." : "Sign In"}
           </button>
 
           <p className="form-footer">

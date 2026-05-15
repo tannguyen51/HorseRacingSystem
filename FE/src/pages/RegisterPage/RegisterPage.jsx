@@ -1,16 +1,78 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { register } from "../../services/authApi";
 import "./RegisterPage.css";
 
 const ROLES = [
   { value: "horse_owner", label: "Horse Owner" },
   { value: "jockey", label: "Jockey" },
   { value: "spectator", label: "Spectator" },
-  { value: "referee", label: "Referee" },
-  { value: "admin", label: "Admin" },
 ];
+
+const ROLE_MAP = {
+  horse_owner: 1,
+  jockey: 2,
+  spectator: 3,
+};
 
 function RegisterPage() {
   const [selectedRole, setSelectedRole] = useState("horse_owner");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
+    const roleValue = ROLE_MAP[selectedRole];
+    if (!roleValue) {
+      setErrorMessage("Unsupported role selected.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await register({
+        email,
+        password,
+        role: roleValue,
+        fullName: fullName.trim() || null,
+        licenseNumber:
+          selectedRole === "jockey" ? licenseNumber.trim() || null : null,
+      });
+      localStorage.setItem("authToken", response.token);
+      localStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          userId: response.userId,
+          email: response.email,
+          role: response.role,
+        }),
+      );
+      setSuccessMessage("Account created successfully.");
+      navigate("/");
+    } catch (error) {
+      setErrorMessage(
+        error.message || "Registration failed. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="auth-page register-page">
@@ -20,7 +82,7 @@ function RegisterPage() {
       </section>
 
       <div className="auth-card single-card">
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           <h2>Create Account</h2>
 
           <div className="form-group">
@@ -32,6 +94,8 @@ function RegisterPage() {
               type="text"
               placeholder="Ariana Blake"
               className="form-input"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
               required
             />
           </div>
@@ -45,6 +109,8 @@ function RegisterPage() {
               type="email"
               placeholder="you@stable.com"
               className="form-input"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </div>
@@ -58,6 +124,8 @@ function RegisterPage() {
               type="password"
               placeholder="••••••••"
               className="form-input"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </div>
@@ -71,6 +139,8 @@ function RegisterPage() {
               type="password"
               placeholder="••••••••"
               className="form-input"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
               required
             />
           </div>
@@ -93,6 +163,22 @@ function RegisterPage() {
             </select>
           </div>
 
+          {selectedRole === "jockey" ? (
+            <div className="form-group">
+              <label htmlFor="license" className="label-required">
+                License Number
+              </label>
+              <input
+                id="license"
+                type="text"
+                placeholder="JCK-2026-001"
+                className="form-input"
+                value={licenseNumber}
+                onChange={(event) => setLicenseNumber(event.target.value)}
+              />
+            </div>
+          ) : null}
+
           <div className="terms-agreement">
             <label>
               <input type="checkbox" required />
@@ -109,8 +195,17 @@ function RegisterPage() {
             </label>
           </div>
 
-          <button type="submit" className="primary-button btn-block">
-            Create Account
+          {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
+          {successMessage ? (
+            <p className="form-success">{successMessage}</p>
+          ) : null}
+
+          <button
+            type="submit"
+            className="primary-button btn-block"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Account"}
           </button>
 
           <p className="form-footer">
