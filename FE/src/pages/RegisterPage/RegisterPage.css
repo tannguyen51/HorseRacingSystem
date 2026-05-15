@@ -1,34 +1,200 @@
-.auth-page {
+.register-page {
   display: grid;
-  gap: 32px;
+  place-items: center;
+  justify-items: center;
+  gap: 40px;
+  min-height: calc(100vh - 140px);
+  width: 100%;
+  padding: 40px 24px;
+}
+
+.page-header {
+  text-align: center;
+  max-width: 580px;
 }
 
 .single-card {
-  background: rgba(10, 16, 28, 0.9);
-  border-radius: 20px;
-  padding: 28px;
-  border: 1px solid rgba(231, 198, 120, 0.12);
-  display: grid;
-  gap: 16px;
+  width: 100%;
   max-width: 520px;
+  background: linear-gradient(135deg, rgba(10, 16, 28, 0.95) 0%, rgba(15, 22, 38, 0.9) 100%);
+  border-radius: 24px;
+  padding: 48px;
+  border: 1px solid rgba(231, 198, 120, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(231, 198, 120, 0.1);
+  max-width: 520px;
+  margin: 0 auto;
 }
 
-.auth-card h3 {
-  color: #f8f4e6;
-  margin: 0 0 4px;
-}
-
-.auth-card label {
+.auth-form {
   display: grid;
-  gap: 8px;
-  color: #98a1b3;
-  font-size: 13px;
+  gap: 28px;
 }
 
-.auth-card input {
-  padding: 12px 14px;
+.auth-form h2 {
+  color: #f8f4e6;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.form-group {
+  display: grid;
+  gap: 12px;
+}
+
+.label-required {
+  color: #e7c678;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.form-input {
+  padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(231, 198, 120, 0.2);
+  border: 1.5px solid rgba(231, 198, 120, 0.2);
   background: rgba(6, 10, 20, 0.8);
   color: #f8f4e6;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-input::placeholder {
+  color: #596273;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(231, 198, 120, 0.5);
+  background: rgba(6, 10, 20, 0.95);
+  box-shadow: 0 0 0 3px rgba(231, 198, 120, 0.1);
+}
+
+.form-select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(231, 198, 120, 0.2);
+  background: rgba(6, 10, 20, 0.85);
+  color: #f8f4e6;
+  font-size: 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(231, 198, 120, 0.7) 50%),
+    linear-gradient(135deg, rgba(231, 198, 120, 0.7) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 14px) calc(1em + 2px);
+  background-size: 8px 8px, 8px 8px;
+  background-repeat: no-repeat;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: rgba(231, 198, 120, 0.5);
+  background: rgba(6, 10, 20, 0.95);
+  box-shadow: 0 0 0 3px rgba(231, 198, 120, 0.1);
+}
+
+.terms-agreement {
+  padding: 14px;
+  background: rgba(231, 198, 120, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+}
+
+.terms-agreement label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.terms-agreement input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #e7c678;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.terms-agreement span {
+  color: #98a1b3;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.btn-block {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.primary-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #e7c678 0%, #f2d28b 100%);
+  color: #0a101c;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(231, 198, 120, 0.3);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+}
+
+.form-footer {
+  text-align: center;
+  margin: 0;
+  color: #98a1b3;
+  font-size: 14px;
+}
+
+.link-accent {
+  color: #e7c678;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.link-accent:hover {
+  color: #f2d28b;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .single-card {
+    padding: 32px 24px;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .single-card {
+    padding: 24px 16px;
+  }
 }
