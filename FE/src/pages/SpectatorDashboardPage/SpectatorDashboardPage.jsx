@@ -165,7 +165,9 @@ function SpectatorDashboardPage() {
               </p>
               <div className="spectator-hero__actions">
                 <button className="primary-button">Watch Live</button>
-                <button className="ghost-button">View Bracket</button>
+                <button type="button" className="ghost-button" disabled>
+                  View Bracket
+                </button>
               </div>
             </div>
             <div className="spectator-hero__panel">
