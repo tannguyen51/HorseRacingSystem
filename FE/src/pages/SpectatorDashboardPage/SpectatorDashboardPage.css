@@ -484,12 +484,63 @@
   }
 
   .table-row {
-    grid-template-columns: 40px 1fr;
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-areas:
+      "rank player"
+      "accuracy accuracy"
+      "streak rewards";
     row-gap: 8px;
+    column-gap: 12px;
+    align-items: start;
+  }
+
+  .table-row span:nth-child(1) {
+    grid-area: rank;
+  }
+
+  .table-row span:nth-child(2) {
+    grid-area: player;
+    min-width: 0;
+  }
+
+  .table-row span:nth-child(3) {
+    grid-area: accuracy;
+  }
+
+  .table-row span:nth-child(4) {
+    grid-area: streak;
+  }
+
+  .table-row span:nth-child(5) {
+    grid-area: rewards;
   }
 
   .table-row span:nth-child(n + 3) {
-    display: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .table-row span:nth-child(3)::before,
+  .table-row span:nth-child(4)::before,
+  .table-row span:nth-child(5)::before {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .table-row span:nth-child(3)::before {
+    content: "Accuracy";
+  }
+
+  .table-row span:nth-child(4)::before {
+    content: "Streak";
+  }
+
+  .table-row span:nth-child(5)::before {
+    content: "Rewards";
   }
 
   .table-header {
