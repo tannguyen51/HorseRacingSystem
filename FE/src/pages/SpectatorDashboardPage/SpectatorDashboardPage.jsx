@@ -124,7 +124,7 @@ const sidebarLinks = [
 ];
 
 function SpectatorDashboardPage() {
-  const showLoadingMore = true;
+  const showLoadingMore = false;
   const recentPredictions = [];
 
   return (
