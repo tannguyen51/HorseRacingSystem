@@ -201,6 +201,7 @@ function SpectatorTournamentListPage() {
                 onClick={() => {
                   setQuery("");
                   setStatus("All");
+                  setCurrentPage(1);
                 }}
               >
                 Reset filters
