@@ -277,12 +277,19 @@ function SpectatorTournamentListPage() {
       </div>
 
       {activeTournament ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="spectator-tournament-dialog-title"
+        >
           <div className="spectator-modal">
             <div className="modal-header">
               <div>
                 <span className="badge">{activeTournament.status}</span>
-                <h3>{activeTournament.name}</h3>
+                <h3 id="spectator-tournament-dialog-title">
+                  {activeTournament.name}
+                </h3>
                 <p className="muted">{activeTournament.date}</p>
               </div>
               <button
