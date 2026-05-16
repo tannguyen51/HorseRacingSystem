@@ -1,68 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRoles, login } from "../../services/authApi";
+import {
+  buildLoginRoleOptions,
+  LABEL_BY_ROLE,
+  LOGIN_ROLE_OPTIONS,
+  normalizeApiRole,
+  unwrapResponseData,
+} from "../../services/authRoleUtils";
 import "./LoginPage.css";
 
-const DEFAULT_ROLES = [
-  { value: "horse_owner", label: "Horse Owner" },
-  { value: "jockey", label: "Jockey" },
-  { value: "spectator", label: "Spectator" },
-  { value: "referee", label: "Referee" },
-  { value: "admin", label: "Admin" },
-];
-
-const ROLE_BY_API = {
-  horseowner: "horse_owner",
-  jockey: "jockey",
-  spectator: "spectator",
-  referee: "referee",
-  admin: "admin",
-};
-
-const ROLE_BY_ID = {
-  1: "horse_owner",
-  2: "jockey",
-  3: "spectator",
-  4: "admin",
-  5: "referee",
-};
-
-const LABEL_BY_ROLE = DEFAULT_ROLES.reduce((acc, role) => {
-  acc[role.value] = role.label;
-  return acc;
-}, {});
-
-const normalizeApiRole = (value) => {
-  if (value && typeof value === "object") {
-    const nestedValue = value.value ?? value.name ?? value.role;
-    if (nestedValue !== undefined) {
-      return normalizeApiRole(nestedValue);
-    }
-  }
-
-  if (typeof value === "number") {
-    return ROLE_BY_ID[value] ?? "";
-  }
-
-  const key = String(value || "")
-    .trim()
-    .toLowerCase();
-
-  if (!key) {
-    return "";
-  }
-
-  if (/^\d+$/.test(key)) {
-    return ROLE_BY_ID[Number(key)] ?? "";
-  }
-
-  return ROLE_BY_API[key] ?? "";
-};
-
-const unwrapResponseData = (response) => response?.data ?? response;
-
 function LoginPage() {
-  const [roles, setRoles] = useState(DEFAULT_ROLES);
+  const [roles, setRoles] = useState(LOGIN_ROLE_OPTIONS);
   const [selectedRole, setSelectedRole] = useState("horse_owner");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,20 +27,7 @@ function LoginPage() {
       try {
         const apiRolesResponse = await getRoles();
         const apiRoles = unwrapResponseData(apiRolesResponse);
-        const normalizedRoles = Array.isArray(apiRoles)
-          ? apiRoles.map((role) => normalizeApiRole(role)).filter(Boolean)
-          : [];
-        const uniqueRoles = Array.from(new Set(normalizedRoles));
-        const mergedRoles =
-          uniqueRoles.length > 0
-            ? DEFAULT_ROLES.filter(
-                (role) => uniqueRoles.includes(role.value) || role.value === "admin"
-              )
-            : DEFAULT_ROLES;
-        const roleOptions = mergedRoles.map((role) => ({
-          value: role.value,
-          label: role.label,
-        }));
+        const roleOptions = buildLoginRoleOptions(apiRoles);
         const availableRoleValues = roleOptions.map((role) => role.value);
 
         if (!cancelled && roleOptions.length > 0) {
@@ -102,7 +38,7 @@ function LoginPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setRoles(DEFAULT_ROLES);
+          setRoles(LOGIN_ROLE_OPTIONS);
         }
       } finally {
         if (!cancelled) {
