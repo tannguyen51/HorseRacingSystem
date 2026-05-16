@@ -351,24 +351,28 @@ function SpectatorDashboardPage() {
               <h2>Live leaderboard</h2>
               <p>Top predictors climbing the live standings.</p>
             </div>
-            <div className="leaderboard-table">
-              <div className="table-row table-header">
-                <span>Rank</span>
-                <span>Predictor</span>
-                <span>Accuracy</span>
-                <span>Streak</span>
-                <span>Rewards</span>
-              </div>
-              {leaderboardRows.map((row) => (
-                <div key={row.rank} className="table-row">
-                  <span className="rank-pill">{row.rank}</span>
-                  <span>{row.player}</span>
-                  <span className="rating">{row.accuracy}</span>
-                  <span>{row.streak}</span>
-                  <span className="earnings">{row.rewards}</span>
-                </div>
-              ))}
-            </div>
+            <table className="leaderboard-table">
+              <thead>
+                <tr className="table-row table-header">
+                  <th scope="col">Rank</th>
+                  <th scope="col">Predictor</th>
+                  <th scope="col">Accuracy</th>
+                  <th scope="col">Streak</th>
+                  <th scope="col">Rewards</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboardRows.map((row) => (
+                  <tr key={row.rank} className="table-row">
+                    <td className="rank-pill">{row.rank}</td>
+                    <td>{row.player}</td>
+                    <td className="rating">{row.accuracy}</td>
+                    <td>{row.streak}</td>
+                    <td className="earnings">{row.rewards}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </section>
         </div>
       </div>
