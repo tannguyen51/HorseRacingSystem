@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
+using HorseRacing.Models;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,5 +31,15 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.LoginAsync(request);
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpGet("roles")]
+    public ActionResult<string[]> GetRoles()
+    {
+        var roles = Enum.GetNames(typeof(UserRole))
+            .Where(role => !string.Equals(role, nameof(UserRole.Admin), StringComparison.Ordinal))
+            .ToArray();
+
+        return Ok(roles);
     }
 }

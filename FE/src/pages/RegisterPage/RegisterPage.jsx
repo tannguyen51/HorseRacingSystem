@@ -1,21 +1,71 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { register } from "../../services/authApi";
+import { getRoles, register } from "../../services/authApi";
 import "./RegisterPage.css";
 
-const ROLES = [
+const DEFAULT_ROLES = [
   { value: "horse_owner", label: "Horse Owner" },
   { value: "jockey", label: "Jockey" },
   { value: "spectator", label: "Spectator" },
 ];
 
-const ROLE_MAP = {
+const ROLE_ID_BY_VALUE = {
   horse_owner: 1,
   jockey: 2,
   spectator: 3,
 };
 
+const ROLE_BY_API = {
+  horseowner: "horse_owner",
+  jockey: "jockey",
+  spectator: "spectator",
+  referee: "referee",
+  admin: "admin",
+};
+
+const ROLE_BY_ID = {
+  1: "horse_owner",
+  2: "jockey",
+  3: "spectator",
+  4: "admin",
+  5: "referee",
+};
+
+const LABEL_BY_ROLE = DEFAULT_ROLES.reduce((acc, role) => {
+  acc[role.value] = role.label;
+  return acc;
+}, {});
+
+const normalizeApiRole = (value) => {
+  if (value && typeof value === "object") {
+    const nestedValue = value.value ?? value.name ?? value.role;
+    if (nestedValue !== undefined) {
+      return normalizeApiRole(nestedValue);
+    }
+  }
+
+  if (typeof value === "number") {
+    return ROLE_BY_ID[value] ?? "";
+  }
+
+  const key = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (!key) {
+    return "";
+  }
+
+  if (/^\d+$/.test(key)) {
+    return ROLE_BY_ID[Number(key)] ?? "";
+  }
+
+  return ROLE_BY_API[key] ?? "";
+};
+
+const unwrapResponseData = (response) => response?.data ?? response;
+
 function RegisterPage() {
+  const [roles, setRoles] = useState(DEFAULT_ROLES);
   const [selectedRole, setSelectedRole] = useState("horse_owner");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +75,50 @@ function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [rolesReady, setRolesReady] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRoles = async () => {
+      try {
+        const apiRolesResponse = await getRoles();
+        const apiRoles = unwrapResponseData(apiRolesResponse);
+        const normalizedRoles = Array.isArray(apiRoles)
+          ? apiRoles.map((role) => normalizeApiRole(role)).filter(Boolean)
+          : [];
+        const allowedRoles = normalizedRoles.filter(
+          (role) => ROLE_ID_BY_VALUE[role],
+        );
+        const uniqueRoles = Array.from(new Set(allowedRoles));
+        const roleOptions = uniqueRoles.map((value) => ({
+          value,
+          label: LABEL_BY_ROLE[value] ?? value,
+        }));
+
+        if (!cancelled && roleOptions.length > 0) {
+          setRoles(roleOptions);
+          if (!uniqueRoles.includes(selectedRole)) {
+            setSelectedRole(uniqueRoles[0]);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setRoles(DEFAULT_ROLES);
+        }
+      } finally {
+        if (!cancelled) {
+          setRolesReady(true);
+        }
+      }
+    };
+
+    loadRoles();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -37,7 +130,7 @@ function RegisterPage() {
       return;
     }
 
-    const roleValue = ROLE_MAP[selectedRole];
+    const roleValue = ROLE_ID_BY_VALUE[selectedRole];
     if (!roleValue) {
       setErrorMessage("Unsupported role selected.");
       return;
@@ -54,13 +147,15 @@ function RegisterPage() {
         licenseNumber:
           selectedRole === "jockey" ? licenseNumber.trim() || null : null,
       });
-      localStorage.setItem("authToken", response.token);
+      const payload = unwrapResponseData(response);
+      const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
+      localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
         JSON.stringify({
-          userId: response.userId,
-          email: response.email,
-          role: response.role,
+          userId: payload?.userId,
+          email: payload?.email,
+          role: apiRole || selectedRole,
         }),
       );
       setSuccessMessage("Account created successfully.");
@@ -155,7 +250,7 @@ function RegisterPage() {
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
-              {ROLES.map((role) => (
+              {roles.map((role) => (
                 <option key={role.value} value={role.value}>
                   {role.label}
                 </option>
@@ -203,7 +298,7 @@ function RegisterPage() {
           <button
             type="submit"
             className="primary-button btn-block"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !rolesReady}
           >
             {isSubmitting ? "Creating..." : "Create Account"}
           </button>
