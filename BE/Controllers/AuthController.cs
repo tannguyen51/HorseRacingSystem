@@ -36,8 +36,19 @@ public class AuthController : ControllerBase
     [HttpGet("roles")]
     public ActionResult<string[]> GetRoles()
     {
+        var roles = Enum.GetNames(typeof(UserRole));
+
+        return Ok(roles);
+    }
+
+    [HttpGet("roles/register")]
+    public ActionResult<string[]> GetRegisterRoles()
+    {
         var roles = Enum.GetNames(typeof(UserRole))
-            .Where(role => !string.Equals(role, nameof(UserRole.Admin), StringComparison.Ordinal))
+            .Where(role =>
+                string.Equals(role, nameof(UserRole.HorseOwner), StringComparison.Ordinal) ||
+                string.Equals(role, nameof(UserRole.Jockey), StringComparison.Ordinal) ||
+                string.Equals(role, nameof(UserRole.Spectator), StringComparison.Ordinal))
             .ToArray();
 
         return Ok(roles);
