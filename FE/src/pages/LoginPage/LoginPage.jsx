@@ -82,15 +82,22 @@ function LoginPage() {
           ? apiRoles.map((role) => normalizeApiRole(role)).filter(Boolean)
           : [];
         const uniqueRoles = Array.from(new Set(normalizedRoles));
-        const roleOptions = uniqueRoles.map((value) => ({
-          value,
-          label: LABEL_BY_ROLE[value] ?? value,
+        const mergedRoles =
+          uniqueRoles.length > 0
+            ? DEFAULT_ROLES.filter(
+                (role) => uniqueRoles.includes(role.value) || role.value === "admin"
+              )
+            : DEFAULT_ROLES;
+        const roleOptions = mergedRoles.map((role) => ({
+          value: role.value,
+          label: role.label,
         }));
+        const availableRoleValues = roleOptions.map((role) => role.value);
 
         if (!cancelled && roleOptions.length > 0) {
           setRoles(roleOptions);
-          if (!uniqueRoles.includes(selectedRole)) {
-            setSelectedRole(uniqueRoles[0]);
+          if (!availableRoleValues.includes(selectedRole)) {
+            setSelectedRole(availableRoleValues[0]);
           }
         }
       } catch (error) {
