@@ -55,7 +55,7 @@ function RegisterPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

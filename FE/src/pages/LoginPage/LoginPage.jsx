@@ -51,7 +51,7 @@ function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

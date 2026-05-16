@@ -1,3 +1,4 @@
+import "../SpectatorSharedLayout.css";
 import "./SpectatorDashboardPage.css";
 
 const stats = [
@@ -128,7 +129,7 @@ function SpectatorDashboardPage() {
   const recentPredictions = [];
 
   return (
-    <div className="spectator-page">
+    <div className="spectator-page spectator-dashboard">
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">

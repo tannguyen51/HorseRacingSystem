@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import "../SpectatorSharedLayout.css";
 import "./SpectatorTournamentListPage.css";
 
 const tournaments = [
