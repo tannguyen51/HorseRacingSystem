@@ -1,0 +1,188 @@
+/* Page-specific styles for Spectator Tournament List */
+
+.empty-state {
+  border: 1px dashed rgba(231, 198, 120, 0.2);
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  display: grid;
+  gap: 10px;
+  background: rgba(6, 10, 20, 0.7);
+}
+
+.empty-state h3 {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+
+
+.spectator-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.filter-group {
+  display: grid;
+  gap: 8px;
+}
+
+.tournament-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.spectator-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+}
+
+.tournament-banner {
+  min-height: 120px;
+  padding: 16px;
+  display: flex;
+  justify-content: flex-end;
+  background: linear-gradient(135deg, rgba(231, 198, 120, 0.15), rgba(7, 11, 20, 0.8)),
+    radial-gradient(circle at top, rgba(231, 198, 120, 0.35), transparent 60%);
+}
+
+.tournament-body {
+  display: grid;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.tournament-body h3 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.tournament-body p {
+  margin: 0 0 6px;
+  color: #98a1b3;
+}
+
+.tournament-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  background: rgba(6, 10, 20, 0.7);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.tournament-meta span {
+  display: block;
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.tournament-meta strong {
+  display: block;
+  margin-top: 6px;
+  color: #f2d28b;
+  font-size: 18px;
+}
+
+.tournament-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #98a1b3;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 15, 0.75);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+  padding: 24px;
+}
+
+.spectator-modal {
+  width: min(560px, 100%);
+  border-radius: 24px;
+  padding: 28px;
+  background: rgba(10, 16, 28, 0.95);
+  border: 1px solid rgba(231, 198, 120, 0.2);
+  display: grid;
+  gap: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.modal-header h3 {
+  margin: 10px 0 6px;
+  color: #f8f4e6;
+}
+
+.modal-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.modal-body h4 {
+  margin: 0 0 6px;
+  color: #f2d28b;
+}
+
+.modal-body p {
+  margin: 0;
+  color: #98a1b3;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .tournament-actions {
+    flex-direction: column;
+  }
+
+  .modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-body {
+    grid-template-columns: 1fr;
+  }
+}

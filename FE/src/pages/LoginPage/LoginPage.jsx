@@ -1,23 +1,57 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../services/authApi";
+import { getRoles, login } from "../../services/authApi";
+import {
+  buildLoginRoleOptions,
+  LABEL_BY_ROLE,
+  LOGIN_ROLE_OPTIONS,
+  normalizeApiRole,
+  unwrapResponseData,
+} from "../../services/authRoleUtils";
 import "./LoginPage.css";
 
-const ROLES = [
-  { value: "horse_owner", label: "Horse Owner" },
-  { value: "jockey", label: "Jockey" },
-  { value: "spectator", label: "Spectator" },
-  { value: "referee", label: "Referee" },
-  { value: "admin", label: "Admin" },
-];
-
 function LoginPage() {
+  const [roles, setRoles] = useState(LOGIN_ROLE_OPTIONS);
   const [selectedRole, setSelectedRole] = useState("horse_owner");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [rolesReady, setRolesReady] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRoles = async () => {
+      try {
+        const apiRolesResponse = await getRoles();
+        const apiRoles = unwrapResponseData(apiRolesResponse);
+        const roleOptions = buildLoginRoleOptions(apiRoles);
+        const availableRoleValues = roleOptions.map((role) => role.value);
+
+        if (!cancelled && roleOptions.length > 0) {
+          setRoles(roleOptions);
+          if (!availableRoleValues.includes(selectedRole)) {
+            setSelectedRole(availableRoleValues[0]);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setRoles(LOGIN_ROLE_OPTIONS);
+        }
+      } finally {
+        if (!cancelled) {
+          setRolesReady(true);
+        }
+      }
+    };
+
+    loadRoles();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -26,16 +60,33 @@ function LoginPage() {
 
     try {
       const response = await login({ email, password });
-      localStorage.setItem("authToken", response.token);
+      const payload = unwrapResponseData(response);
+      const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
+      if (!apiRole) {
+        const rawRole = JSON.stringify(payload?.role ?? payload?.Role);
+        throw new Error(`Unsupported role returned by server: ${rawRole}`);
+      }
+      if (apiRole !== selectedRole) {
+        const selectedLabel = LABEL_BY_ROLE[selectedRole] ?? "selected";
+        const apiLabel = LABEL_BY_ROLE[apiRole] ?? apiRole;
+        throw new Error(
+          `Role mismatch. Account is ${apiLabel}, not ${selectedLabel}.`,
+        );
+      }
+      localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
         JSON.stringify({
-          userId: response.userId,
-          email: response.email,
-          role: response.role,
+          userId: payload?.userId,
+          email: payload?.email,
+          role: apiRole,
         }),
       );
-      navigate("/");
+      if (apiRole === "spectator") {
+        navigate("/spectator");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       setErrorMessage(error.message || "Login failed. Please try again.");
     } finally {
@@ -94,7 +145,7 @@ function LoginPage() {
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
-              {ROLES.map((role) => (
+              {roles.map((role) => (
                 <option key={role.value} value={role.value}>
                   {role.label}
                 </option>
@@ -107,7 +158,7 @@ function LoginPage() {
           <button
             type="submit"
             className="primary-button btn-block"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !rolesReady}
           >
             {isSubmitting ? "Signing In..." : "Sign In"}
           </button>

@@ -47,3 +47,7 @@ export function register(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function getRoles() {
+  return request("/api/auth/roles");
+}
