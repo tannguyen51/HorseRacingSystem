@@ -240,7 +240,14 @@ function SpectatorTournamentListPage() {
                     >
                       View details
                     </button>
-                    <button className="primary-button">Follow</button>
+                    <button
+                      className="primary-button"
+                      type="button"
+                      disabled
+                      title="Follow is not available yet"
+                    >
+                      Follow
+                    </button>
                   </div>
                 </article>
               ))}
