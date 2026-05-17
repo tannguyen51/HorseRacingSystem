@@ -119,11 +119,6 @@ const leaderboardRows = [
   },
 ];
 
-const sidebarLinks = [
-  { label: "Dashboard", href: "/spectator" },
-  { label: "Tournaments", href: "/spectator/tournaments" },
-];
-
 function SpectatorDashboardPage() {
   const showLoadingMore = false;
   const recentPredictions = [];
@@ -137,17 +132,6 @@ function SpectatorDashboardPage() {
             <h3>Race Day Hub</h3>
             <p className="muted">Track live action and rewards.</p>
           </div>
-          <nav className="spectator-nav">
-            {sidebarLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="spectator-nav__link"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
           <div className="spectator-sidebar__card">
             <p className="muted">Next live window</p>
             <h4>Bluegrass Sprint</h4>

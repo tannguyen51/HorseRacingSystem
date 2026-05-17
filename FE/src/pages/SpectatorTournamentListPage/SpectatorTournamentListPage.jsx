@@ -1,95 +1,120 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { unwrapResponseData } from "../../services/authRoleUtils";
+import { getTournaments } from "../../services/spectatorApi";
 import "../SpectatorSharedLayout.css";
 import "./SpectatorTournamentListPage.css";
 
-const tournaments = [
-  {
-    id: 1,
-    name: "Spring Championship Finals",
-    date: "May 24, 2026 · 2:00 PM",
-    totalRaces: 12,
-    prizePool: "$500,000",
-    status: "Live",
-    location: "Churchill Downs",
-  },
-  {
-    id: 2,
-    name: "Pacific Classic Series",
-    date: "June 12, 2026 · 4:30 PM",
-    totalRaces: 9,
-    prizePool: "$320,000",
-    status: "Open",
-    location: "Santa Anita Park",
-  },
-  {
-    id: 3,
-    name: "Bluegrass Invitational",
-    date: "June 18, 2026 · 3:10 PM",
-    totalRaces: 7,
-    prizePool: "$210,000",
-    status: "Filling Fast",
-    location: "Keeneland",
-  },
-  {
-    id: 4,
-    name: "Harbor Stakes",
-    date: "June 25, 2026 · 1:40 PM",
-    totalRaces: 6,
-    prizePool: "$180,000",
-    status: "Open",
-    location: "Del Mar",
-  },
-  {
-    id: 5,
-    name: "Metropolitan Mile",
-    date: "July 2, 2026 · 2:20 PM",
-    totalRaces: 8,
-    prizePool: "$275,000",
-    status: "Open",
-    location: "Belmont Park",
-  },
-  {
-    id: 6,
-    name: "Coastal Derby",
-    date: "July 9, 2026 · 5:00 PM",
-    totalRaces: 10,
-    prizePool: "$410,000",
-    status: "Full",
-    location: "Gulfstream Park",
-  },
-  {
-    id: 7,
-    name: "Emerald Invitational",
-    date: "July 16, 2026 · 3:30 PM",
-    totalRaces: 5,
-    prizePool: "$150,000",
-    status: "Open",
-    location: "Emerald Downs",
-  },
-  {
-    id: 8,
-    name: "Capital Cup",
-    date: "July 23, 2026 · 2:10 PM",
-    totalRaces: 9,
-    prizePool: "$295,000",
-    status: "Filling Fast",
-    location: "Laurel Park",
-  },
-];
+const statusFilters = ["All", "Live", "Open", "Closed"];
 
-const statusFilters = ["All", "Live", "Open", "Filling Fast", "Full"];
+const formatDateTime = (value) => {
+  if (!value) {
+    return "TBD";
+  }
 
-const sidebarLinks = [
-  { label: "Dashboard", href: "/spectator" },
-  { label: "Tournaments", href: "/spectator/tournaments" },
-];
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "TBD";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const formatPrizePool = (raceCount) => {
+  if (!raceCount) {
+    return "TBD";
+  }
+  const estimate = Math.max(1, raceCount) * 25000;
+  return `$${estimate.toLocaleString("en-US")}`;
+};
+
+const getTournamentStatus = (tournament) => {
+  const isActive = tournament?.isActive ?? tournament?.IsActive;
+  if (!isActive) {
+    return "Closed";
+  }
+
+  const start = new Date(tournament?.startDate ?? tournament?.StartDate);
+  const end = new Date(tournament?.endDate ?? tournament?.EndDate);
+  const now = new Date();
+
+  if (
+    !Number.isNaN(start.getTime()) &&
+    !Number.isNaN(end.getTime()) &&
+    now >= start &&
+    now <= end
+  ) {
+    return "Live";
+  }
+
+  return "Open";
+};
+
+const mapTournament = (tournament) => {
+  const raceCount = tournament?.raceCount ?? tournament?.RaceCount ?? 0;
+  const startDate = tournament?.startDate ?? tournament?.StartDate;
+
+  return {
+    id: tournament?.id ?? tournament?.Id,
+    name: tournament?.name ?? tournament?.Name ?? "Tournament",
+    date: formatDateTime(startDate),
+    totalRaces: raceCount,
+    prizePool: formatPrizePool(raceCount),
+    status: getTournamentStatus(tournament),
+    location:
+      tournament?.description ?? tournament?.Description ?? "Location TBD",
+  };
+};
 
 function SpectatorTournamentListPage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTournament, setActiveTournament] = useState(null);
-  const pageSize = 6;
+  const basePageSize = 6;
+  const fullPageSize = 8;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTournaments = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      try {
+        const response = await getTournaments();
+        const payload = unwrapResponseData(response);
+        const items = Array.isArray(payload) ? payload.map(mapTournament) : [];
+
+        if (!cancelled) {
+          setTournaments(items);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error.message || "Unable to load tournaments.");
+          setTournaments([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadTournaments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredTournaments = useMemo(() => {
     return tournaments.filter((tournament) => {
@@ -103,14 +128,18 @@ function SpectatorTournamentListPage() {
     });
   }, [query, status]);
 
+  const effectivePageSize =
+    filteredTournaments.length <= fullPageSize
+      ? filteredTournaments.length
+      : basePageSize;
   const pageCount = Math.max(
     1,
-    Math.ceil(filteredTournaments.length / pageSize),
+    Math.ceil(filteredTournaments.length / effectivePageSize),
   );
   const safePage = Math.min(currentPage, pageCount);
   const pageItems = filteredTournaments.slice(
-    (safePage - 1) * pageSize,
-    safePage * pageSize,
+    (safePage - 1) * effectivePageSize,
+    safePage * effectivePageSize,
   );
 
   const handlePrevious = () => {
@@ -130,17 +159,6 @@ function SpectatorTournamentListPage() {
             <h3>Tournament Finder</h3>
             <p className="muted">Browse upcoming and live events.</p>
           </div>
-          <nav className="spectator-nav">
-            {sidebarLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="spectator-nav__link"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
           <div className="spectator-sidebar__card">
             <p className="muted">Filters</p>
             <h4>{status}</h4>
@@ -193,7 +211,23 @@ function SpectatorTournamentListPage() {
             </div>
           </section>
 
-          {pageItems.length === 0 ? (
+          {isLoading ? (
+            <div className="empty-state">
+              <h3>Loading tournaments</h3>
+              <p>Fetching the latest tournament schedule.</p>
+            </div>
+          ) : errorMessage ? (
+            <div className="empty-state">
+              <h3>Unable to load tournaments</h3>
+              <p>{errorMessage}</p>
+              <button
+                className="ghost-button"
+                onClick={() => location.reload()}
+              >
+                Try again
+              </button>
+            </div>
+          ) : pageItems.length === 0 ? (
             <div className="empty-state">
               <h3>No tournaments found</h3>
               <p>Try a different keyword or reset your filters.</p>
@@ -256,25 +290,27 @@ function SpectatorTournamentListPage() {
             </section>
           )}
 
-          <div className="pagination">
-            <button
-              className="ghost-button"
-              onClick={handlePrevious}
-              disabled={safePage === 1}
-            >
-              Previous
-            </button>
-            <span>
-              Page {safePage} of {pageCount}
-            </span>
-            <button
-              className="ghost-button"
-              onClick={handleNext}
-              disabled={safePage === pageCount}
-            >
-              Next
-            </button>
-          </div>
+          {pageCount > 1 ? (
+            <div className="pagination">
+              <button
+                className="ghost-button"
+                onClick={handlePrevious}
+                disabled={safePage === 1}
+              >
+                Previous
+              </button>
+              <span>
+                Page {safePage} of {pageCount}
+              </span>
+              <button
+                className="ghost-button"
+                onClick={handleNext}
+                disabled={safePage === pageCount}
+              >
+                Next
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 

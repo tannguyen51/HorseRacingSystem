@@ -1,0 +1,258 @@
+.spectator-schedule-page {
+  display: grid;
+  gap: 32px;
+}
+
+.schedule-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-detail {
+  color: #98a1b3;
+  font-size: 13px;
+}
+
+.schedule-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.schedule-timeline {
+  display: grid;
+  gap: 24px;
+}
+
+.schedule-day {
+  display: grid;
+  gap: 16px;
+}
+
+.schedule-day__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f8f4e6;
+}
+
+.schedule-day__header h3 {
+  margin: 0;
+}
+
+.schedule-day__list {
+  display: grid;
+  gap: 16px;
+}
+
+.schedule-entry {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  padding: 22px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 16px;
+}
+
+.schedule-entry__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.schedule-time {
+  color: #f2d28b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+  margin: 0 0 6px;
+}
+
+.schedule-entry h3 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.schedule-entry__status {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.countdown-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(231, 198, 120, 0.15);
+  color: #f2d28b;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.schedule-entry__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(6, 10, 20, 0.7);
+}
+
+.schedule-entry__meta span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.schedule-entry__meta strong {
+  display: block;
+  color: #f2d28b;
+  margin-top: 6px;
+}
+
+.schedule-entry__horses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  color: #f8f4e6;
+}
+
+.schedule-entry__horses strong {
+  display: block;
+}
+
+.schedule-entry__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.schedule-sidepanel {
+  display: grid;
+  gap: 18px;
+}
+
+.upcoming-list {
+  display: grid;
+  gap: 14px;
+}
+
+.upcoming-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: grid;
+  gap: 14px;
+}
+
+.upcoming-card h4 {
+  margin: 10px 0 6px;
+  color: #f8f4e6;
+}
+
+.upcoming-card span {
+  color: #f2d28b;
+  font-size: 13px;
+}
+
+.upcoming-card__countdown {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(6, 10, 20, 0.7);
+}
+
+.upcoming-card__countdown strong {
+  color: #f2d28b;
+  font-size: 18px;
+}
+
+.schedule-modal .participant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.participant-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(6, 10, 20, 0.7);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: grid;
+  gap: 8px;
+}
+
+.participant-card h5 {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+.participant-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #98a1b3;
+  font-size: 12px;
+}
+
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(231, 198, 120, 0.12);
+  margin-bottom: 10px;
+}
+
+.skeleton-line.wide {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@media (max-width: 1100px) {
+  .schedule-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .schedule-entry__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .schedule-entry__status {
+    justify-items: start;
+  }
+
+  .schedule-entry__actions {
+    justify-content: flex-start;
+  }
+}

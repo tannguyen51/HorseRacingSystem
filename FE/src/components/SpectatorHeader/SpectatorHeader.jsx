@@ -1,10 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
+import { spectatorNavItems } from "../../constants/spectatorNavigation";
 import "./SpectatorHeader.css";
-
-const navItems = [
-  { to: "/spectator", label: "Dashboard", end: true },
-  { to: "/spectator/tournaments", label: "Tournaments" },
-];
 
 function SpectatorHeader() {
   const handleLogout = () => {
@@ -23,7 +19,7 @@ function SpectatorHeader() {
       </Link>
 
       <nav className="spectator-header__nav" aria-label="Spectator">
-        {navItems.map((item) => (
+        {spectatorNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
