@@ -1,0 +1,203 @@
+.owner-horse-list {
+  display: grid;
+  gap: 32px;
+}
+
+.owner-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.owner-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.filter-group {
+  display: grid;
+  gap: 8px;
+}
+
+.horse-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.horse-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-radius: 24px;
+  border: 1px solid rgba(231, 198, 120, 0.12);
+  background: linear-gradient(160deg, rgba(16, 23, 38, 0.92), rgba(7, 11, 20, 0.92));
+  box-shadow: 0 24px 50px rgba(3, 7, 16, 0.55);
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.horse-card:hover {
+  box-shadow: 0 30px 60px rgba(3, 7, 16, 0.6), 0 0 28px rgba(231, 198, 120, 0.18);
+  transform: translateY(-4px);
+}
+
+.horse-media {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.horse-image {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(231, 198, 120, 0.22), rgba(7, 11, 20, 0.75)),
+    radial-gradient(circle at top, rgba(231, 198, 120, 0.35), transparent 60%);
+  background-size: cover;
+  background-position: center;
+}
+
+.horse-media__fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: linear-gradient(180deg, rgba(7, 11, 20, 0), rgba(7, 11, 20, 0.85));
+}
+
+.horse-status {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.badge-active {
+  background: rgba(110, 231, 183, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(110, 231, 183, 0.4);
+}
+
+.badge-training {
+  background: rgba(231, 198, 120, 0.2);
+  color: #f2d28b;
+  border: 1px solid rgba(231, 198, 120, 0.4);
+}
+
+.badge-resting {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5f1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.badge-medical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.horse-card__content {
+  display: grid;
+  gap: 18px;
+  padding: 22px 22px 24px;
+}
+
+.horse-card__header {
+  display: grid;
+  gap: 6px;
+}
+
+.horse-card__header h3 {
+  margin: 0;
+  color: #f8f4e6;
+  font-size: 20px;
+}
+
+.horse-card__details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(6, 10, 20, 0.6);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.horse-card__details span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.horse-card__details strong {
+  display: block;
+  color: #f2d28b;
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+.horse-card__actions {
+  display: grid;
+  gap: 12px;
+}
+
+.horse-card__secondary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.button-block {
+  width: 100%;
+  justify-content: center;
+}
+
+.button-outline {
+  border-color: rgba(231, 198, 120, 0.25);
+  color: #dbe2ef;
+  background: rgba(6, 10, 20, 0.35);
+}
+
+.button-outline:hover {
+  background: rgba(231, 198, 120, 0.12);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #98a1b3;
+}
+
+@media (max-width: 1200px) {
+  .horse-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .horse-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .horse-card__details {
+    grid-template-columns: 1fr;
+  }
+
+  .horse-card__secondary-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,7 @@ import {
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
+import OwnerHeader from "./components/OwnerHeader/OwnerHeader";
 import HomePage from "./pages/HomePage/HomePage";
 import TournamentListPage from "./pages/TournamentListPage/TournamentListPage";
 import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailPage";
@@ -21,6 +22,14 @@ import SpectatorLiveRankingPage from "./pages/SpectatorLiveRankingPage/Spectator
 import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage";
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
 import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
+import OwnerDashboardPage from "./pages/OwnerDashboardPage/OwnerDashboardPage";
+import OwnerHorseListPage from "./pages/OwnerHorseListPage/OwnerHorseListPage";
+import OwnerHorseDetailPage from "./pages/OwnerHorseDetailPage/OwnerHorseDetailPage";
+import OwnerHorseCreatePage from "./pages/OwnerHorseCreatePage/OwnerHorseCreatePage";
+import OwnerHorseEditPage from "./pages/OwnerHorseEditPage/OwnerHorseEditPage";
+import OwnerTournamentListPage from "./pages/OwnerTournamentListPage/OwnerTournamentListPage";
+import OwnerTournamentRegisterPage from "./pages/OwnerTournamentRegisterPage/OwnerTournamentRegisterPage";
+import OwnerRaceConfirmationPage from "./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import "./App.css";
@@ -28,10 +37,17 @@ import "./App.css";
 function AppLayout() {
   const location = useLocation();
   const isSpectator = location.pathname.startsWith("/spectator");
+  const isOwner = location.pathname.startsWith("/owner");
 
   return (
     <div className="app-shell">
-      {isSpectator ? <SpectatorHeader /> : <Header />}
+      {isSpectator ? (
+        <SpectatorHeader />
+      ) : isOwner ? (
+        <OwnerHeader />
+      ) : (
+        <Header />
+      )}
       <main className="page-wrapper">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -64,6 +80,26 @@ function AppLayout() {
           <Route
             path="/spectator/rewards"
             element={<SpectatorRewardNotificationsPage />}
+          />
+          <Route path="/owner" element={<OwnerDashboardPage />} />
+          <Route path="/owner/horses" element={<OwnerHorseListPage />} />
+          <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
+          <Route path="/owner/horses/:id" element={<OwnerHorseDetailPage />} />
+          <Route
+            path="/owner/horses/:id/edit"
+            element={<OwnerHorseEditPage />}
+          />
+          <Route
+            path="/owner/tournaments"
+            element={<OwnerTournamentListPage />}
+          />
+          <Route
+            path="/owner/HorseRegister"
+            element={<OwnerTournamentRegisterPage />}
+          />
+          <Route
+            path="/owner/race-confirmations"
+            element={<OwnerRaceConfirmationPage />}
           />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

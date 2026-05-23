@@ -1,0 +1,65 @@
+.owner-race-confirmation {
+  display: grid;
+  gap: 32px;
+}
+
+.confirmation-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.confirmation-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 16px;
+}
+
+.confirmation-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.confirmation-header h3 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.confirmation-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(6, 10, 20, 0.7);
+}
+
+.confirmation-meta span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.confirmation-meta strong {
+  display: block;
+  color: #f2d28b;
+  margin-top: 6px;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .confirmation-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
