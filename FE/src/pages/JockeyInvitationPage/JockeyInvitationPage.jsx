@@ -41,9 +41,13 @@ export function JockeyInvitationPage() {
   const handleResponse = async (id, action) => {
     setLoadingId(id);
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${BASE_URL}/api/jockeys/invitations/${id}/respond`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ 
           status: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED' 
         })
