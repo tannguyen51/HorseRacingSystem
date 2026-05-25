@@ -1,4 +1,4 @@
-export function JockeySchedulePage() {
+function JockeySchedulePage() {
   return (
     <div>
       <section className="page-header">
@@ -13,3 +13,5 @@ export function JockeySchedulePage() {
     </div>
   );
 }
+
+export default JockeySchedulePage;

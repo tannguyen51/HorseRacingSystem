@@ -1,4 +1,4 @@
-export function JockeyPerformancePage() {
+function JockeyPerformancePage() {
   return (
     <div>
       <section className="page-header">
@@ -13,3 +13,5 @@ export function JockeyPerformancePage() {
     </div>
   );
 }
+
+export default JockeyPerformancePage;

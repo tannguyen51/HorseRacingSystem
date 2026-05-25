@@ -24,9 +24,9 @@ import SpectatorLiveRankingPage from "./pages/SpectatorLiveRankingPage/Spectator
 import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage";
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
 import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
-import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
-import { JockeySchedulePage } from "./pages/JockeySchedulePage/JockeySchedulePage";
-import { JockeyPerformancePage } from "./pages/JockeyPerformancePage/JockeyPerformancePage";
+import JockeyInvitationPage from "./pages/JockeyInvitationPage/JockeyInvitationPage";
+import JockeySchedulePage from "./pages/JockeySchedulePage/JockeySchedulePage";
+import JockeyPerformancePage from "./pages/JockeyPerformancePage/JockeyPerformancePage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage/OwnerDashboardPage";
 import OwnerHorseListPage from "./pages/OwnerHorseListPage/OwnerHorseListPage";
 import OwnerHorseDetailPage from "./pages/OwnerHorseDetailPage/OwnerHorseDetailPage";
