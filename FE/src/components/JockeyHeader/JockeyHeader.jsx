@@ -1,8 +1,8 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { spectatorNavItems } from "../../constants/spectatorNavigation";
-import "./SpectatorHeader.css";
+import { jockeyNavItems } from "../../constants/jockeyNavigation";
+import "./JockeyHeader.css";
 
-function SpectatorHeader() {
+function JockeyHeader() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,17 +12,17 @@ function SpectatorHeader() {
   };
 
   return (
-    <header className="spectator-header">
-      <Link className="spectator-header__brand" to="/spectator">
+    <header className="jockey-header">
+      <Link className="jockey-header__brand" to="/jockey">
         <div className="brand-mark">RM</div>
         <div>
           <p className="brand-title">RaceMaster</p>
-          <p className="brand-subtitle">Spectator Hub</p>
+          <p className="brand-subtitle">Jockey Hub</p>
         </div>
       </Link>
 
-      <nav className="spectator-header__nav" aria-label="Spectator">
-        {spectatorNavItems.map((item) => (
+      <nav className="jockey-header__nav" aria-label="Jockey">
+        {jockeyNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -36,7 +36,7 @@ function SpectatorHeader() {
         ))}
       </nav>
 
-      <div className="spectator-header__actions">
+      <div className="jockey-header__actions">
         <button className="ghost-button" onClick={handleLogout}>
           Logout
         </button>
@@ -45,4 +45,4 @@ function SpectatorHeader() {
   );
 }
 
-export default SpectatorHeader;
+export default JockeyHeader;
