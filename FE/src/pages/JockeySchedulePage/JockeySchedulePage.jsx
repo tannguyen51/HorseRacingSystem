@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "../SpectatorSharedLayout.css";
 import "./JockeySchedulePage.css";
 
-const BASE_URL = 'http://localhost:5226';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
 
 export function JockeySchedulePage() {
   const [races, setRaces] = useState([]);
