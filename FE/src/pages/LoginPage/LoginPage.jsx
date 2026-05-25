@@ -12,7 +12,8 @@ import "./LoginPage.css";
 
 function LoginPage() {
   const [roles, setRoles] = useState(LOGIN_ROLE_OPTIONS);
-  const [selectedRole, setSelectedRole] = useState("horse_owner");
+  
+  const [selectedRole, setSelectedRole] = useState("jockey"); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,10 +63,13 @@ function LoginPage() {
       const response = await login({ email, password });
       const payload = unwrapResponseData(response);
       const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
+      
       if (!apiRole) {
         const rawRole = JSON.stringify(payload?.role ?? payload?.Role);
         throw new Error(`Unsupported role returned by server: ${rawRole}`);
       }
+      
+      
       if (apiRole !== selectedRole) {
         const selectedLabel = LABEL_BY_ROLE[selectedRole] ?? "selected";
         const apiLabel = LABEL_BY_ROLE[apiRole] ?? apiRole;
@@ -73,6 +77,7 @@ function LoginPage() {
           `Role mismatch. Account is ${apiLabel}, not ${selectedLabel}.`,
         );
       }
+      
       localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
@@ -82,11 +87,16 @@ function LoginPage() {
           role: apiRole,
         }),
       );
-      if (apiRole === "spectator") {
-        navigate("/spectator");
-      } else {
-        navigate("/");
-      }
+
+      const ROLE_ROUTES = {
+        spectator: "/spectator",
+        jockey: "/jockey/schedule", 
+        horse_owner: "/",
+        admin: "/",
+        trainer: "/",
+      };
+
+      navigate(ROLE_ROUTES[apiRole] ?? "/");
     } catch (error) {
       setErrorMessage(error.message || "Login failed. Please try again.");
     } finally {
@@ -112,6 +122,8 @@ function LoginPage() {
             <input
               id="email"
               type="email"
+              name="email"
+              autoComplete="email" 
               placeholder="you@stable.com"
               className="form-input"
               value={email}
@@ -127,6 +139,8 @@ function LoginPage() {
             <input
               id="password"
               type="password"
+              name="password"
+              autoComplete="current-password" 
               placeholder="••••••••"
               className="form-input"
               value={password}

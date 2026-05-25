@@ -12,7 +12,8 @@ import "./RegisterPage.css";
 
 function RegisterPage() {
   const [roles, setRoles] = useState(REGISTER_ROLE_OPTIONS);
-  const [selectedRole, setSelectedRole] = useState("horse_owner");
+  
+  const [selectedRole, setSelectedRole] = useState("jockey");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,6 +87,7 @@ function RegisterPage() {
       });
       const payload = unwrapResponseData(response);
       const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
+      
       localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
@@ -96,7 +98,13 @@ function RegisterPage() {
         }),
       );
       setSuccessMessage("Account created successfully.");
-      navigate("/");
+      
+      
+      if ((apiRole || selectedRole) === "jockey") {
+        navigate("/jockey/schedule");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       setErrorMessage(
         error.message || "Registration failed. Please try again.",
@@ -124,6 +132,8 @@ function RegisterPage() {
             <input
               id="fullname"
               type="text"
+              name="name"
+              autoComplete="name" 
               placeholder="Ariana Blake"
               className="form-input"
               value={fullName}
@@ -139,6 +149,8 @@ function RegisterPage() {
             <input
               id="email"
               type="email"
+              name="email"
+              autoComplete="email" 
               placeholder="you@stable.com"
               className="form-input"
               value={email}
@@ -154,6 +166,8 @@ function RegisterPage() {
             <input
               id="password"
               type="password"
+              name="password"
+              autoComplete="new-password" 
               placeholder="••••••••"
               className="form-input"
               value={password}
@@ -169,6 +183,8 @@ function RegisterPage() {
             <input
               id="confirm-password"
               type="password"
+              name="confirmPassword"
+              autoComplete="new-password" 
               placeholder="••••••••"
               className="form-input"
               value={confirmPassword}
@@ -203,10 +219,12 @@ function RegisterPage() {
               <input
                 id="license"
                 type="text"
+                name="license"
                 placeholder="JCK-2026-001"
                 className="form-input"
                 value={licenseNumber}
                 onChange={(event) => setLicenseNumber(event.target.value)}
+                required 
               />
             </div>
           ) : null}
