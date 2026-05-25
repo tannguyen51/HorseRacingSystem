@@ -64,9 +64,9 @@ function AppLayout() {
 
   const authUser = isAuthRoute ? null : readAuthUser();
 
-  const isSpectator = location.pathname.startsWith(SPECTATOR_PREFIX);
-  const isJockey = location.pathname.startsWith(JOCKEY_PREFIX);
-  const isOwner = location.pathname.startsWith(OWNER_PREFIX);
+  const isSpectator = pathname.startsWith(SPECTATOR_PREFIX);
+  const isJockey = pathname.startsWith(JOCKEY_PREFIX);
+  const isOwner = pathname.startsWith(OWNER_PREFIX);
 
   const renderHeader = () => {
     if (authUser?.role === "spectator") {
