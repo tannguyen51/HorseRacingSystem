@@ -3,7 +3,7 @@ import "../SpectatorSharedLayout.css";
 import "./JockeyInvitationPage.css";   
 
 
-const BASE_URL = 'http://localhost:5226'; 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
 
 export function JockeyInvitationPage() {
   const [invitations, setInvitations] = useState([]);
