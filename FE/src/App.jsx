@@ -5,7 +5,6 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { useMemo } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
@@ -44,28 +43,26 @@ const SPECTATOR_PREFIX = "/spectator";
 const JOCKEY_PREFIX = "/jockey";
 const OWNER_PREFIX = "/owner";
 
+const readAuthUser = () => {
+  const user = localStorage.getItem("authUser");
+
+  if (!user) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(user);
+  } catch {
+    return null;
+  }
+};
+
 function AppLayout() {
   const location = useLocation();
   const pathname = location.pathname;
   const isAuthRoute = ["/auth", "/login", "/register"].includes(pathname);
 
-  const authUser = useMemo(() => {
-    if (isAuthRoute) {
-      return null;
-    }
-
-    const user = localStorage.getItem("authUser");
-
-    if (!user) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(user);
-    } catch {
-      return null;
-    }
-  }, [isAuthRoute]);
+  const authUser = isAuthRoute ? null : readAuthUser();
 
   const isSpectator = location.pathname.startsWith(SPECTATOR_PREFIX);
   const isJockey = location.pathname.startsWith(JOCKEY_PREFIX);
