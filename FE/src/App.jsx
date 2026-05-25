@@ -46,7 +46,14 @@ const OWNER_PREFIX = "/owner";
 
 function AppLayout() {
   const location = useLocation();
+  const pathname = location.pathname;
+  const isAuthRoute = ["/auth", "/login", "/register"].includes(pathname);
+
   const authUser = useMemo(() => {
+    if (isAuthRoute) {
+      return null;
+    }
+
     const user = localStorage.getItem("authUser");
 
     if (!user) {
@@ -58,22 +65,34 @@ function AppLayout() {
     } catch {
       return null;
     }
-  }, []);
+  }, [isAuthRoute]);
 
   const isSpectator = location.pathname.startsWith(SPECTATOR_PREFIX);
   const isJockey = location.pathname.startsWith(JOCKEY_PREFIX);
   const isOwner = location.pathname.startsWith(OWNER_PREFIX);
 
   const renderHeader = () => {
-    if (isSpectator || authUser?.role === "spectator") {
+    if (authUser?.role === "spectator") {
       return <SpectatorHeader />;
     }
 
-    if (isJockey || authUser?.role === "jockey") {
+    if (authUser?.role === "jockey") {
       return <JockeyHeader />;
     }
 
-    if (isOwner || authUser?.role === "owner") {
+    if (authUser?.role === "owner") {
+      return <OwnerHeader />;
+    }
+
+    if (isSpectator) {
+      return <SpectatorHeader />;
+    }
+
+    if (isJockey) {
+      return <JockeyHeader />;
+    }
+
+    if (isOwner) {
       return <OwnerHeader />;
     }
 
