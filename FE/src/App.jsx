@@ -5,7 +5,6 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { useMemo } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
@@ -42,7 +41,7 @@ import "./App.css";
 
 function AppLayout() {
   const location = useLocation();
-  const authUser = useMemo(() => {
+  const authUser = (() => {
     const user = localStorage.getItem("authUser");
 
     if (!user) {
@@ -54,7 +53,7 @@ function AppLayout() {
     } catch {
       return null;
     }
-  }, [location.pathname]);
+  })();
 
   const isSpectator = location.pathname.startsWith("/spectator");
   const isJockey = location.pathname.startsWith("/jockey");
