@@ -45,14 +45,18 @@ function AppLayout() {
 
   useEffect(() => {
     const user = localStorage.getItem("authUser");
-    if (user) {
-      try {
-        setAuthUser(JSON.parse(user));
-      } catch (e) {
-        setAuthUser(null);
-      }
+
+    if (!user) {
+      setAuthUser(null);
+      return;
     }
-  }, []);
+
+    try {
+      setAuthUser(JSON.parse(user));
+    } catch {
+      setAuthUser(null);
+    }
+  }, [location.pathname]);
 
   const isSpectator = location.pathname.startsWith("/spectator");
   const isJockey = location.pathname.startsWith("/jockey");
