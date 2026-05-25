@@ -38,7 +38,6 @@ export function JockeyPerformancePage() {
         </aside>
 
         <div className="spectator-content">
-          {}
           <section className="spectator-stats">
             <article className="stat-card hover-lift">
               <p className="muted">Total Career Races</p>
