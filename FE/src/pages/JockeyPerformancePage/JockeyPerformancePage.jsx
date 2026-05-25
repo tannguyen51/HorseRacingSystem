@@ -56,7 +56,6 @@ export function JockeyPerformancePage() {
             </article>
           </section>
 
-          {}
           <section className="spectator-section">
             <div className="section-heading">
               <h2>Achievement History</h2>
