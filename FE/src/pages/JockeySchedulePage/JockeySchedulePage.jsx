@@ -38,11 +38,8 @@ export function JockeySchedulePage() {
         }
       } catch (error) {
         console.error("Error fetching races:", error);
-        setRaces([
-          { id: 101, title: "Emerald Invitational", time: "Today · 5:10 PM", track: "Emerald Downs", status: "Confirmed", horse: { name: "Thunder Bolt", age: 4, weight: "520kg", form: "1-2-1" }, prize: "$150,000" },
-          { id: 102, title: "Capital Cup", time: "Tomorrow · 2:00 PM", track: "Laurel Park", status: "Confirmed", horse: { name: "Wind Runner", age: 5, weight: "515kg", form: "3-1-4" }, prize: "$200,000" },
-          { id: 103, title: "Harbor Stakes", time: "May 28 · 3:40 PM", track: "Del Mar", status: "Pending", horse: { name: "Midnight Fury", age: 3, weight: "498kg", form: "2-5-2" }, prize: "$125,000" }
-        ]);
+        setRaces([]);
+        setSelectedRace(null);
       } finally {
         setLoading(false);
       }
