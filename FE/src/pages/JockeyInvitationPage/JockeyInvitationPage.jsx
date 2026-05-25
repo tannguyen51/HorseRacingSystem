@@ -80,7 +80,6 @@ export function JockeyInvitationPage() {
           </div>
         </aside>
 
-        {}
         <div className="spectator-content">
           <section className="spectator-hero">
             <div>
