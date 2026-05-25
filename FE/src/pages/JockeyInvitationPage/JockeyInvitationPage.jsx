@@ -63,9 +63,7 @@ export function JockeyInvitationPage() {
       setInvitations(prev => prev.filter(inv => inv.id !== id));
     } catch (error) {
       console.error("Error submitting response:", error);
-      alert("Xử lý thất bại. Hệ thống tự động cập nhật UI mẫu (Xóa item).");
-      
-      setInvitations(prev => prev.filter(inv => inv.id !== id));
+      alert("Failed to process the invitation. Please try again.");
     } finally {
       setLoadingId(null);
     }
