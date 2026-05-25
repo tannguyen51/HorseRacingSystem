@@ -5,7 +5,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
@@ -42,20 +42,17 @@ import "./App.css";
 
 function AppLayout() {
   const location = useLocation();
-  const [authUser, setAuthUser] = useState(null);
-
-  useEffect(() => {
+  const authUser = useMemo(() => {
     const user = localStorage.getItem("authUser");
 
     if (!user) {
-      setAuthUser(null);
-      return;
+      return null;
     }
 
     try {
-      setAuthUser(JSON.parse(user));
+      return JSON.parse(user);
     } catch {
-      setAuthUser(null);
+      return null;
     }
   }, [location.pathname]);
 
