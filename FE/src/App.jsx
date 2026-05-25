@@ -5,6 +5,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import { useMemo } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
@@ -39,9 +40,13 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import "./App.css";
 
+const SPECTATOR_PREFIX = "/spectator";
+const JOCKEY_PREFIX = "/jockey";
+const OWNER_PREFIX = "/owner";
+
 function AppLayout() {
   const location = useLocation();
-  const authUser = (() => {
+  const authUser = useMemo(() => {
     const user = localStorage.getItem("authUser");
 
     if (!user) {
@@ -53,11 +58,11 @@ function AppLayout() {
     } catch {
       return null;
     }
-  })();
+  }, []);
 
-  const isSpectator = location.pathname.startsWith("/spectator");
-  const isJockey = location.pathname.startsWith("/jockey");
-  const isOwner = location.pathname.startsWith("/owner");
+  const isSpectator = location.pathname.startsWith(SPECTATOR_PREFIX);
+  const isJockey = location.pathname.startsWith(JOCKEY_PREFIX);
+  const isOwner = location.pathname.startsWith(OWNER_PREFIX);
 
   const renderHeader = () => {
     if (isSpectator || authUser?.role === "spectator") {
