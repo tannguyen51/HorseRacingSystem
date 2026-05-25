@@ -67,7 +67,6 @@ export function JockeyInvitationPage() {
     <div className="spectator-page jockey-invitations">
       <div className="spectator-layout">
         
-        {}
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
             <p className="pill">Jockey Panel</p>
