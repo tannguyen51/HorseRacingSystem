@@ -14,9 +14,13 @@ export function JockeyInvitationPage() {
   const fetchInvitations = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${BASE_URL}/api/jockeys/invitations`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
       });
       if (!response.ok) throw new Error('Network response error');
       const data = await response.json();
