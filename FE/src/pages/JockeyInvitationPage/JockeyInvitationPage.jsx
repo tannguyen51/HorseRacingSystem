@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import "../SpectatorSharedLayout.css"; 
-import "./JockeyInvitationPage.css";   
-
+import React, { useState, useEffect } from "react";
+import "../SpectatorSharedLayout.css";
+import "./JockeyInvitationPage.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
 
@@ -10,27 +9,45 @@ export function JockeyInvitationPage() {
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
 
-  
+  const normalizeInvitations = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.data)) return payload.data;
+    if (payload && Array.isArray(payload.items)) return payload.items;
+    return [];
+  };
+
   const fetchInvitations = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       const response = await fetch(`${BASE_URL}/api/jockeys/invitations`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
-      if (!response.ok) throw new Error('Network response error');
+      if (!response.ok) throw new Error("Network response error");
       const data = await response.json();
-      setInvitations(data);
+      setInvitations(normalizeInvitations(data));
     } catch (error) {
       console.error("Error fetching invitations:", error);
-      
+
       setInvitations([
-        { id: 1, raceName: "Bluegrass Sprint", date: "Today · 5:10 PM", horseName: "Thunder Strike", track: "Churchill Downs" },
-        { id: 2, raceName: "Coastal Derby", date: "Tomorrow · 2:00 PM", horseName: "Silver Comet", track: "Gulfstream Park" }
+        {
+          id: 1,
+          raceName: "Bluegrass Sprint",
+          date: "Today · 5:10 PM",
+          horseName: "Thunder Strike",
+          track: "Churchill Downs",
+        },
+        {
+          id: 2,
+          raceName: "Coastal Derby",
+          date: "Tomorrow · 2:00 PM",
+          horseName: "Silver Comet",
+          track: "Gulfstream Park",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -41,26 +58,30 @@ export function JockeyInvitationPage() {
     fetchInvitations();
   }, []);
 
-  
   const handleResponse = async (id, action) => {
     setLoadingId(id);
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${BASE_URL}/api/jockeys/invitations/${id}/respond`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        `${BASE_URL}/api/jockeys/invitations/${id}/respond`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify({
+            status: action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
+          }),
         },
-        body: JSON.stringify({ 
-          status: action === 'ACCEPT' ? 'ACCEPTED' : 'REJECTED' 
-        })
-      });
+      );
 
-      if (!response.ok) throw new Error('Response submission failed');
-      
-      alert(`Successfully ${action === 'ACCEPT' ? 'accepted' : 'rejected'} the invitation!`);
-      setInvitations(prev => prev.filter(inv => inv.id !== id));
+      if (!response.ok) throw new Error("Response submission failed");
+
+      alert(
+        `Successfully ${action === "ACCEPT" ? "accepted" : "rejected"} the invitation!`,
+      );
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
     } catch (error) {
       console.error("Error submitting response:", error);
       alert("Failed to process the invitation. Please try again.");
@@ -72,7 +93,6 @@ export function JockeyInvitationPage() {
   return (
     <div className="spectator-page jockey-invitations">
       <div className="spectator-layout">
-        
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
             <p className="pill">Jockey Panel</p>
@@ -92,8 +112,9 @@ export function JockeyInvitationPage() {
               <span className="pill">Action Required</span>
               <h1>Race Invitations</h1>
               <p>
-                Review and respond to race invitations assigned to you by the organizers. 
-                Please accept early to secure your jockey registration slot.
+                Review and respond to race invitations assigned to you by the
+                organizers. Please accept early to secure your jockey
+                registration slot.
               </p>
             </div>
             <div className="spectator-hero__panel">
@@ -118,7 +139,10 @@ export function JockeyInvitationPage() {
             ) : invitations.length === 0 ? (
               <div className="empty-state">
                 <h4>No pending invitations</h4>
-                <p>You are all caught up! New race invitations from organizers will appear here.</p>
+                <p>
+                  You are all caught up! New race invitations from organizers
+                  will appear here.
+                </p>
               </div>
             ) : (
               <div className="live-grid">
@@ -128,10 +152,10 @@ export function JockeyInvitationPage() {
                       <span className="badge">Pending</span>
                       <span className="muted">{inv.date}</span>
                     </div>
-                    
+
                     <h3>{inv.raceName}</h3>
                     <p>{inv.track || "TBD Track"}</p>
-                    
+
                     <div className="live-card__meta">
                       <div>
                         <span>Assigned Horse</span>
@@ -140,19 +164,19 @@ export function JockeyInvitationPage() {
                     </div>
 
                     <div className="invitation-actions">
-                      <button 
+                      <button
                         type="button"
                         className="ghost-button"
                         disabled={loadingId !== null}
-                        onClick={() => handleResponse(inv.id, 'REJECT')}
+                        onClick={() => handleResponse(inv.id, "REJECT")}
                       >
                         Decline
                       </button>
-                      <button 
+                      <button
                         type="button"
                         className="primary-button"
                         disabled={loadingId !== null}
-                        onClick={() => handleResponse(inv.id, 'ACCEPT')}
+                        onClick={() => handleResponse(inv.id, "ACCEPT")}
                       >
                         {loadingId === inv.id ? "Processing..." : "Accept Race"}
                       </button>
@@ -163,7 +187,6 @@ export function JockeyInvitationPage() {
             )}
           </section>
         </div>
-
       </div>
     </div>
   );

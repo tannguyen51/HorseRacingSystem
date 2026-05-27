@@ -12,8 +12,8 @@ import "./LoginPage.css";
 
 function LoginPage() {
   const [roles, setRoles] = useState(LOGIN_ROLE_OPTIONS);
-  
-  const [selectedRole, setSelectedRole] = useState("jockey"); 
+
+  const [selectedRole, setSelectedRole] = useState("jockey");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,13 +63,12 @@ function LoginPage() {
       const response = await login({ email, password });
       const payload = unwrapResponseData(response);
       const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
-      
+
       if (!apiRole) {
         const rawRole = JSON.stringify(payload?.role ?? payload?.Role);
         throw new Error(`Unsupported role returned by server: ${rawRole}`);
       }
-      
-      
+
       if (apiRole !== selectedRole) {
         const selectedLabel = LABEL_BY_ROLE[selectedRole] ?? "selected";
         const apiLabel = LABEL_BY_ROLE[apiRole] ?? apiRole;
@@ -77,7 +76,7 @@ function LoginPage() {
           `Role mismatch. Account is ${apiLabel}, not ${selectedLabel}.`,
         );
       }
-      
+
       localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
@@ -90,7 +89,7 @@ function LoginPage() {
 
       const ROLE_ROUTES = {
         spectator: "/spectator",
-        jockey: "/jockey/schedule", 
+        jockey: "/jockey/invitations",
         horse_owner: "/",
         admin: "/",
         trainer: "/",
@@ -123,7 +122,7 @@ function LoginPage() {
               id="email"
               type="email"
               name="email"
-              autoComplete="email" 
+              autoComplete="email"
               placeholder="you@stable.com"
               className="form-input"
               value={email}
@@ -140,7 +139,7 @@ function LoginPage() {
               id="password"
               type="password"
               name="password"
-              autoComplete="current-password" 
+              autoComplete="current-password"
               placeholder="••••••••"
               className="form-input"
               value={password}
