@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HorseRacing.Controllers;
 
+/// <summary>
+/// Xử lý đăng ký, đăng nhập và tra cứu vai trò người dùng.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
@@ -19,6 +22,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    // Authentication
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
@@ -33,6 +37,7 @@ public class AuthController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    // Roles
     [HttpGet("roles")]
     public ActionResult<string[]> GetRoles()
     {
@@ -41,6 +46,7 @@ public class AuthController : ControllerBase
         return Ok(roles);
     }
 
+    // Chỉ trả về các role được phép đăng ký công khai (HorseOwner, Jockey, Spectator)
     [HttpGet("roles/register")]
     public ActionResult<string[]> GetRegisterRoles()
     {
