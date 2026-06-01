@@ -129,5 +129,6 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"))
     .ExcludeFromDescription();
 
+await AdminSeeder.SeedAsync(app.Services);
 
 app.Run();
