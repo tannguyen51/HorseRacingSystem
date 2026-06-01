@@ -1,80 +1,88 @@
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getMyHorses } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerHorseDetailPage.css";
 
-const horseData = {
-  1: {
-    name: "Thunder Strike",
-    breed: "Thoroughbred",
-    age: 4,
-    speed: 94,
-    status: "Active",
-    weight: "480 kg",
-    jockey: "Ariana Blake",
-  },
-  2: {
-    name: "Silver Comet",
-    breed: "Arabian",
-    age: 5,
-    speed: 91,
-    status: "Active",
-    weight: "465 kg",
-    jockey: "Drew Hamilton",
-  },
-};
-
-const raceHistory = [
-  {
-    id: 1,
-    race: "Spring Showcase",
-    date: "May 12, 2026",
-    result: "2nd",
-    time: "1:36.4",
-    prize: "$12,000",
-  },
-  {
-    id: 2,
-    race: "Emerald Stakes",
-    date: "Apr 28, 2026",
-    result: "1st",
-    time: "1:35.1",
-    prize: "$25,000",
-  },
-  {
-    id: 3,
-    race: "Winter Cup",
-    date: "Apr 10, 2026",
-    result: "3rd",
-    time: "1:37.8",
-    prize: "$8,500",
-  },
-];
-
-const participationHistory = [
-  {
-    id: 1,
-    tournament: "Spring Championship Finals",
-    status: "Qualified",
-    races: 3,
-  },
-  {
-    id: 2,
-    tournament: "Pacific Classic Series",
-    status: "Registered",
-    races: 2,
-  },
-];
-
-const performanceChart = [
-  { label: "Speed", value: 94 },
-  { label: "Stamina", value: 86 },
-  { label: "Start", value: 88 },
-  { label: "Finish", value: 90 },
-];
-
 function OwnerHorseDetailPage() {
   const { id } = useParams();
-  const horse = horseData[id] ?? horseData["1"];
+  const [horse, setHorse] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const approvalStatusMap = useMemo(
+    () => ({
+      1: "Pending",
+      2: "Approved",
+      3: "Rejected",
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchHorse = async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const data = await getMyHorses();
+        const list = Array.isArray(data) ? data : [];
+        const match = list.find((item) => item.id === id);
+        if (isMounted) {
+          setHorse(match || null);
+          if (!match) {
+            setError("Horse not found.");
+          }
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setError(fetchError?.message || "Unable to load horse details.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchHorse();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  const statusLabel = horse
+    ? (approvalStatusMap[horse.approvalStatus] ?? "Pending")
+    : "Pending";
+
+  const formattedDob = horse?.dateOfBirth
+    ? new Date(horse.dateOfBirth).toLocaleDateString()
+    : "-";
+
+  const primaryDetails = horse
+    ? [
+        { label: "Breed", value: horse.breed || "-" },
+        { label: "Gender", value: horse.gender || "-" },
+        { label: "Color", value: horse.color || "-" },
+        { label: "Date of birth", value: formattedDob },
+      ]
+    : [];
+
+  const metricDetails = horse
+    ? [
+        { label: "Age", value: horse.age ?? "-" },
+        { label: "Weight (kg)", value: horse.weight ?? "-" },
+        { label: "Height (cm)", value: horse.height ?? "-" },
+      ]
+    : [];
+
+  const careerDetails = horse
+    ? [
+        { label: "Total races", value: horse.totalRaces ?? 0 },
+        { label: "Total wins", value: horse.totalWins ?? 0 },
+        { label: "Approval status", value: statusLabel },
+      ]
+    : [];
 
   return (
     <div className="owner-page owner-horse-detail">
@@ -87,95 +95,85 @@ function OwnerHorseDetailPage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Current status</p>
-            <h4>{horse.status}</h4>
+            <h4>{statusLabel}</h4>
             <span>Last updated today</span>
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Assigned jockey</p>
-            <h4>{horse.jockey}</h4>
-            <span>Confirmed</span>
+            <h4>Unassigned</h4>
+            <span>Pending</span>
           </div>
         </aside>
 
         <div className="owner-content">
-          <section className="horse-banner">
-            <div className="horse-banner__image" aria-hidden="true" />
-            <div className="horse-banner__content">
-              <span className="pill">Horse detail</span>
-              <h1>{horse.name}</h1>
-              <p>{horse.breed}</p>
-              <div className="horse-banner__meta">
-                <div>
-                  <span>Age</span>
-                  <strong>{horse.age}</strong>
-                </div>
-                <div>
-                  <span>Weight</span>
-                  <strong>{horse.weight}</strong>
-                </div>
-                <div>
-                  <span>Speed rating</span>
-                  <strong>{horse.speed}</strong>
+          {error ? <p className="form-error">{error}</p> : null}
+
+          {isLoading || !horse ? (
+            <p className="muted">Loading horse details...</p>
+          ) : (
+            <section className="horse-banner">
+              <div
+                className="horse-banner__image"
+                style={
+                  horse.imageUrl
+                    ? { backgroundImage: `url(${horse.imageUrl})` }
+                    : undefined
+                }
+                aria-hidden="true"
+              />
+              <div className="horse-banner__content">
+                <span className="pill">Horse detail</span>
+                <h1>{horse.name}</h1>
+                <p>{horse.breed || "Unknown breed"}</p>
+                <div className="horse-banner__meta">
+                  <div>
+                    <span>Age</span>
+                    <strong>{horse.age ?? "-"}</strong>
+                  </div>
+                  <div>
+                    <span>Weight</span>
+                    <strong>{horse.weight ?? "-"}</strong>
+                  </div>
+                  <div>
+                    <span>Height</span>
+                    <strong>{horse.height ?? "-"}</strong>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           <section className="stat-grid">
             <article className="stat-card">
-              <p className="muted">Season wins</p>
-              <h3>4</h3>
-              <span className="stat-trend">+1 this month</span>
+              <p className="muted">Total wins</p>
+              <h3>{horse?.totalWins ?? 0}</h3>
+              <span className="stat-trend">Career total</span>
             </article>
             <article className="stat-card">
-              <p className="muted">Best time</p>
-              <h3>1:35.1</h3>
-              <span className="stat-trend">Emerald Stakes</span>
+              <p className="muted">Total races</p>
+              <h3>{horse?.totalRaces ?? 0}</h3>
+              <span className="stat-trend">Career total</span>
             </article>
             <article className="stat-card">
-              <p className="muted">Top 3 finishes</p>
-              <h3>6</h3>
-              <span className="stat-trend">Season total</span>
+              <p className="muted">Approval status</p>
+              <h3>{statusLabel}</h3>
+              <span className="stat-trend">Current status</span>
             </article>
           </section>
 
           <section className="horse-detail-columns">
             <div className="horse-detail-stack">
               <div className="section-heading">
-                <h2>Race history</h2>
-                <p>Recent results and prize earnings.</p>
-              </div>
-              <div className="history-table">
-                <div className="table-row table-header">
-                  <span>Race</span>
-                  <span>Date</span>
-                  <span>Result</span>
-                  <span>Time</span>
-                  <span>Prize</span>
-                </div>
-                {raceHistory.map((race) => (
-                  <div key={race.id} className="table-row">
-                    <span>{race.race}</span>
-                    <span>{race.date}</span>
-                    <span className="highlight">{race.result}</span>
-                    <span>{race.time}</span>
-                    <span className="highlight">{race.prize}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="section-heading">
-                <h2>Tournament participation</h2>
-                <p>Events where this horse is currently listed.</p>
+                <h2>Horse profile</h2>
+                <p>Core profile details from the registry.</p>
               </div>
               <div className="participation-list">
-                {participationHistory.map((item) => (
-                  <article key={item.id} className="participation-card">
+                {primaryDetails.map((item) => (
+                  <article key={item.label} className="participation-card">
                     <div>
-                      <h4>{item.tournament}</h4>
-                      <p className="muted">{item.races} races</p>
+                      <h4>{item.label}</h4>
+                      <p className="muted">{item.value}</p>
                     </div>
-                    <span className="badge">{item.status}</span>
                   </article>
                 ))}
               </div>
@@ -183,55 +181,34 @@ function OwnerHorseDetailPage() {
 
             <div className="horse-detail-stack">
               <div className="section-heading">
-                <h2>Performance chart</h2>
-                <p>Latest speed and stamina check.</p>
+                <h2>Physical metrics</h2>
+                <p>Latest recorded measurements.</p>
               </div>
-              <div className="performance-card">
-                {performanceChart.map((item) => (
-                  <div key={item.label} className="chart-row">
-                    <span>{item.label}</span>
-                    <div className="chart-track">
-                      <div
-                        className="chart-fill"
-                        style={{ width: `${item.value}%` }}
-                      />
+              <div className="participation-list">
+                {metricDetails.map((item) => (
+                  <article key={item.label} className="participation-card">
+                    <div>
+                      <h4>{item.label}</h4>
+                      <p className="muted">{item.value}</p>
                     </div>
-                    <strong>{item.value}</strong>
-                  </div>
+                  </article>
                 ))}
               </div>
 
               <div className="section-heading">
-                <h2>Assigned jockey</h2>
-                <p>Primary rider information.</p>
+                <h2>Career totals</h2>
+                <p>Wins and races for this horse.</p>
               </div>
-              <article className="jockey-card">
-                <div className="jockey-avatar">AB</div>
-                <div>
-                  <h4>{horse.jockey}</h4>
-                  <p className="muted">Senior jockey</p>
-                </div>
-                <button className="ghost-button">Message</button>
-              </article>
-
-              <div className="section-heading">
-                <h2>Medical status</h2>
-                <p>Health checks and care notes.</p>
+              <div className="participation-list">
+                {careerDetails.map((item) => (
+                  <article key={item.label} className="participation-card">
+                    <div>
+                      <h4>{item.label}</h4>
+                      <p className="muted">{item.value}</p>
+                    </div>
+                  </article>
+                ))}
               </div>
-              <article className="medical-card">
-                <div>
-                  <h4>Condition</h4>
-                  <p className="muted">Cleared for race entry</p>
-                </div>
-                <div>
-                  <h4>Next check</h4>
-                  <p className="muted">May 20, 2026</p>
-                </div>
-                <div>
-                  <h4>Notes</h4>
-                  <p className="muted">Hydration plan updated</p>
-                </div>
-              </article>
             </div>
           </section>
         </div>

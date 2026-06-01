@@ -1,98 +1,70 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { getMyHorses } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerHorseListPage.css";
 
-const horses = [
-  {
-    id: 1,
-    name: "Thunder Strike",
-    age: 4,
-    breed: "Thoroughbred",
-    speed: 94,
-    status: "Active",
-    jockey: "Ariana Blake",
-    upcomingRace: "Emerald Invitational",
-  },
-  {
-    id: 2,
-    name: "Silver Comet",
-    age: 5,
-    breed: "Arabian",
-    speed: 91,
-    status: "Active",
-    jockey: "Drew Hamilton",
-    upcomingRace: "Coastal Derby",
-  },
-  {
-    id: 3,
-    name: "Midnight Runner",
-    age: 3,
-    breed: "Quarter Horse",
-    speed: 88,
-    status: "Training",
-    jockey: "Maya Ortiz",
-    upcomingRace: "Golden Mile",
-  },
-  {
-    id: 4,
-    name: "Crimson Tide",
-    age: 6,
-    breed: "Thoroughbred",
-    speed: 86,
-    status: "Resting",
-    jockey: "TBD",
-    upcomingRace: "TBD",
-  },
-  {
-    id: 5,
-    name: "Velvet Arrow",
-    age: 4,
-    breed: "Arabian",
-    speed: 90,
-    status: "Active",
-    jockey: "Sebastian Cole",
-    upcomingRace: "Capital Cup",
-  },
-  {
-    id: 6,
-    name: "Aurora Bloom",
-    age: 5,
-    breed: "Thoroughbred",
-    speed: 87,
-    status: "Medical",
-    jockey: "TBD",
-    upcomingRace: "TBD",
-  },
-  {
-    id: 7,
-    name: "Iron Halo",
-    age: 3,
-    breed: "Quarter Horse",
-    speed: 89,
-    status: "Training",
-    jockey: "TBD",
-    upcomingRace: "TBD",
-  },
-];
-
-const statusFilters = ["All", "Active", "Training", "Resting", "Medical"];
+const statusFilters = ["All", "Pending", "Approved", "Rejected"];
+const approvalStatusMap = {
+  1: "Pending",
+  2: "Approved",
+  3: "Rejected",
+};
 
 function OwnerHorseListPage() {
+  const [horses, setHorses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchHorses = async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const data = await getMyHorses();
+        if (isMounted) {
+          setHorses(Array.isArray(data) ? data : []);
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setError(fetchError?.message || "Unable to load horses.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchHorses();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const getStatusLabel = (horse) =>
+    approvalStatusMap[horse.approvalStatus] ?? "Pending";
+
+  const totalCount = horses.length;
+  const pendingCount = horses.filter(
+    (horse) => getStatusLabel(horse) === "Pending",
+  ).length;
+
   const filteredHorses = useMemo(() => {
     return horses.filter((horse) => {
+      const horseStatus = getStatusLabel(horse);
       const matchesStatus =
-        status === "All" || horse.status.toLowerCase() === status.toLowerCase();
+        status === "All" || horseStatus.toLowerCase() === status.toLowerCase();
       const matchesQuery = horse.name
         .toLowerCase()
         .includes(query.toLowerCase());
       return matchesStatus && matchesQuery;
     });
-  }, [query, status]);
+  }, [query, status, horses]);
 
   const pageSize = 6;
   const pageCount = Math.max(1, Math.ceil(filteredHorses.length / pageSize));
@@ -111,14 +83,14 @@ function OwnerHorseListPage() {
             <p className="muted">Search, edit, and track your stable.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Active horses</p>
-            <h4>4</h4>
-            <span>Across 3 races</span>
+            <p className="muted">Total horses</p>
+            <h4>{totalCount}</h4>
+            <span>In your stable</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Next vet check</p>
-            <h4>May 20</h4>
-            <span>Thunder Strike</span>
+            <p className="muted">Pending approvals</p>
+            <h4>{pendingCount}</h4>
+            <span>Awaiting review</span>
           </div>
         </aside>
 
@@ -129,7 +101,9 @@ function OwnerHorseListPage() {
           </section>
 
           <section className="owner-actions">
-            <button className="primary-button">Create horse</button>
+            <Link className="primary-button" to="/owner/horses/new">
+              Create horse
+            </Link>
             <button className="ghost-button">Assign jockey</button>
             <button className="ghost-button">Export roster</button>
           </section>
@@ -173,66 +147,85 @@ function OwnerHorseListPage() {
             </div>
           </section>
 
+          {error ? <p className="form-error">{error}</p> : null}
+
           <section className="horse-grid">
-            {pageItems.map((horse) => (
-              <article key={horse.id} className="horse-card hover-lift">
-                <div className="horse-media">
-                  <div className="horse-image" aria-hidden="true" />
-                  <span
-                    className={`horse-status badge badge-${horse.status.toLowerCase()}`}
-                  >
-                    {horse.status}
-                  </span>
-                  <div className="horse-media__fade" />
-                </div>
-                <div className="horse-card__content">
-                  <div className="horse-card__header">
-                    <h3>{horse.name}</h3>
-                    <p className="muted">{horse.breed}</p>
-                  </div>
-                  <div className="horse-card__details">
-                    <div>
-                      <span>Age</span>
-                      <strong>{horse.age}</strong>
-                    </div>
-                    <div>
-                      <span>Speed rating</span>
-                      <strong>{horse.speed}</strong>
-                    </div>
-                    <div>
-                      <span>Assigned jockey</span>
-                      <strong>{horse.jockey}</strong>
-                    </div>
-                    <div>
-                      <span>Upcoming race</span>
-                      <strong>{horse.upcomingRace}</strong>
-                    </div>
-                  </div>
-                  <div className="horse-card__actions">
-                    <Link
-                      className="primary-button button-block"
-                      to={`/owner/horses/${horse.id}`}
-                    >
-                      View Details
-                    </Link>
-                    <div className="horse-card__secondary-actions">
-                      <Link
-                        className="ghost-button button-outline"
-                        to={`/owner/horses/${horse.id}/edit`}
+            {isLoading ? (
+              <p className="muted">Loading horses...</p>
+            ) : (
+              pageItems.map((horse) => {
+                const statusLabel = getStatusLabel(horse);
+                const imageStyle = horse.imageUrl
+                  ? { backgroundImage: `url(${horse.imageUrl})` }
+                  : undefined;
+                return (
+                  <article key={horse.id} className="horse-card hover-lift">
+                    <div className="horse-media">
+                      <div
+                        className="horse-image"
+                        style={imageStyle}
+                        aria-hidden="true"
+                      />
+                      <span
+                        className={`horse-status badge badge-${statusLabel.toLowerCase()}`}
                       >
-                        Edit
-                      </Link>
-                      <Link
-                        className="ghost-button button-outline"
-                        to={`/owner/horses/${horse.id}/edit`}
-                      >
-                        Assign Jockey
-                      </Link>
+                        {statusLabel}
+                      </span>
+                      <div className="horse-media__fade" />
                     </div>
-                  </div>
-                </div>
-              </article>
-            ))}
+                    <div className="horse-card__content">
+                      <div className="horse-card__header">
+                        <h3>{horse.name}</h3>
+                        <p className="muted">
+                          {horse.breed || "Unknown breed"}
+                          {horse.color ? ` • ${horse.color}` : ""}
+                        </p>
+                      </div>
+                      <div className="horse-card__details">
+                        <div>
+                          <span>Age</span>
+                          <strong>{horse.age ?? "-"}</strong>
+                        </div>
+                        <div>
+                          <span>Gender</span>
+                          <strong>{horse.gender || "-"}</strong>
+                        </div>
+                        <div>
+                          <span>Total wins</span>
+                          <strong>{horse.totalWins ?? 0}</strong>
+                        </div>
+                        <div>
+                          <span>Total races</span>
+                          <strong>{horse.totalRaces ?? 0}</strong>
+                        </div>
+                      </div>
+                      <div className="horse-card__actions">
+                        <Link
+                          className="primary-button button-block"
+                          to={`/owner/horses/${horse.id}`}
+                        >
+                          View Details
+                        </Link>
+                        <div className="horse-card__secondary-actions">
+                          <Link
+                            className="ghost-button button-outline"
+                            to={`/owner/horses/${horse.id}/edit`}
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            className="ghost-button button-outline"
+                            to={`/owner/horses/${horse.id}/edit`}
+                          >
+                            Assign Jockey
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })
+            )}
           </section>
 
           <section className="pagination">

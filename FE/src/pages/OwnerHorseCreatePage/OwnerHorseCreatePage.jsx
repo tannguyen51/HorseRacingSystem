@@ -1,7 +1,84 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createHorse } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "../OwnerHorseFormPage.css";
 
 function OwnerHorseCreatePage() {
+  const navigate = useNavigate();
+  const [formValues, setFormValues] = useState({
+    name: "",
+    breed: "",
+    gender: "",
+    dateOfBirth: "",
+    age: "",
+    weight: "",
+    height: "",
+    color: "",
+    totalRaces: "",
+    totalWins: "",
+    imageUrl: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const requiredCount = 2;
+
+  const parseNumber = (value) => {
+    if (!value) {
+      return undefined;
+    }
+    const normalized = value.toString().replace(/[^0-9.]/g, "");
+    if (!normalized) {
+      return undefined;
+    }
+    const parsed = Number(normalized);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  };
+
+  const updateField = (field) => (event) => {
+    const value = event.target.value;
+    setFormValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    const name = formValues.name.trim();
+    if (!name) {
+      setError("Horse name is required.");
+      return;
+    }
+
+    const payload = {
+      name,
+      breed: formValues.breed.trim() || undefined,
+      gender: formValues.gender.trim() || undefined,
+      dateOfBirth: formValues.dateOfBirth || undefined,
+      age: parseNumber(formValues.age) ?? 0,
+      weight: parseNumber(formValues.weight),
+      height: parseNumber(formValues.height),
+      color: formValues.color.trim() || undefined,
+      totalRaces: parseNumber(formValues.totalRaces) ?? 0,
+      totalWins: parseNumber(formValues.totalWins) ?? 0,
+      imageUrl: formValues.imageUrl.trim() || undefined,
+    };
+
+    setIsSubmitting(true);
+    try {
+      await createHorse(payload);
+      navigate("/owner/horses");
+    } catch (submitError) {
+      setError(submitError?.message || "Unable to save horse.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="owner-page owner-horse-form-page">
       <div className="owner-layout">
@@ -13,7 +90,7 @@ function OwnerHorseCreatePage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Required fields</p>
-            <h4>6 fields</h4>
+            <h4>{requiredCount} fields</h4>
             <span>Before saving</span>
           </div>
         </aside>
@@ -21,26 +98,26 @@ function OwnerHorseCreatePage() {
         <div className="owner-content">
           <section className="page-header">
             <h1>Create horse</h1>
-            <p>Upload horse details, stats, and status information.</p>
+            <p>Enter horse profile details for approval.</p>
           </section>
 
-          <form className="horse-form-card">
+          <form className="horse-form-card" onSubmit={handleSubmit}>
             <div className="horse-form-grid">
               <div className="form-section">
                 <h3>Horse image</h3>
                 <div className="image-upload">
                   <div className="image-preview" aria-hidden="true" />
                   <div className="form-field">
-                    <label className="label-required" htmlFor="horse-image">
-                      Upload image
-                    </label>
+                    <label htmlFor="horse-image-url">Image URL</label>
                     <input
-                      id="horse-image"
-                      className="form-file"
-                      type="file"
-                      accept="image/*"
+                      id="horse-image-url"
+                      className="form-input"
+                      type="url"
+                      placeholder="https://..."
+                      value={formValues.imageUrl}
+                      onChange={updateField("imageUrl")}
                     />
-                    <p className="form-hint">PNG or JPG, up to 5MB.</p>
+                    <p className="form-hint">Provide a hosted image URL.</p>
                   </div>
                 </div>
               </div>
@@ -56,20 +133,59 @@ function OwnerHorseCreatePage() {
                     className="form-input"
                     type="text"
                     placeholder="Enter horse name"
+                    value={formValues.name}
+                    onChange={updateField("name")}
+                    required
                   />
                 </div>
                 <div className="form-grid-two">
                   <div className="form-field">
-                    <label className="label-required" htmlFor="horse-breed">
-                      Breed
-                    </label>
+                    <label htmlFor="horse-breed">Breed</label>
                     <input
                       id="horse-breed"
                       className="form-input"
                       type="text"
                       placeholder="Thoroughbred"
+                      value={formValues.breed}
+                      onChange={updateField("breed")}
                     />
                   </div>
+                  <div className="form-field">
+                    <label htmlFor="horse-gender">Gender</label>
+                    <input
+                      id="horse-gender"
+                      className="form-input"
+                      type="text"
+                      placeholder="Mare / Stallion"
+                      value={formValues.gender}
+                      onChange={updateField("gender")}
+                    />
+                  </div>
+                </div>
+                <div className="form-grid-two">
+                  <div className="form-field">
+                    <label htmlFor="horse-color">Color</label>
+                    <input
+                      id="horse-color"
+                      className="form-input"
+                      type="text"
+                      placeholder="Bay"
+                      value={formValues.color}
+                      onChange={updateField("color")}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label htmlFor="horse-dob">Date of birth</label>
+                    <input
+                      id="horse-dob"
+                      className="form-input"
+                      type="date"
+                      value={formValues.dateOfBirth}
+                      onChange={updateField("dateOfBirth")}
+                    />
+                  </div>
+                </div>
+                <div className="form-grid-three">
                   <div className="form-field">
                     <label className="label-required" htmlFor="horse-age">
                       Age
@@ -79,90 +195,79 @@ function OwnerHorseCreatePage() {
                       className="form-input"
                       type="number"
                       placeholder="4"
+                      value={formValues.age}
+                      onChange={updateField("age")}
+                      min={0}
+                      required
                     />
                   </div>
-                </div>
-                <div className="form-grid-two">
                   <div className="form-field">
-                    <label className="label-required" htmlFor="horse-weight">
-                      Weight
-                    </label>
+                    <label htmlFor="horse-weight">Weight (kg)</label>
                     <input
                       id="horse-weight"
                       className="form-input"
                       type="text"
-                      placeholder="480 kg"
+                      placeholder="480"
+                      value={formValues.weight}
+                      onChange={updateField("weight")}
                     />
                   </div>
                   <div className="form-field">
-                    <label className="label-required" htmlFor="horse-status">
-                      Status
-                    </label>
-                    <select id="horse-status" className="form-select">
-                      <option>Active</option>
-                      <option>Training</option>
-                      <option>Resting</option>
-                      <option>Medical</option>
-                    </select>
+                    <label htmlFor="horse-height">Height (cm)</label>
+                    <input
+                      id="horse-height"
+                      className="form-input"
+                      type="text"
+                      placeholder="165"
+                      value={formValues.height}
+                      onChange={updateField("height")}
+                    />
                   </div>
                 </div>
                 <div className="form-section">
-                  <h3>Speed stats</h3>
-                  <div className="form-grid-three">
+                  <h3>Career totals</h3>
+                  <div className="form-grid-two">
                     <div className="form-field">
-                      <label className="label-required" htmlFor="speed-rating">
-                        Speed rating
-                      </label>
+                      <label htmlFor="horse-total-races">Total races</label>
                       <input
-                        id="speed-rating"
+                        id="horse-total-races"
                         className="form-input"
                         type="number"
-                        placeholder="92"
+                        placeholder="0"
+                        value={formValues.totalRaces}
+                        onChange={updateField("totalRaces")}
+                        min={0}
                       />
                     </div>
                     <div className="form-field">
-                      <label className="label-required" htmlFor="stamina">
-                        Stamina
-                      </label>
+                      <label htmlFor="horse-total-wins">Total wins</label>
                       <input
-                        id="stamina"
+                        id="horse-total-wins"
                         className="form-input"
                         type="number"
-                        placeholder="86"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label className="label-required" htmlFor="sprint">
-                        Sprint
-                      </label>
-                      <input
-                        id="sprint"
-                        className="form-input"
-                        type="number"
-                        placeholder="88"
+                        placeholder="0"
+                        value={formValues.totalWins}
+                        onChange={updateField("totalWins")}
+                        min={0}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="form-field">
-                  <label className="label-required" htmlFor="horse-description">
-                    Description
-                  </label>
-                  <textarea
-                    id="horse-description"
-                    className="form-textarea"
-                    placeholder="Write a short description"
-                  />
-                </div>
               </div>
             </div>
+
+            {error ? <p className="form-error">{error}</p> : null}
 
             <div className="form-actions">
               <button className="ghost-button" type="button">
                 Cancel
               </button>
-              <button className="primary-button" type="submit">
-                Save horse
+              <button
+                className="primary-button"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save horse"}
               </button>
             </div>
           </form>
