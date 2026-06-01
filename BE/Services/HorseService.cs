@@ -45,7 +45,16 @@ public class HorseService : IHorseService
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
+            Breed = request.Breed,
+            Gender = request.Gender,
+            DateOfBirth = request.DateOfBirth,
             Age = request.Age,
+            Weight = request.Weight,
+            Height = request.Height,
+            Color = request.Color,
+            TotalRaces = request.TotalRaces,
+            TotalWins = request.TotalWins,
+            ImageUrl = request.ImageUrl,
             OwnerId = ownerId,
             ApprovalStatus = ApprovalStatus.Pending
         };
@@ -65,7 +74,16 @@ public class HorseService : IHorseService
         }
 
         horse.Name = request.Name;
+        horse.Breed = request.Breed;
+        horse.Gender = request.Gender;
+        horse.DateOfBirth = request.DateOfBirth;
         horse.Age = request.Age;
+        horse.Weight = request.Weight;
+        horse.Height = request.Height;
+        horse.Color = request.Color;
+        horse.TotalRaces = request.TotalRaces;
+        horse.TotalWins = request.TotalWins;
+        horse.ImageUrl = request.ImageUrl;
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult<object>.Ok(horse);
