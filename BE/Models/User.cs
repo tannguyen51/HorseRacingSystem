@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace HorseRacing.Models;
 
@@ -17,6 +18,7 @@ public class User
 
     [Required]
     [MaxLength(500)]
+    [JsonIgnore]
     public string PasswordHash { get; set; } = string.Empty;
 
     [MaxLength(200)]
@@ -28,6 +30,9 @@ public class User
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [JsonIgnore]
     public Owner? OwnerProfile { get; set; }
+
+    [JsonIgnore]
     public Jockey? JockeyProfile { get; set; }
 }

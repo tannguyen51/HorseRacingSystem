@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using HorseRacing.Data;
 using HorseRacing.Options;
 using HorseRacing.Repositories;
@@ -11,7 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

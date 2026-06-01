@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace HorseRacing.Models;
 
@@ -41,5 +42,6 @@ public class Owner
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    [JsonIgnore]
     public ICollection<Horse> Horses { get; set; } = new List<Horse>();
 }
