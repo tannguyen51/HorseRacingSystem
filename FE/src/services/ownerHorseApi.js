@@ -5,6 +5,9 @@ const unwrapResponseData = (response) => response?.data ?? response;
 export const getMyHorses = async () =>
   unwrapResponseData(await request("/api/horses"));
 
+export const getHorse = async (id) =>
+  unwrapResponseData(await request(`/api/horses/${id}`));
+
 export const createHorse = async (payload) =>
   unwrapResponseData(
     await request("/api/horses", {

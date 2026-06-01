@@ -10,7 +10,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/horses")]
-[Authorize(Roles = "HorseOwner")]
+[Authorize]
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
@@ -25,6 +25,14 @@ public class HorsesController : ControllerBase
     {
         var ownerId = GetUserId();
         var result = await _horseService.GetMyHorsesAsync(ownerId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult> GetHorse(Guid id)
+    {
+        var ownerId = GetUserId();
+        var result = await _horseService.GetHorseAsync(ownerId, id);
         return StatusCode(result.StatusCode, result.Result);
     }
 

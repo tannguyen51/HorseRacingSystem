@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import "../OwnerSharedLayout.css";
 import "./OwnerDashboardPage.css";
 
@@ -109,6 +110,8 @@ const chartData = [
 ];
 
 function OwnerDashboardPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="owner-page owner-dashboard">
       <div className="owner-layout">
@@ -140,7 +143,7 @@ function OwnerDashboardPage() {
                 race-ready.
               </p>
               <div className="owner-hero__actions">
-                <button className="primary-button">Add horse</button>
+                <button className="primary-button" onClick={() => navigate("/owner/horses/new")}>Add horse</button>
                 <button className="ghost-button">Register tournament</button>
               </div>
             </div>
@@ -294,7 +297,14 @@ function OwnerDashboardPage() {
                 <article key={action.title} className="quick-action-card">
                   <h4>{action.title}</h4>
                   <p className="muted">{action.description}</p>
-                  <button className="ghost-button">Open</button>
+                  <button
+                    className="ghost-button"
+                    onClick={() => {
+                      if (action.title === "Add a new horse") navigate("/owner/horses/new");
+                    }}
+                  >
+                    Open
+                  </button>
                 </article>
               ))}
             </div>

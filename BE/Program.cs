@@ -120,9 +120,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("Frontend");
+app.UseHttpsRedirection();
 
 app.UseSwagger();
 app.UseSwaggerUI();

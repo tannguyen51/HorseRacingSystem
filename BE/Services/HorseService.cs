@@ -48,6 +48,23 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(horses);
     }
 
+    public async Task<ServiceResult<object>> GetHorseAsync(Guid userId, Guid horseId)
+    {
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
+        if (horse == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+        }
+
+        return ServiceResult<object>.Ok(horse);
+    }
+
     public async Task<ServiceResult<object>> CreateHorseAsync(Guid userId, HorseCreateRequest request)
     {
         var owner = await GetOwnerProfileAsync(userId);
