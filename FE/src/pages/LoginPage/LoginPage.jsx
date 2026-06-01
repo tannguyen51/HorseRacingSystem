@@ -90,7 +90,7 @@ function LoginPage() {
       const ROLE_ROUTES = {
         spectator: "/spectator",
         jockey: "/jockey/invitations",
-        horse_owner: "/",
+        horse_owner: "/owner",
         admin: "/",
         trainer: "/",
       };
