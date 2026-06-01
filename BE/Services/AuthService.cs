@@ -57,12 +57,16 @@ public class AuthService : IAuthService
 
         if (request.Role == UserRole.Jockey)
         {
+            var now = DateTime.UtcNow;
             var jockey = new Jockey
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 LicenseNumber = request.LicenseNumber,
-                ApprovalStatus = ApprovalStatus.Pending
+                ApprovalStatus = ApprovalStatus.Pending,
+                Status = "Active",
+                CreatedAt = now,
+                UpdatedAt = now
             };
             await _jockeys.AddAsync(jockey);
         }
