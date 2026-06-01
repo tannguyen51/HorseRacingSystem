@@ -11,6 +11,7 @@ namespace HorseRacing.Services;
 public class HorseService : IHorseService
 {
     private readonly IHorseRepository _horses;
+    private readonly IOwnerRepository _owners;
     private readonly IJockeyRepository _jockeys;
     private readonly IRaceRepository _races;
     private readonly IRaceEntryRepository _raceEntries;
@@ -19,6 +20,7 @@ public class HorseService : IHorseService
 
     public HorseService(
         IHorseRepository horses,
+        IOwnerRepository owners,
         IJockeyRepository jockeys,
         IRaceRepository races,
         IRaceEntryRepository raceEntries,
@@ -26,6 +28,7 @@ public class HorseService : IHorseService
         IUnitOfWork unitOfWork)
     {
         _horses = horses;
+        _owners = owners;
         _jockeys = jockeys;
         _races = races;
         _raceEntries = raceEntries;
@@ -33,14 +36,26 @@ public class HorseService : IHorseService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult<object>> GetMyHorsesAsync(Guid ownerId)
+    public async Task<ServiceResult<object>> GetMyHorsesAsync(Guid userId)
     {
-        var horses = await _horses.GetByOwnerAsync(ownerId);
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horses = await _horses.GetByOwnerAsync(owner.Id);
         return ServiceResult<object>.Ok(horses);
     }
 
-    public async Task<ServiceResult<object>> CreateHorseAsync(Guid ownerId, HorseCreateRequest request)
+    public async Task<ServiceResult<object>> CreateHorseAsync(Guid userId, HorseCreateRequest request)
     {
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
         var horse = new Horse
         {
             Id = Guid.NewGuid(),
@@ -55,7 +70,7 @@ public class HorseService : IHorseService
             TotalRaces = request.TotalRaces,
             TotalWins = request.TotalWins,
             ImageUrl = request.ImageUrl,
-            OwnerId = ownerId,
+            OwnerId = owner.Id,
             ApprovalStatus = ApprovalStatus.Pending
         };
 
@@ -65,9 +80,15 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(horse);
     }
 
-    public async Task<ServiceResult<object>> UpdateHorseAsync(Guid ownerId, Guid horseId, HorseUpdateRequest request)
+    public async Task<ServiceResult<object>> UpdateHorseAsync(Guid userId, Guid horseId, HorseUpdateRequest request)
     {
-        var horse = await _horses.GetOwnedHorseAsync(horseId, ownerId);
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
@@ -89,9 +110,15 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(horse);
     }
 
-    public async Task<ServiceResult<string>> DeleteHorseAsync(Guid ownerId, Guid horseId)
+    public async Task<ServiceResult<string>> DeleteHorseAsync(Guid userId, Guid horseId)
     {
-        var horse = await _horses.GetOwnedHorseAsync(horseId, ownerId);
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
             return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
@@ -103,9 +130,15 @@ public class HorseService : IHorseService
         return ServiceResult<string>.Ok("Deleted");
     }
 
-    public async Task<ServiceResult<object>> InviteJockeyAsync(Guid ownerId, Guid horseId, JockeyInvitationCreateRequest request)
+    public async Task<ServiceResult<object>> InviteJockeyAsync(Guid userId, Guid horseId, JockeyInvitationCreateRequest request)
     {
-        var horse = await _horses.GetOwnedHorseAsync(horseId, ownerId);
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
@@ -133,9 +166,15 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(invitation);
     }
 
-    public async Task<ServiceResult<object>> RegisterHorseAsync(Guid ownerId, Guid horseId, Guid raceId, RaceRegistrationRequest request)
+    public async Task<ServiceResult<object>> RegisterHorseAsync(Guid userId, Guid horseId, Guid raceId, RaceRegistrationRequest request)
     {
-        var horse = await _horses.GetOwnedHorseAsync(horseId, ownerId);
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
@@ -169,10 +208,16 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(entry);
     }
 
-    public async Task<ServiceResult<object>> ConfirmOwnerAsync(Guid ownerId, Guid raceId, Guid entryId)
+    public async Task<ServiceResult<object>> ConfirmOwnerAsync(Guid userId, Guid raceId, Guid entryId)
     {
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+        }
+
         var entry = await _raceEntries.GetByIdWithHorseAsync(entryId, raceId);
-        if (entry?.Horse == null || entry.Horse.OwnerId != ownerId)
+        if (entry?.Horse == null || entry.Horse.OwnerId != owner.Id)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Entry not found.");
         }
@@ -182,4 +227,6 @@ public class HorseService : IHorseService
 
         return ServiceResult<object>.Ok(entry);
     }
+
+    private Task<Owner?> GetOwnerProfileAsync(Guid userId) => _owners.GetByUserIdAsync(userId);
 }

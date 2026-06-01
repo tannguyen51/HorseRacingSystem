@@ -54,6 +54,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
 builder.Services.AddScoped<IJockeyRepository, JockeyRepository>();
 builder.Services.AddScoped<IHorseRepository, HorseRepository>();
 builder.Services.AddScoped<IRaceRepository, RaceRepository>();

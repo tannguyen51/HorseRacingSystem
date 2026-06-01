@@ -27,6 +27,7 @@ public class HorseRepository : IHorseRepository
     {
         return _db.Horses
             .Include(h => h.Owner)
+                .ThenInclude(o => o!.User)
             .FirstOrDefaultAsync(h => h.Id == horseId);
     }
 

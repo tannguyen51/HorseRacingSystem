@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Horse> Horses => Set<Horse>();
+    public DbSet<Owner> Owners => Set<Owner>();
     public DbSet<Jockey> Jockeys => Set<Jockey>();
     public DbSet<Tournament> Tournaments => Set<Tournament>();
     public DbSet<Round> Rounds => Set<Round>();
@@ -54,8 +55,22 @@ public class ApplicationDbContext : DbContext
             .Property(p => p.Status)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Owner>()
+            .HasIndex(o => o.OwnerCode)
+            .IsUnique();
+
+        modelBuilder.Entity<Owner>()
+            .HasIndex(o => o.UserId)
+            .IsUnique();
+
         modelBuilder.Entity<User>()
-            .HasMany(u => u.Horses)
+            .HasOne(u => u.OwnerProfile)
+            .WithOne(o => o.User)
+            .HasForeignKey<Owner>(o => o.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Owner>()
+            .HasMany(o => o.Horses)
             .WithOne(h => h.Owner)
             .HasForeignKey(h => h.OwnerId)
             .OnDelete(DeleteBehavior.Restrict);
