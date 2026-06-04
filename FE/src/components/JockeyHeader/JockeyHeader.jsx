@@ -13,7 +13,7 @@ function JockeyHeader() {
 
   return (
     <header className="jockey-header">
-      <Link className="jockey-header__brand" to="/jockey">
+      <Link className="jockey-header__brand" to="/jockey/invitations">
         <div className="brand-mark">RM</div>
         <div>
           <p className="brand-title">RaceMaster</p>

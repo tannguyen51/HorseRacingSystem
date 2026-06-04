@@ -66,22 +66,7 @@ export function JockeyInvitationPage() {
     } catch (error) {
       console.error("Error fetching invitations:", error);
 
-      setInvitations([
-        {
-          id: 1,
-          raceName: "Bluegrass Sprint",
-          date: "Today · 5:10 PM",
-          horseName: "Thunder Strike",
-          track: "Churchill Downs",
-        },
-        {
-          id: 2,
-          raceName: "Coastal Derby",
-          date: "Tomorrow · 2:00 PM",
-          horseName: "Silver Comet",
-          track: "Gulfstream Park",
-        },
-      ]);
+      setInvitations([]);
     } finally {
       setLoading(false);
     }
