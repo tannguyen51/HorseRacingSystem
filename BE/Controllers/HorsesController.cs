@@ -10,7 +10,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/horses")]
-[Authorize]
+[Authorize(Roles = "HorseOwner")]
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
