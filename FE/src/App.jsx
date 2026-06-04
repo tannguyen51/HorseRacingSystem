@@ -72,12 +72,11 @@ function AppLayout() {
       return <JockeyHeader />;
     }
 
-    if (isOwner || authUser?.role === "owner") {
+    if (isOwner || authUser?.role === "horse_owner") {
       return <OwnerHeader />;
     }
 
-    return <Header />;
-  };
+    return <Header isLoggedIn={Boolean(authUser)} />;
 
   return (
     <div className="app-shell">
