@@ -11,7 +11,8 @@ namespace HorseRacing.Data;
 public static class AdminSeeder
 {
     private const string AdminEmail = "Admin@gmail.com";
-    private const string AdminPassword = "Admin123";
+    private static readonly string AdminPassword =
+        Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") ?? string.Empty;
 
     public static async Task SeedAsync(IServiceProvider services)
     {
@@ -21,12 +22,17 @@ public static class AdminSeeder
 
         try
         {
+            if (string.IsNullOrWhiteSpace(AdminPassword))
+            {
+                logger.LogInformation("Skipping default admin seeding because DEFAULT_ADMIN_PASSWORD is not set.");
+                return;
+            }
+
             var exists = await db.Users.AnyAsync(u => u.Email == AdminEmail);
             if (exists)
             {
                 return;
             }
-
             var admin = new User
             {
                 Id = Guid.NewGuid(),
