@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
 const navItems = [
@@ -9,7 +10,15 @@ const navItems = [
   { to: "/leaderboard", label: "Leaderboard" },
 ];
 
-function Header() {
+function Header({ isLoggedIn = false }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+    navigate("/");
+  };
+
   return (
     <header className="site-header">
       <Link className="site-header__brand" to="/">
@@ -36,12 +45,20 @@ function Header() {
       </nav>
 
       <div className="site-header__actions">
-        <Link className="ghost-button" to="/login">
-          Login
-        </Link>
-        <Link className="primary-button" to="/register">
-          Register
-        </Link>
+        {isLoggedIn ? (
+          <button className="ghost-button" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <>
+            <Link className="ghost-button" to="/login">
+              Login
+            </Link>
+            <Link className="primary-button" to="/register">
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

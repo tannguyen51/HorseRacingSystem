@@ -87,7 +87,7 @@ public class AdminService : IAdminService
                 Email = u.Email,
                 FullName = u.FullName,
                 Role = u.Role.ToString(),
-                HorseCount = u.Horses?.Count ?? 0,
+                HorseCount = u.OwnerProfile?.Horses?.Count ?? 0,
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt
             });
@@ -116,7 +116,7 @@ public class AdminService : IAdminService
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = user.Role.ToString(),
-                HorseCount = user.Horses?.Count ?? 0,
+                HorseCount = user.OwnerProfile?.Horses?.Count ?? 0,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt
             };

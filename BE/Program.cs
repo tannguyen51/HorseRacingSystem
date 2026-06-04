@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using HorseRacing.Data;
 using HorseRacing.Options;
 using HorseRacing.Repositories;
@@ -11,7 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -54,6 +59,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
 builder.Services.AddScoped<IJockeyRepository, JockeyRepository>();
 builder.Services.AddScoped<IHorseRepository, HorseRepository>();
 builder.Services.AddScoped<IRaceRepository, RaceRepository>();
@@ -114,9 +120,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("Frontend");
+app.UseHttpsRedirection();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -128,5 +134,8 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"))
     .ExcludeFromDescription();
 
-
+if (app.Environment.IsDevelopment())
+{
+    await AdminSeeder.SeedAsync(app.Services);
+}
 app.Run();

@@ -19,6 +19,38 @@ public class Jockey
     [MaxLength(100)]
     public string? LicenseNumber { get; set; }
 
+    public DateTime? DateOfBirth { get; set; }
+
+    [MaxLength(20)]
+    public string? Gender { get; set; }
+
+    [MaxLength(100)]
+    public string? Nationality { get; set; }
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal? Height { get; set; }
+
+    [Column(TypeName = "decimal(6,2)")]
+    public decimal? Weight { get; set; }
+
+    public int ExperienceYears { get; set; } = 0;
+
+    public int TotalRaces { get; set; } = 0;
+
+    public int TotalWins { get; set; } = 0;
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal WinRate { get; set; } = 0;
+
+    public int? Rank { get; set; }
+
+    [MaxLength(50)]
+    public string Status { get; set; } = "Active";
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
     [MaxLength(1000)]
     public string? ApprovalNote { get; set; }

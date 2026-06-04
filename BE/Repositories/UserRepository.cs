@@ -30,14 +30,16 @@ public class UserRepository : IUserRepository
     public Task<User?> GetByIdAsync(Guid userId)
     {
         return _db.Users
-            .Include(u => u.Horses)
+            .Include(u => u.OwnerProfile)
+                .ThenInclude(o => o!.Horses)
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     public Task<List<User>> GetAllAsync()
     {
         return _db.Users
-            .Include(u => u.Horses)
+            .Include(u => u.OwnerProfile)
+                .ThenInclude(o => o!.Horses)
             .ToListAsync();
     }
 

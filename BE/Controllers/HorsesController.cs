@@ -28,6 +28,14 @@ public class HorsesController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult> GetHorse(Guid id)
+    {
+        var ownerId = GetUserId();
+        var result = await _horseService.GetHorseAsync(ownerId, id);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpPost]
     public async Task<ActionResult> CreateHorse(HorseCreateRequest request)
     {

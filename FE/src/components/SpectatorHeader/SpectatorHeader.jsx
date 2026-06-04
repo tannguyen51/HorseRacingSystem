@@ -1,15 +1,14 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { spectatorNavItems } from "../../constants/spectatorNavigation";
 import "./SpectatorHeader.css";
 
-const navItems = [
-  { to: "/spectator", label: "Dashboard", end: true },
-  { to: "/spectator/tournaments", label: "Tournaments" },
-];
-
 function SpectatorHeader() {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authUser");
+    navigate("/");
   };
 
   return (
@@ -23,7 +22,7 @@ function SpectatorHeader() {
       </Link>
 
       <nav className="spectator-header__nav" aria-label="Spectator">
-        {navItems.map((item) => (
+        {spectatorNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -38,9 +37,9 @@ function SpectatorHeader() {
       </nav>
 
       <div className="spectator-header__actions">
-        <Link className="ghost-button" to="/" onClick={handleLogout}>
+        <button className="ghost-button" onClick={handleLogout}>
           Logout
-        </Link>
+        </button>
       </div>
     </header>
   );

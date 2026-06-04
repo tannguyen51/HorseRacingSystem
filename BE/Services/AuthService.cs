@@ -12,6 +12,7 @@ namespace HorseRacing.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _users;
+    private readonly IOwnerRepository _owners;
     private readonly IJockeyRepository _jockeys;
     private readonly IUnitOfWork _unitOfWork;
     private readonly JwtTokenService _jwtTokenService;
@@ -19,11 +20,13 @@ public class AuthService : IAuthService
 
     public AuthService(
         IUserRepository users,
+        IOwnerRepository owners,
         IJockeyRepository jockeys,
         IUnitOfWork unitOfWork,
         JwtTokenService jwtTokenService)
     {
         _users = users;
+        _owners = owners;
         _jockeys = jockeys;
         _unitOfWork = unitOfWork;
         _jwtTokenService = jwtTokenService;
@@ -55,6 +58,24 @@ public class AuthService : IAuthService
 
         await _users.AddAsync(user);
 
+        var now = DateTime.UtcNow;
+
+        if (request.Role == UserRole.HorseOwner)
+        {
+            var owner = new Owner
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                OwnerCode = GenerateOwnerCode(),
+                OwnerType = "Individual",
+                JoinDate = now,
+                Status = "Active",
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+            await _owners.AddAsync(owner);
+        }
+
         if (request.Role == UserRole.Jockey)
         {
             var jockey = new Jockey
@@ -62,7 +83,10 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 LicenseNumber = request.LicenseNumber,
-                ApprovalStatus = ApprovalStatus.Pending
+                ApprovalStatus = ApprovalStatus.Pending,
+                Status = "Active",
+                CreatedAt = now,
+                UpdatedAt = now
             };
             await _jockeys.AddAsync(jockey);
         }
@@ -110,4 +134,7 @@ public class AuthService : IAuthService
 
         return ServiceResult<AuthResponse>.Ok(response);
     }
+
+    private static string GenerateOwnerCode() =>
+        $"OWN-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
 }
