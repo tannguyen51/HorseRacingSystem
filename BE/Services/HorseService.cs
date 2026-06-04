@@ -219,6 +219,13 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
         }
 
+        if (horse.ApprovalStatus != ApprovalStatus.Approved)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Only approved horses can be registered for a race.");
+        }
+
         var raceExists = await _races.ExistsAsync(raceId);
         if (!raceExists)
         {

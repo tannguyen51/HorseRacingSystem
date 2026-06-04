@@ -275,7 +275,11 @@ function OwnerHorseCreatePage() {
             {error ? <p className="form-error">{error}</p> : null}
 
             <div className="form-actions">
-              <button className="ghost-button" type="button">
+              <button
+                className="ghost-button"
+                type="button"
+                onClick={() => navigate("/owner/horses")}
+              >
                 Cancel
               </button>
               <button

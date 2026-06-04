@@ -1,12 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getMyHorses } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentRegisterPage.css";
-
-const horses = [
-  { id: 1, name: "Thunder Strike", status: "Approved", age: 5, rating: 92 },
-  { id: 2, name: "Silver Comet", status: "Approved", age: 4, rating: 88 },
-  { id: 3, name: "Midnight Runner", status: "Training", age: 3, rating: 81 },
-];
 
 const tournaments = [
   {
@@ -53,16 +48,56 @@ const initialRegistrations = [
 ];
 
 function OwnerTournamentRegisterPage() {
-  const [selectedHorseId, setSelectedHorseId] = useState(horses[0].id);
+  const [horses, setHorses] = useState([]);
+  const [selectedHorseId, setSelectedHorseId] = useState("");
   const [selectedTournamentId, setSelectedTournamentId] = useState(
     tournaments[0].id,
   );
   const [showConfirm, setShowConfirm] = useState(false);
   const [registrations, setRegistrations] = useState(initialRegistrations);
+  const [isHorseLoading, setIsHorseLoading] = useState(true);
+  const [horseError, setHorseError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchApprovedHorses = async () => {
+      setIsHorseLoading(true);
+      setHorseError("");
+
+      try {
+        const data = await getMyHorses();
+        const approvedHorses = (Array.isArray(data) ? data : []).filter(
+          (horse) =>
+            horse.approvalStatus === 2 || horse.approvalStatus === "Approved",
+        );
+
+        if (isMounted) {
+          setHorses(approvedHorses);
+          setSelectedHorseId(approvedHorses[0]?.id ?? "");
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setHorses([]);
+          setSelectedHorseId("");
+          setHorseError(fetchError?.message || "Unable to load approved horses.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsHorseLoading(false);
+        }
+      }
+    };
+
+    fetchApprovedHorses();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const selectedHorse = useMemo(
-    () => horses.find((horse) => horse.id === Number(selectedHorseId)),
-    [selectedHorseId],
+    () => horses.find((horse) => horse.id === selectedHorseId),
+    [horses, selectedHorseId],
   );
 
   const selectedTournament = useMemo(
@@ -76,8 +111,8 @@ function OwnerTournamentRegisterPage() {
   const eligibilityChecks = [
     {
       label: "Horse approval",
-      value: selectedHorse?.status === "Approved" ? "Ready" : "Review needed",
-      tone: selectedHorse?.status === "Approved" ? "success" : "warning",
+      value: selectedHorse ? "Approved" : "No horse selected",
+      tone: selectedHorse ? "success" : "warning",
     },
     {
       label: "Age requirement",
@@ -85,9 +120,11 @@ function OwnerTournamentRegisterPage() {
       tone: selectedHorse?.age >= 3 ? "success" : "warning",
     },
     {
-      label: "Performance rating",
-      value: `${selectedHorse?.rating ?? "-"} points`,
-      tone: selectedHorse?.rating >= 85 ? "success" : "warning",
+      label: "Race record",
+      value: selectedHorse
+        ? `${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
+        : "-",
+      tone: selectedHorse ? "success" : "warning",
     },
     {
       label: "Tournament slots",
@@ -97,6 +134,10 @@ function OwnerTournamentRegisterPage() {
   ];
 
   const handleSubmitRegistration = () => {
+    if (!selectedHorse || !selectedTournament) {
+      return;
+    }
+
     setRegistrations((current) => [
       {
         id: Date.now(),
@@ -142,7 +183,7 @@ function OwnerTournamentRegisterPage() {
               <div className="register-form__heading">
                 <span className="pill">New registration</span>
                 <h2>Tournament entry</h2>
-                <p>Mock flow only. API integration can be added later.</p>
+                <p>Only approved horses are available for registration.</p>
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-horse">
@@ -153,13 +194,20 @@ function OwnerTournamentRegisterPage() {
                   className="form-select"
                   value={selectedHorseId}
                   onChange={(event) => setSelectedHorseId(event.target.value)}
+                  disabled={isHorseLoading || horses.length === 0}
                 >
+                  {isHorseLoading ? (
+                    <option value="">Loading approved horses...</option>
+                  ) : horses.length === 0 ? (
+                    <option value="">No approved horses available</option>
+                  ) : null}
                   {horses.map((horse) => (
                     <option key={horse.id} value={horse.id}>
-                      {horse.name} · {horse.status} · Rating {horse.rating}
+                      {horse.name} · Approved · {horse.age ?? "-"} years
                     </option>
                   ))}
                 </select>
+                {horseError ? <p className="form-error">{horseError}</p> : null}
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-tournament">
@@ -183,8 +231,12 @@ function OwnerTournamentRegisterPage() {
               <div className="selection-summary">
                 <div>
                   <span>Horse</span>
-                  <strong>{selectedHorse?.name}</strong>
-                  <p>{selectedHorse?.age} years · {selectedHorse?.rating} rating</p>
+                  <strong>{selectedHorse?.name ?? "No approved horse"}</strong>
+                  <p>
+                    {selectedHorse
+                      ? `${selectedHorse.age ?? "-"} years · ${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
+                      : "An approved horse is required."}
+                  </p>
                 </div>
                 <div>
                   <span>Tournament</span>
@@ -197,6 +249,7 @@ function OwnerTournamentRegisterPage() {
                   className="primary-button"
                   type="button"
                   onClick={() => setShowConfirm(true)}
+                  disabled={!selectedHorse}
                 >
                   Review registration
                 </button>

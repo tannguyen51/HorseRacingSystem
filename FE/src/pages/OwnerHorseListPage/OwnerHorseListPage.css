@@ -81,25 +81,19 @@
   font-weight: 600;
 }
 
-.badge-active {
-  background: rgba(110, 231, 183, 0.2);
-  color: #6ee7b7;
-  border: 1px solid rgba(110, 231, 183, 0.4);
-}
-
-.badge-training {
+.badge-pending {
   background: rgba(231, 198, 120, 0.2);
   color: #f2d28b;
   border: 1px solid rgba(231, 198, 120, 0.4);
 }
 
-.badge-resting {
-  background: rgba(148, 163, 184, 0.2);
-  color: #cbd5f1;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+.badge-approved {
+  background: rgba(110, 231, 183, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(110, 231, 183, 0.4);
 }
 
-.badge-medical {
+.badge-rejected {
   background: rgba(239, 68, 68, 0.2);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.4);
@@ -212,18 +206,6 @@
   transform: none;
 }
 
-.horse-action::before {
-  content: "";
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .horse-action:hover,
 .horse-action:focus-visible {
   transform: translateY(-2px);
@@ -238,15 +220,6 @@
   box-shadow: 0 16px 30px rgba(215, 170, 77, 0.22);
 }
 
-.horse-action--primary::before {
-  content: "i";
-  color: #14100a;
-  background: rgba(20, 16, 10, 0.12);
-  border: 1px solid rgba(20, 16, 10, 0.18);
-  font-family: Georgia, serif;
-  font-style: italic;
-}
-
 .horse-action--primary:hover,
 .horse-action--primary:focus-visible {
   box-shadow: 0 20px 38px rgba(215, 170, 77, 0.28);
@@ -257,13 +230,6 @@
   color: #dbe7ff;
   background: rgba(30, 41, 59, 0.72);
   border-color: rgba(148, 163, 184, 0.22);
-}
-
-.horse-action--edit::before {
-  content: "✎";
-  color: #dbe7ff;
-  background: rgba(148, 163, 184, 0.14);
-  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .horse-action--edit:hover,
@@ -277,13 +243,6 @@
   color: #9ff2d2;
   background: rgba(10, 62, 46, 0.52);
   border-color: rgba(110, 231, 183, 0.24);
-}
-
-.horse-action--assign::before {
-  content: "+";
-  color: #07140f;
-  background: linear-gradient(145deg, #8cf1ca, #48c79a);
-  border: 1px solid rgba(185, 255, 225, 0.34);
 }
 
 .horse-action--assign:hover,
@@ -301,13 +260,6 @@
   border-color: rgba(148, 163, 184, 0.22);
   box-shadow: none;
   transform: none;
-}
-
-.horse-action--locked::before {
-  content: "✓";
-  color: #0f172a;
-  background: #94a3b8;
-  border-color: rgba(203, 213, 225, 0.34);
 }
 
 .button-outline {

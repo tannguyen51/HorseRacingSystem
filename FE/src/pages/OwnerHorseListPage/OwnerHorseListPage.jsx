@@ -254,14 +254,6 @@ function OwnerHorseListPage() {
             <Link className="primary-button" to="/owner/horses/new">
               Create horse
             </Link>
-            <button
-              className="ghost-button"
-              onClick={() => openAssignModal()}
-              disabled={pageItems.length === 0}
-            >
-              Assign jockey
-            </button>
-            <button className="ghost-button">Export roster</button>
           </section>
 
           <section className="owner-filters">
@@ -428,9 +420,6 @@ function OwnerHorseListPage() {
               <div>
                 <span className="pill">Assign jockey</span>
                 <h3 id="assign-jockey-title">{assignHorse.name}</h3>
-                <p className="muted">
-                  Select a jockey from the API and send an invitation.
-                </p>
               </div>
               <button
                 className="assign-modal__close"
