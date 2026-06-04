@@ -9,7 +9,6 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/races/management")]
-[Authorize(Roles = "Admin,Referee")]
 public class RacesManagementController : ControllerBase
 {
     private readonly IRaceManagementService _raceService;
@@ -21,7 +20,6 @@ public class RacesManagementController : ControllerBase
 
     // Race CRUD
     [HttpPost]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> CreateRace([FromBody] CreateRaceRequest request)
     {
         var result = await _raceService.CreateRaceAsync(request);
@@ -37,7 +35,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpPut("{raceId:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> UpdateRace(Guid raceId, [FromBody] UpdateRaceRequest request)
     {
         var result = await _raceService.UpdateRaceAsync(raceId, request);
@@ -45,7 +42,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpDelete("{raceId:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteRace(Guid raceId)
     {
         var result = await _raceService.DeleteRaceAsync(raceId);
@@ -70,7 +66,6 @@ public class RacesManagementController : ControllerBase
 
     // Horse Assignment
     [HttpPost("{raceId:guid}/assign-horse")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> AssignHorseToRace(Guid raceId, [FromBody] AssignHorseToRaceRequest request)
     {
         var result = await _raceService.AssignHorseToRaceAsync(raceId, request);
@@ -78,7 +73,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpPost("{raceId:guid}/bulk-assign-horses")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> BulkAssignHorsesToRace(Guid raceId, [FromBody] BulkAssignHorsesToRaceRequest request)
     {
         var result = await _raceService.BulkAssignHorsesToRaceAsync(raceId, request);
@@ -86,7 +80,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpDelete("{raceId:guid}/remove-horse/{horseId:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> RemoveHorseFromRace(Guid raceId, Guid horseId)
     {
         var result = await _raceService.RemoveHorseFromRaceAsync(raceId, horseId);
@@ -95,7 +88,6 @@ public class RacesManagementController : ControllerBase
 
     // Race Control
     [HttpPost("{raceId:guid}/start")]
-    [Authorize(Roles = "Admin,Referee")]
     public async Task<ActionResult> StartRace(Guid raceId)
     {
         var result = await _raceService.StartRaceAsync(raceId);
@@ -103,7 +95,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpPost("{raceId:guid}/end")]
-    [Authorize(Roles = "Admin,Referee")]
     public async Task<ActionResult> EndRace(Guid raceId)
     {
         var result = await _raceService.EndRaceAsync(raceId);
@@ -111,7 +102,6 @@ public class RacesManagementController : ControllerBase
     }
 
     [HttpPost("{raceId:guid}/cancel")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> CancelRace(Guid raceId)
     {
         var result = await _raceService.CancelRaceAsync(raceId);

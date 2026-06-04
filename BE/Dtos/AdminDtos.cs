@@ -64,6 +64,37 @@ public class UserManagementResponse
     public DateTime CreatedAt { get; set; }
 }
 
+public class AdminHorseResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Breed { get; set; }
+    public string? Gender { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public int Age { get; set; }
+    public decimal? Weight { get; set; }
+    public decimal? Height { get; set; }
+    public string? Color { get; set; }
+    public string? ImageUrl { get; set; }
+    public int TotalRaces { get; set; }
+    public int TotalWins { get; set; }
+    public string ApprovalStatus { get; set; } = string.Empty;
+    public string? ApprovalNote { get; set; }
+    public Guid OwnerId { get; set; }
+    public Guid OwnerUserId { get; set; }
+    public string? OwnerName { get; set; }
+    public Guid? AssignedJockeyId { get; set; }
+    public string? AssignedJockeyName { get; set; }
+    public string? JockeyAssignmentStatus { get; set; }
+    public Guid[] AssignedJockeyIds { get; set; } = Array.Empty<Guid>();
+}
+
+public class UpdateHorseApprovalStatusRequest
+{
+    public string Status { get; set; } = string.Empty;
+    public string? Note { get; set; }
+}
+
 // Live Race Result DTOs
 public class LiveRaceResultResponse
 {

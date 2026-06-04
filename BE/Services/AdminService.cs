@@ -171,6 +171,136 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<ServiceResult<IEnumerable<AdminHorseResponse>>> GetOwnerHorsesAsync(Guid userId)
+    {
+        try
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "User not found");
+            }
+
+            if (user.Role != UserRole.HorseOwner)
+            {
+                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(
+                    400, "Only users with the HorseOwner role have horses.");
+            }
+
+            if (user.OwnerProfile == null)
+            {
+                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "Owner profile not found");
+            }
+
+            var horses = await _horseRepo.GetByOwnerAsync(user.OwnerProfile.Id);
+            return ServiceResult<IEnumerable<AdminHorseResponse>>.Ok(
+                horses.Select(horse => MapHorseResponse(horse, user)));
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(
+                500, $"Error retrieving owner horses: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<AdminHorseResponse>> GetOwnerHorseAsync(Guid userId, Guid horseId)
+    {
+        try
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(404, "User not found");
+            }
+
+            if (user.Role != UserRole.HorseOwner)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    400, "Only users with the HorseOwner role have horses.");
+            }
+
+            if (user.OwnerProfile == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Owner profile not found");
+            }
+
+            var horse = await _horseRepo.GetOwnedHorseAsync(horseId, user.OwnerProfile.Id);
+            if (horse == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    404, "Horse not found for this owner.");
+            }
+
+            return ServiceResult<AdminHorseResponse>.Ok(MapHorseResponse(horse, user));
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<AdminHorseResponse>.Fail(
+                500, $"Error retrieving horse detail: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<AdminHorseResponse>> UpdateOwnerHorseStatusAsync(
+        Guid userId,
+        Guid horseId,
+        UpdateHorseApprovalStatusRequest request)
+    {
+        try
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(404, "User not found");
+            }
+
+            if (user.Role != UserRole.HorseOwner)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    400, "Only users with the HorseOwner role have horses.");
+            }
+
+            if (user.OwnerProfile == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Owner profile not found");
+            }
+
+            if (!Enum.TryParse<ApprovalStatus>(request.Status, true, out var status) ||
+                !Enum.IsDefined(status))
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    400, "Status must be Pending, Approved, or Rejected.");
+            }
+
+            if (status == ApprovalStatus.Rejected && string.IsNullOrWhiteSpace(request.Note))
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    400, "A rejection note is required when rejecting a horse.");
+            }
+
+            var horse = await _horseRepo.GetOwnedHorseAsync(horseId, user.OwnerProfile.Id);
+            if (horse == null)
+            {
+                return ServiceResult<AdminHorseResponse>.Fail(
+                    404, "Horse not found for this owner.");
+            }
+
+            horse.ApprovalStatus = status;
+            horse.ApprovalNote = status == ApprovalStatus.Rejected
+                ? request.Note!.Trim()
+                : null;
+
+            await _horseRepo.UpdateAsync(horse);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ServiceResult<AdminHorseResponse>.Ok(MapHorseResponse(horse, user));
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<AdminHorseResponse>.Fail(
+                500, $"Error updating horse status: {ex.Message}");
+        }
+    }
+
     public async Task<ServiceResult<UserRegistrationResponse>> GetRegistrationAsync(Guid id)
     {
         try
@@ -287,48 +417,6 @@ public class AdminService : IAdminService
         }
     }
 
-    public async Task<ServiceResult<bool>> ApproveHorseAsync(Guid horseId)
-    {
-        try
-        {
-            var horse = await _horseRepo.GetByIdAsync(horseId);
-            if (horse == null)
-            {
-                return ServiceResult<bool>.Fail(404, "Horse not found");
-            }
-            horse.ApprovalStatus = ApprovalStatus.Approved;
-            horse.ApprovalNote = null;
-            await _horseRepo.UpdateAsync(horse);
-            await _unitOfWork.SaveChangesAsync();
-            return ServiceResult<bool>.Ok(true);
-        }
-        catch (Exception ex)
-        {
-            return ServiceResult<bool>.Fail(500, $"Error approving horse: {ex.Message}");
-        }
-    }
-
-    public async Task<ServiceResult<bool>> RejectHorseAsync(Guid horseId, string reason)
-    {
-        try
-        {
-            var horse = await _horseRepo.GetByIdAsync(horseId);
-            if (horse == null)
-            {
-                return ServiceResult<bool>.Fail(404, "Horse not found");
-            }
-            horse.ApprovalStatus = ApprovalStatus.Rejected;
-            horse.ApprovalNote = reason;
-            await _horseRepo.UpdateAsync(horse);
-            await _unitOfWork.SaveChangesAsync();
-            return ServiceResult<bool>.Ok(true);
-        }
-        catch (Exception ex)
-        {
-            return ServiceResult<bool>.Fail(500, $"Error rejecting horse: {ex.Message}");
-        }
-    }
-
     public async Task<ServiceResult<bool>> ApproveJockeyAsync(Guid jockeyId)
     {
         try
@@ -397,6 +485,59 @@ public class AdminService : IAdminService
             ReviewedByUserName = registration.ReviewedByUser?.FullName,
             RejectionReason = registration.RejectionReason,
             AdminNotes = registration.AdminNotes
+        };
+    }
+
+    private static AdminHorseResponse MapHorseResponse(Horse horse, User ownerUser)
+    {
+        var activeJockeyInvitation = horse.JockeyInvitations
+            .Where(invitation =>
+                invitation.Status == JockeyInvitationStatus.Pending ||
+                invitation.Status == JockeyInvitationStatus.Accepted)
+            .OrderByDescending(invitation => invitation.CreatedAt)
+            .FirstOrDefault();
+        var raceAssignedJockey = horse.RaceEntries
+            .Where(entry => entry.Jockey != null)
+            .OrderByDescending(entry => entry.Race?.ScheduledAt ?? DateTime.MinValue)
+            .Select(entry => entry.Jockey)
+            .FirstOrDefault();
+        var assignedJockey = activeJockeyInvitation?.Jockey ?? raceAssignedJockey;
+        var assignedJockeyIds = horse.JockeyInvitations
+            .Where(invitation =>
+                invitation.Status == JockeyInvitationStatus.Pending ||
+                invitation.Status == JockeyInvitationStatus.Accepted)
+            .Select(invitation => invitation.JockeyId)
+            .Concat(
+                horse.RaceEntries
+                    .Where(entry => entry.JockeyId.HasValue)
+                    .Select(entry => entry.JockeyId!.Value))
+            .Distinct()
+            .ToArray();
+
+        return new AdminHorseResponse
+        {
+            Id = horse.Id,
+            Name = horse.Name,
+            Breed = horse.Breed,
+            Gender = horse.Gender,
+            DateOfBirth = horse.DateOfBirth,
+            Age = horse.Age,
+            Weight = horse.Weight,
+            Height = horse.Height,
+            Color = horse.Color,
+            ImageUrl = horse.ImageUrl,
+            TotalRaces = horse.TotalRaces,
+            TotalWins = horse.TotalWins,
+            ApprovalStatus = horse.ApprovalStatus.ToString(),
+            ApprovalNote = horse.ApprovalNote,
+            OwnerId = horse.OwnerId,
+            OwnerUserId = ownerUser.Id,
+            OwnerName = ownerUser.FullName,
+            AssignedJockeyId = assignedJockey?.Id,
+            AssignedJockeyName = assignedJockey?.User?.FullName,
+            JockeyAssignmentStatus = activeJockeyInvitation?.Status.ToString() ??
+                (raceAssignedJockey != null ? "RaceAssigned" : null),
+            AssignedJockeyIds = assignedJockeyIds
         };
     }
 }

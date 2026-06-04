@@ -49,24 +49,37 @@
   position: relative;
   height: 200px;
   overflow: hidden;
+  background: rgba(6, 10, 20, 0.92);
 }
 
 .horse-image {
+  position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
   background: linear-gradient(135deg, rgba(231, 198, 120, 0.22), rgba(7, 11, 20, 0.75)),
     radial-gradient(circle at top, rgba(231, 198, 120, 0.35), transparent 60%);
-  background-size: cover;
-  background-position: center;
 }
 
-.horse-media__fade {
+.horse-image::before,
+.horse-image::after {
+  content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 70px;
-  background: linear-gradient(180deg, rgba(7, 11, 20, 0), rgba(7, 11, 20, 0.85));
+  inset: 0;
+  background-image: var(--horse-image);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.horse-image::before {
+  inset: -12px;
+  background-size: cover;
+  filter: blur(10px) brightness(0.55);
+  transform: scale(1.06);
+}
+
+.horse-image::after {
+  background-size: contain;
 }
 
 .horse-status {

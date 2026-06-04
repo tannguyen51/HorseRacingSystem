@@ -1,34 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getMyHorses } from "../../services/ownerHorseApi";
+import { getOwnerTournaments } from "../../services/ownerApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentRegisterPage.css";
-
-const tournaments = [
-  {
-    id: 1,
-    name: "Pacific Classic Series",
-    status: "Open",
-    track: "Gulfstream Park",
-    date: "June 18, 2026",
-    slots: 8,
-  },
-  {
-    id: 2,
-    name: "Capital Cup",
-    status: "Open",
-    track: "Capital Downs",
-    date: "June 25, 2026",
-    slots: 4,
-  },
-  {
-    id: 3,
-    name: "Spring Championship Finals",
-    status: "Closing soon",
-    track: "Santa Anita",
-    date: "July 2, 2026",
-    slots: 2,
-  },
-];
 
 const initialRegistrations = [
   {
@@ -47,23 +21,47 @@ const initialRegistrations = [
   },
 ];
 
+const formatDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "TBD"
+    : new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+};
+
+const mapTournament = (tournament) => ({
+  id: tournament?.id ?? tournament?.Id,
+  name: tournament?.name ?? tournament?.Name ?? "Tournament",
+  status: (tournament?.isActive ?? tournament?.IsActive) ? "Open" : "Closed",
+  description:
+    tournament?.description ?? tournament?.Description ?? "No description.",
+  date: formatDate(tournament?.startDate ?? tournament?.StartDate),
+  raceCount: tournament?.raceCount ?? tournament?.RaceCount ?? 0,
+});
+
 function OwnerTournamentRegisterPage() {
+  const [tournaments, setTournaments] = useState([]);
   const [horses, setHorses] = useState([]);
   const [selectedHorseId, setSelectedHorseId] = useState("");
-  const [selectedTournamentId, setSelectedTournamentId] = useState(
-    tournaments[0].id,
-  );
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [isHorseLoading, setIsHorseLoading] = useState(true);
   const [horseError, setHorseError] = useState("");
+  const [isTournamentLoading, setIsTournamentLoading] = useState(true);
+  const [tournamentError, setTournamentError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchApprovedHorses = async () => {
+    const fetchOwnerData = async () => {
       setIsHorseLoading(true);
+      setIsTournamentLoading(true);
       setHorseError("");
+      setTournamentError("");
 
       try {
         const data = await getMyHorses();
@@ -87,9 +85,33 @@ function OwnerTournamentRegisterPage() {
           setIsHorseLoading(false);
         }
       }
+
+      try {
+        const data = await getOwnerTournaments();
+        const openTournaments = (Array.isArray(data) ? data : [])
+          .map(mapTournament)
+          .filter((tournament) => tournament.status === "Open");
+
+        if (isMounted) {
+          setTournaments(openTournaments);
+          setSelectedTournamentId(openTournaments[0]?.id ?? "");
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setTournaments([]);
+          setSelectedTournamentId("");
+          setTournamentError(
+            fetchError?.message || "Unable to load open tournaments.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsTournamentLoading(false);
+        }
+      }
     };
 
-    fetchApprovedHorses();
+    fetchOwnerData();
     return () => {
       isMounted = false;
     };
@@ -101,11 +123,8 @@ function OwnerTournamentRegisterPage() {
   );
 
   const selectedTournament = useMemo(
-    () =>
-      tournaments.find(
-        (tournament) => tournament.id === Number(selectedTournamentId),
-      ),
-    [selectedTournamentId],
+    () => tournaments.find((tournament) => tournament.id === selectedTournamentId),
+    [selectedTournamentId, tournaments],
   );
 
   const eligibilityChecks = [
@@ -127,9 +146,11 @@ function OwnerTournamentRegisterPage() {
       tone: selectedHorse ? "success" : "warning",
     },
     {
-      label: "Tournament slots",
-      value: `${selectedTournament?.slots ?? 0} available`,
-      tone: selectedTournament?.slots > 0 ? "success" : "warning",
+      label: "Tournament races",
+      value: selectedTournament
+        ? `${selectedTournament.raceCount} races scheduled`
+        : "No tournament selected",
+      tone: selectedTournament ? "success" : "warning",
     },
   ];
 
@@ -220,13 +241,22 @@ function OwnerTournamentRegisterPage() {
                   onChange={(event) =>
                     setSelectedTournamentId(event.target.value)
                   }
+                  disabled={isTournamentLoading || tournaments.length === 0}
                 >
+                  {isTournamentLoading ? (
+                    <option value="">Loading open tournaments...</option>
+                  ) : tournaments.length === 0 ? (
+                    <option value="">No open tournaments available</option>
+                  ) : null}
                   {tournaments.map((tournament) => (
                     <option key={tournament.id} value={tournament.id}>
                       {tournament.name} · {tournament.status}
                     </option>
                   ))}
                 </select>
+                {tournamentError ? (
+                  <p className="form-error">{tournamentError}</p>
+                ) : null}
               </div>
               <div className="selection-summary">
                 <div>
@@ -240,8 +270,12 @@ function OwnerTournamentRegisterPage() {
                 </div>
                 <div>
                   <span>Tournament</span>
-                  <strong>{selectedTournament?.name}</strong>
-                  <p>{selectedTournament?.track} · {selectedTournament?.date}</p>
+                  <strong>{selectedTournament?.name ?? "No open tournament"}</strong>
+                  <p>
+                    {selectedTournament
+                      ? `${selectedTournament.description} · ${selectedTournament.date}`
+                      : "An open tournament is required."}
+                  </p>
                 </div>
               </div>
               <div className="register-actions">
@@ -249,7 +283,7 @@ function OwnerTournamentRegisterPage() {
                   className="primary-button"
                   type="button"
                   onClick={() => setShowConfirm(true)}
-                  disabled={!selectedHorse}
+                  disabled={!selectedHorse || !selectedTournament}
                 >
                   Review registration
                 </button>
@@ -353,12 +387,12 @@ function OwnerTournamentRegisterPage() {
                 <p>{selectedTournament?.name}</p>
               </div>
               <div>
-                <h4>Track</h4>
-                <p>{selectedTournament?.track}</p>
+                <h4>Description</h4>
+                <p>{selectedTournament?.description}</p>
               </div>
               <div>
-                <h4>Slots</h4>
-                <p>{selectedTournament?.slots} available</p>
+                <h4>Races</h4>
+                <p>{selectedTournament?.raceCount} scheduled</p>
               </div>
             </div>
             <div className="modal-actions">
