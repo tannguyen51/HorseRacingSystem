@@ -30,3 +30,11 @@ export const deleteHorse = async (id) =>
       method: "DELETE",
     }),
   );
+
+export const inviteJockeyToHorse = async (horseId, payload) =>
+  unwrapResponseData(
+    await request(`/api/horses/${horseId}/jockey-invitations`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  );

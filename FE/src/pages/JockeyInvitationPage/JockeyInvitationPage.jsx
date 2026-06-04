@@ -10,10 +10,43 @@ export function JockeyInvitationPage() {
   const [loadingId, setLoadingId] = useState(null);
 
   const normalizeInvitations = (payload) => {
-    if (Array.isArray(payload)) return payload;
-    if (payload && Array.isArray(payload.data)) return payload.data;
-    if (payload && Array.isArray(payload.items)) return payload.items;
-    return [];
+    const list = Array.isArray(payload)
+      ? payload
+      : payload && Array.isArray(payload.data)
+        ? payload.data
+        : payload && Array.isArray(payload.Data)
+          ? payload.Data
+          : payload && Array.isArray(payload.items)
+            ? payload.items
+            : [];
+
+    return list.map((invitation) => ({
+      id: invitation.id ?? invitation.Id,
+      raceName:
+        invitation.raceName ??
+        invitation.RaceName ??
+        invitation.race?.name ??
+        invitation.Race?.Name ??
+        "Race invitation",
+      date:
+        invitation.date ??
+        invitation.Date ??
+        invitation.createdAt ??
+        invitation.CreatedAt ??
+        "Pending review",
+      horseName:
+        invitation.horseName ??
+        invitation.HorseName ??
+        invitation.horse?.name ??
+        invitation.Horse?.Name ??
+        "Unknown horse",
+      track:
+        invitation.track ??
+        invitation.Track ??
+        invitation.race?.trackName ??
+        invitation.Race?.TrackName ??
+        "TBD Track",
+    }));
   };
 
   const fetchInvitations = async () => {
@@ -71,7 +104,7 @@ export function JockeyInvitationPage() {
             Authorization: token ? `Bearer ${token}` : "",
           },
           body: JSON.stringify({
-            status: action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
+            accept: action === "ACCEPT",
           }),
         },
       );
@@ -159,7 +192,7 @@ export function JockeyInvitationPage() {
                     <div className="live-card__meta">
                       <div>
                         <span>Assigned Horse</span>
-                        <strong>🐎 {inv.horseName}</strong>
+                        <strong>{inv.horseName}</strong>
                       </div>
                     </div>
 

@@ -140,11 +140,11 @@ function AppLayout() {
             element={<OwnerTournamentListPage />}
           />
           <Route
-            path="/owner/tournaments/register"
+            path="/owner/register-tournament"
             element={<OwnerTournamentRegisterPage />}
           />
           <Route
-            path="/owner/race-confirmation"
+            path="/owner/race-confirmations"
             element={<OwnerRaceConfirmationPage />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />

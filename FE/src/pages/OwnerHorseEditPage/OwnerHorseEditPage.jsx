@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getHorse, updateHorse } from "../../services/ownerHorseApi";
+import { validateHorseStats } from "../../utils/horseValidation";
 import "../OwnerSharedLayout.css";
 import "../OwnerHorseFormPage.css";
 
@@ -86,17 +87,31 @@ function OwnerHorseEditPage() {
       return;
     }
 
+    const age = parseNumber(formValues.age) ?? 0;
+    const totalRaces = parseNumber(formValues.totalRaces) ?? 0;
+    const totalWins = parseNumber(formValues.totalWins) ?? 0;
+    const validationError = validateHorseStats({
+      dateOfBirth: formValues.dateOfBirth,
+      age,
+      totalRaces,
+      totalWins,
+    });
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     const payload = {
       name,
       breed: formValues.breed.trim() || undefined,
       gender: formValues.gender.trim() || undefined,
       dateOfBirth: formValues.dateOfBirth || undefined,
-      age: parseNumber(formValues.age) ?? 0,
+      age,
       weight: parseNumber(formValues.weight),
       height: parseNumber(formValues.height),
       color: formValues.color.trim() || undefined,
-      totalRaces: parseNumber(formValues.totalRaces) ?? 0,
-      totalWins: parseNumber(formValues.totalWins) ?? 0,
+      totalRaces,
+      totalWins,
       imageUrl: formValues.imageUrl.trim() || undefined,
     };
 
@@ -305,6 +320,7 @@ function OwnerHorseEditPage() {
                         value={formValues.totalWins}
                         onChange={updateField("totalWins")}
                         min={0}
+                        max={formValues.totalRaces || undefined}
                       />
                     </div>
                   </div>
