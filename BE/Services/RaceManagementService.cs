@@ -192,6 +192,34 @@ public class RaceManagementService : IRaceManagementService
             {
                 return ServiceResult<bool>.Fail(400, "Horse is not approved by admin");
             }
+
+            var activeJockeyInvitation = horse.JockeyInvitations
+                .Where(invitation =>
+                    invitation.Status == JockeyInvitationStatus.Pending ||
+                    invitation.Status == JockeyInvitationStatus.Accepted)
+                .OrderByDescending(invitation => invitation.CreatedAt)
+                .FirstOrDefault();
+            var raceAssignedJockey = horse.RaceEntries
+                .Where(entry => entry.Jockey != null)
+                .OrderByDescending(entry => entry.Race?.ScheduledAt ?? DateTime.MinValue)
+                .Select(entry => entry.Jockey)
+                .FirstOrDefault();
+            var assignedJockey = activeJockeyInvitation?.Jockey ?? raceAssignedJockey;
+
+            if (assignedJockey != null &&
+                request.JockeyId.HasValue &&
+                request.JockeyId.Value != assignedJockey.Id)
+            {
+                return ServiceResult<bool>.Fail(
+                    400,
+                    $"Horse is already assigned to jockey {assignedJockey.User?.FullName ?? assignedJockey.Id.ToString()}");
+            }
+
+            if (assignedJockey != null)
+            {
+                request.JockeyId = assignedJockey.Id;
+            }
+
             if (request.JockeyId.HasValue)
             {
                 var jockey = await _jockeyRepo.GetByIdAsync(request.JockeyId.Value);

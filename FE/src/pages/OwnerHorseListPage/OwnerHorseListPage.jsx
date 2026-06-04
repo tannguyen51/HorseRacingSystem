@@ -305,7 +305,7 @@ function OwnerHorseListPage() {
                 const statusLabel = getStatusLabel(horse);
                 const assignment = getHorseAssignment(horse);
                 const imageStyle = horse.imageUrl
-                  ? { backgroundImage: `url(${horse.imageUrl})` }
+                  ? { "--horse-image": `url(${horse.imageUrl})` }
                   : undefined;
                 return (
                   <article key={horse.id} className="horse-card hover-lift">
@@ -320,7 +320,6 @@ function OwnerHorseListPage() {
                       >
                         {statusLabel}
                       </span>
-                      <div className="horse-media__fade" />
                     </div>
                     <div className="horse-card__content">
                       <div className="horse-card__header">

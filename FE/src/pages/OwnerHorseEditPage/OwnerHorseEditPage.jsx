@@ -171,9 +171,7 @@ function OwnerHorseEditPage() {
                     style={
                       formValues.imageUrl
                         ? {
-                            backgroundImage: `url(${formValues.imageUrl})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
+                            "--horse-image": `url(${formValues.imageUrl})`,
                           }
                         : undefined
                     }

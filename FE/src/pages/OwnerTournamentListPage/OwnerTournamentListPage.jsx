@@ -1,52 +1,89 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getOwnerTournaments } from "../../services/ownerApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentListPage.css";
 
-const tournaments = [
-  {
-    id: 1,
-    name: "Spring Championship Finals",
-    location: "Churchill Downs",
-    prizePool: "$500,000",
-    dates: "May 24 - May 28",
-    status: "Live",
-    slots: "2 slots",
-  },
-  {
-    id: 2,
-    name: "Pacific Classic Series",
-    location: "Santa Anita",
-    prizePool: "$320,000",
-    dates: "June 12 - June 18",
-    status: "Open",
-    slots: "4 slots",
-  },
-  {
-    id: 3,
-    name: "Capital Cup",
-    location: "Laurel Park",
-    prizePool: "$280,000",
-    dates: "June 22 - June 25",
-    status: "Open",
-    slots: "1 slot",
-  },
-  {
-    id: 4,
-    name: "Winter Cup",
-    location: "Belmont Park",
-    prizePool: "$210,000",
-    dates: "July 2 - July 6",
-    status: "Closed",
-    slots: "Full",
-  },
-];
-
 const statusFilters = ["All", "Live", "Open", "Closed"];
 
+const formatDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "TBD"
+    : new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+};
+
+const getTournamentStatus = (tournament) => {
+  if (!(tournament?.isActive ?? tournament?.IsActive)) {
+    return "Closed";
+  }
+
+  const start = new Date(tournament?.startDate ?? tournament?.StartDate);
+  const end = new Date(tournament?.endDate ?? tournament?.EndDate);
+  const now = new Date();
+
+  return !Number.isNaN(start.getTime()) &&
+    !Number.isNaN(end.getTime()) &&
+    now >= start &&
+    now <= end
+    ? "Live"
+    : "Open";
+};
+
+const mapTournament = (tournament) => {
+  const startDate = tournament?.startDate ?? tournament?.StartDate;
+  const endDate = tournament?.endDate ?? tournament?.EndDate;
+
+  return {
+    id: tournament?.id ?? tournament?.Id,
+    name: tournament?.name ?? tournament?.Name ?? "Tournament",
+    description:
+      tournament?.description ?? tournament?.Description ?? "No description.",
+    dates: `${formatDate(startDate)} - ${formatDate(endDate)}`,
+    status: getTournamentStatus(tournament),
+    raceCount: tournament?.raceCount ?? tournament?.RaceCount ?? 0,
+    roundCount: tournament?.roundCount ?? tournament?.RoundCount ?? 0,
+  };
+};
+
 function OwnerTournamentListPage() {
+  const navigate = useNavigate();
+  const [tournaments, setTournaments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [activeTournament, setActiveTournament] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTournaments = async () => {
+      try {
+        const payload = await getOwnerTournaments();
+        if (!cancelled) {
+          setTournaments(Array.isArray(payload) ? payload.map(mapTournament) : []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error.message || "Unable to load tournaments.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadTournaments();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredTournaments = useMemo(() => {
     return tournaments.filter((tournament) => {
@@ -58,7 +95,7 @@ function OwnerTournamentListPage() {
         .includes(query.toLowerCase());
       return matchesStatus && matchesQuery;
     });
-  }, [query, status]);
+  }, [query, status, tournaments]);
 
   return (
     <div className="owner-page owner-tournament-list">
@@ -71,8 +108,10 @@ function OwnerTournamentListPage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Open tournaments</p>
-            <h4>2</h4>
-            <span>Available slots</span>
+            <h4>
+              {tournaments.filter((tournament) => tournament.status === "Open").length}
+            </h4>
+            <span>{tournaments.length} total tournaments</span>
           </div>
         </aside>
 
@@ -115,8 +154,24 @@ function OwnerTournamentListPage() {
             </div>
           </section>
 
-          <section className="tournament-grid">
-            {filteredTournaments.map((tournament) => (
+          {isLoading ? (
+            <div className="empty-state">
+              <h3>Loading tournaments</h3>
+              <p>Fetching the latest tournament schedule.</p>
+            </div>
+          ) : errorMessage ? (
+            <div className="empty-state">
+              <h3>Unable to load tournaments</h3>
+              <p>{errorMessage}</p>
+            </div>
+          ) : filteredTournaments.length === 0 ? (
+            <div className="empty-state">
+              <h3>No tournaments found</h3>
+              <p>Try a different keyword or status.</p>
+            </div>
+          ) : (
+            <section className="tournament-grid">
+              {filteredTournaments.map((tournament) => (
               <article key={tournament.id} className="owner-card hover-lift">
                 <div className="tournament-banner">
                   <span className="badge">{tournament.status}</span>
@@ -124,17 +179,17 @@ function OwnerTournamentListPage() {
                 <div className="tournament-body">
                   <div>
                     <h3>{tournament.name}</h3>
-                    <p className="muted">{tournament.location}</p>
+                    <p className="muted">{tournament.description}</p>
                     <p>{tournament.dates}</p>
                   </div>
                   <div className="tournament-meta">
                     <div>
-                      <span>Prize pool</span>
-                      <strong>{tournament.prizePool}</strong>
+                      <span>Races</span>
+                      <strong>{tournament.raceCount}</strong>
                     </div>
                     <div>
-                      <span>Slots</span>
-                      <strong>{tournament.slots}</strong>
+                      <span>Rounds</span>
+                      <strong>{tournament.roundCount}</strong>
                     </div>
                   </div>
                 </div>
@@ -145,11 +200,17 @@ function OwnerTournamentListPage() {
                   >
                     View details
                   </button>
-                  <button className="primary-button">Register</button>
+                  <button
+                    className="primary-button"
+                    onClick={() => navigate("/owner/register-tournament")}
+                  >
+                    Register
+                  </button>
                 </div>
               </article>
-            ))}
-          </section>
+              ))}
+            </section>
+          )}
         </div>
       </div>
 
@@ -165,7 +226,7 @@ function OwnerTournamentListPage() {
               <div>
                 <span className="badge">{activeTournament.status}</span>
                 <h3 id="tournament-modal-title">{activeTournament.name}</h3>
-                <p className="muted">{activeTournament.location}</p>
+                <p className="muted">{activeTournament.description}</p>
               </div>
               <button
                 className="ghost-button"
@@ -180,12 +241,12 @@ function OwnerTournamentListPage() {
                 <p>{activeTournament.dates}</p>
               </div>
               <div>
-                <h4>Prize pool</h4>
-                <p>{activeTournament.prizePool}</p>
+                <h4>Races</h4>
+                <p>{activeTournament.raceCount}</p>
               </div>
               <div>
-                <h4>Slots</h4>
-                <p>{activeTournament.slots}</p>
+                <h4>Rounds</h4>
+                <p>{activeTournament.roundCount}</p>
               </div>
               <div>
                 <h4>Status</h4>
@@ -193,7 +254,12 @@ function OwnerTournamentListPage() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary-button">Register now</button>
+              <button
+                className="primary-button"
+                onClick={() => navigate("/owner/register-tournament")}
+              >
+                Register now
+              </button>
               <button
                 className="ghost-button"
                 onClick={() => setActiveTournament(null)}

@@ -24,6 +24,11 @@ public class HorseRepository : IHorseRepository
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
             .Where(h => h.OwnerId == ownerId)
             .ToListAsync();
     }
@@ -33,6 +38,14 @@ public class HorseRepository : IHorseRepository
         return _db.Horses
             .Include(h => h.Owner)
                 .ThenInclude(o => o!.User)
+            .Include(h => h.JockeyInvitations)
+                .ThenInclude(i => i.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
             .FirstOrDefaultAsync(h => h.Id == horseId);
     }
 
@@ -42,6 +55,11 @@ public class HorseRepository : IHorseRepository
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
             .FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
     }
 

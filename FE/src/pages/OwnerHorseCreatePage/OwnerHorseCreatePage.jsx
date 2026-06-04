@@ -121,7 +121,15 @@ function OwnerHorseCreatePage() {
               <div className="form-section">
                 <h3>Horse image</h3>
                 <div className="image-upload">
-                  <div className="image-preview" aria-hidden="true" />
+                  <div
+                    className="image-preview"
+                    aria-hidden="true"
+                    style={
+                      formValues.imageUrl
+                        ? { "--horse-image": `url(${formValues.imageUrl})` }
+                        : undefined
+                    }
+                  />
                   <div className="form-field">
                     <label htmlFor="horse-image-url">Image URL</label>
                     <input

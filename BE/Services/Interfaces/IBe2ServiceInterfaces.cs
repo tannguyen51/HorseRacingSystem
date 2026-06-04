@@ -112,8 +112,12 @@ public interface IAdminService
     Task<ServiceResult<bool>> RejectRegistrationAsync(RejectRegistrationRequest request);
     
     // Horse Management
-    Task<ServiceResult<bool>> ApproveHorseAsync(Guid horseId);
-    Task<ServiceResult<bool>> RejectHorseAsync(Guid horseId, string reason);
+    Task<ServiceResult<IEnumerable<AdminHorseResponse>>> GetOwnerHorsesAsync(Guid userId);
+    Task<ServiceResult<AdminHorseResponse>> GetOwnerHorseAsync(Guid userId, Guid horseId);
+    Task<ServiceResult<AdminHorseResponse>> UpdateOwnerHorseStatusAsync(
+        Guid userId,
+        Guid horseId,
+        UpdateHorseApprovalStatusRequest request);
     
     // Jockey Management
     Task<ServiceResult<bool>> ApproveJockeyAsync(Guid jockeyId);

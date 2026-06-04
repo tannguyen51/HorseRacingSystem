@@ -5,12 +5,12 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
 import JockeyHeader from "./components/JockeyHeader/JockeyHeader";
 import OwnerHeader from "./components/OwnerHeader/OwnerHeader";
+import AdminHeader from "./components/AdminHeader/AdminHeader";
 import HomePage from "./pages/HomePage/HomePage";
 import TournamentListPage from "./pages/TournamentListPage/TournamentListPage";
 import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailPage";
@@ -38,30 +38,37 @@ import OwnerTournamentRegisterPage from "./pages/OwnerTournamentRegisterPage/Own
 import OwnerRaceConfirmationPage from "./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
+import AdminPage from "./pages/AdminPage/AdminPage";
 import "./App.css";
+
+const getStoredAuthUser = () => {
+  const user = localStorage.getItem("authUser");
+  if (!user) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(user);
+  } catch {
+    return null;
+  }
+};
 
 function AppLayout() {
   const location = useLocation();
-  const [authUser, setAuthUser] = useState(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem("authUser");
-
-    if (!user) {
-      setAuthUser(null);
-      return;
-    }
-
-    try {
-      setAuthUser(JSON.parse(user));
-    } catch {
-      setAuthUser(null);
-    }
-  }, [location.pathname]);
+  const authUser = getStoredAuthUser();
+  const hasAuthToken = Boolean(localStorage.getItem("authToken"));
+  const adminPage =
+    hasAuthToken && authUser?.role === "admin" ? (
+      <AdminPage />
+    ) : (
+      <Navigate to="/login" replace />
+    );
 
   const isSpectator = location.pathname.startsWith("/spectator");
   const isJockey = location.pathname.startsWith("/jockey");
   const isOwner = location.pathname.startsWith("/owner");
+  const isAdmin = location.pathname.startsWith("/admin");
 
   const renderHeader = () => {
     if (isSpectator || authUser?.role === "spectator") {
@@ -76,7 +83,12 @@ function AppLayout() {
       return <OwnerHeader />;
     }
 
-    return <Header isLoggedIn={Boolean(authUser)} />;
+    if (isAdmin || authUser?.role === "admin") {
+      return <AdminHeader />;
+    }
+
+    return <Header />;
+  };
 
   return (
     <div className="app-shell">
@@ -146,10 +158,18 @@ function AppLayout() {
             path="/owner/race-confirmations"
             element={<OwnerRaceConfirmationPage />}
           />
+          <Route path="/admin" element={adminPage} />
+          <Route path="/admin/users" element={adminPage} />
+          <Route path="/admin/users/:id" element={adminPage} />
+          <Route path="/admin/users/:userId/horses/:horseId" element={adminPage} />
+          <Route path="/admin/roles" element={adminPage} />
+          <Route path="/admin/tournaments" element={adminPage} />
+          <Route path="/admin/rounds" element={adminPage} />
+          <Route path="/admin/races" element={adminPage} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
+      {!isAdmin && <Footer />}
     </div>
   );
 }

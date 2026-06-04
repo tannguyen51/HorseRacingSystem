@@ -135,6 +135,39 @@ public class AuthService : IAuthService
         return ServiceResult<AuthResponse>.Ok(response);
     }
 
+    public async Task<ServiceResult<OwnerProfileResponse>> GetOwnerProfileAsync(Guid userId)
+    {
+        var user = await _users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return ServiceResult<OwnerProfileResponse>.Fail(
+                StatusCodes.Status404NotFound,
+                "User not found.");
+        }
+
+        if (user.Role != UserRole.HorseOwner || user.OwnerProfile == null)
+        {
+            return ServiceResult<OwnerProfileResponse>.Fail(
+                StatusCodes.Status404NotFound,
+                "Owner profile not found.");
+        }
+
+        var owner = user.OwnerProfile;
+        return ServiceResult<OwnerProfileResponse>.Ok(new OwnerProfileResponse
+        {
+            UserId = user.Id,
+            OwnerId = owner.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            Role = user.Role.ToString(),
+            OwnerCode = owner.OwnerCode,
+            OwnerType = owner.OwnerType,
+            Status = owner.Status,
+            JoinDate = owner.JoinDate,
+            HorseCount = owner.Horses.Count
+        });
+    }
+
     private static string GenerateOwnerCode() =>
         $"OWN-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
 }

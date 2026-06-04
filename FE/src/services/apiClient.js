@@ -20,7 +20,7 @@ export async function request(path, options = {}) {
   });
 
   const contentType = response.headers.get("content-type");
-  let data = null;
+  let data;
 
   if (contentType && contentType.includes("application/json")) {
     data = await response.json();
@@ -29,10 +29,22 @@ export async function request(path, options = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401 && path !== "/api/auth/login") {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("authUser");
+      window.location.assign("/login");
+    }
+
+    const validationMessage =
+      data?.errors && typeof data.errors === "object"
+        ? Object.values(data.errors).flat().filter(Boolean).join(" ")
+        : "";
     const message =
       (typeof data === "string" && data.trim()) ||
       data?.message ||
       data?.error ||
+      validationMessage ||
+      data?.title ||
       "Request failed.";
     const error = new Error(message);
     error.status = response.status;
