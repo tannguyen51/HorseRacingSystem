@@ -71,3 +71,41 @@ public enum ApprovalStatus
     Approved = 2,
     Rejected = 3
 }
+
+public enum NotificationType
+{
+    Email = 1,
+    SMS = 2,
+    PushNotification = 3,
+    InApp = 4
+}
+
+public enum NotificationCategory
+{
+    RegistrationApproval = 1,
+    HorseApproval = 2,
+    JockeyApproval = 3,
+    JockeyInvitation = 4,
+    RaceAssignment = 5,
+    RaceUpdate = 6,
+    RaceResult = 7,
+    ViolationRecord = 8,
+    HealthCheckResult = 9,
+    SystemAlert = 10,
+    Other = 11
+}
+
+public enum AuditAction
+{
+    Create = 1,
+    Update = 2,
+    Delete = 3,
+    Approve = 4,
+    Reject = 5,
+    Activate = 6,
+    Deactivate = 7,
+    Assign = 8,
+    Login = 9,
+    Export = 10,
+    Other = 11
+}

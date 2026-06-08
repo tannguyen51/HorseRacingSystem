@@ -5,8 +5,10 @@ namespace HorseRacing.Services;
 
 public class ServiceResult<T>
 {
-    public int StatusCode { get; }
-    public ApiResult<T> Result { get; }
+    public int StatusCode { get; set; }
+    public ApiResult<T> Result { get; set; }
+
+    public ServiceResult() { }
 
     public ServiceResult(int statusCode, ApiResult<T> result)
     {
