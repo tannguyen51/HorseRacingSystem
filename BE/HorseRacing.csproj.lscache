@@ -1,4 +1,49 @@
+version=1
 
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[properties]
+AssemblyName=HorseRacing
+CommandLineArgsForDesignTimeEvaluation=-langversion:13.0 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=13.0
+ProjectAssetsFile=<PATH>obj/project.assets.json
+RootNamespace=HorseRacing
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=<PATH>../HorseRacing.sln
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>bin/Debug/net9.0/HorseRacing.dll
+TargetRefPath=<PATH>obj/Debug/net9.0/ref/HorseRacing.dll
+TemporaryDependencyNodeTargetIdentifier=net9.0
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1701,1702
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:9
+/define:TRACE;DEBUG;NET;NET9_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER
+/highentropyva+
+/nullable:enable
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:obj\Debug\net9.0\HorseRacing.dll
 /refout:obj\Debug\net9.0\refint\HorseRacing.dll
 /target:exe
 /warnaserror-
@@ -32,8 +77,8 @@ Dtos/
  RefereeDutyDtos.cs
  TournamentDtos.cs
 Migrations/
- 20260514142045_HorseRacing.cs
- 20260514142045_HorseRacing.Designer.cs
+ 20260515093417_init.cs
+ 20260515093417_init.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Models/
  Enums.cs
@@ -105,7 +150,7 @@ Services/
  TournamentAndRoundService.cs
 
 [metadataReferences]
-<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.16/ref/net9.0/
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.11/ref/net9.0/
  Microsoft.AspNetCore.Antiforgery.dll
  Microsoft.AspNetCore.Authentication.Abstractions.dll
  Microsoft.AspNetCore.Authentication.BearerToken.dll
@@ -244,7 +289,7 @@ Services/
  System.Diagnostics.EventLog.dll
  System.Security.Cryptography.Xml.dll
  System.Threading.RateLimiting.dll
-<DOTNET>/packs/Microsoft.NETCore.App.Ref/9.0.16/ref/net9.0/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/9.0.11/ref/net9.0/
  Microsoft.CSharp.dll
  Microsoft.VisualBasic.Core.dll
  Microsoft.VisualBasic.dll
@@ -438,29 +483,29 @@ Services/
  system.security.cryptography.protecteddata/6.0.0/lib/net6.0/System.Security.Cryptography.ProtectedData.dll
 
 [analyzerReferences]
-<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.16/analyzers/dotnet/cs/
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.11/analyzers/dotnet/cs/
  Microsoft.AspNetCore.App.Analyzers.dll
  Microsoft.AspNetCore.App.CodeFixes.dll
  Microsoft.AspNetCore.Components.Analyzers.dll
-<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.16/analyzers/dotnet/roslyn4.4/cs/
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/9.0.11/analyzers/dotnet/roslyn4.4/cs/
  Microsoft.Extensions.Logging.Generators.dll
  Microsoft.Extensions.Options.SourceGeneration.dll
-<DOTNET>/packs/Microsoft.NETCore.App.Ref/9.0.16/analyzers/dotnet/cs/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/9.0.11/analyzers/dotnet/cs/
  Microsoft.Interop.ComInterfaceGenerator.dll
  Microsoft.Interop.JavaScript.JSImportGenerator.dll
  Microsoft.Interop.LibraryImportGenerator.dll
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/9.0.314/Sdks/Microsoft.NET.Sdk.Razor/source-generators/
+<DOTNET>/sdk/9.0.308/Sdks/Microsoft.NET.Sdk.Razor/source-generators/
  Microsoft.AspNetCore.Razor.Utilities.Shared.dll
  Microsoft.CodeAnalysis.Razor.Compiler.dll
  Microsoft.Extensions.ObjectPool.dll
  System.Collections.Immutable.dll
-<DOTNET>/sdk/9.0.314/Sdks/Microsoft.NET.Sdk.Web/analyzers/cs/
+<DOTNET>/sdk/9.0.308/Sdks/Microsoft.NET.Sdk.Web/analyzers/cs/
  Microsoft.AspNetCore.Analyzers.dll
  Microsoft.AspNetCore.Mvc.Analyzers.dll
-<DOTNET>/sdk/9.0.314/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/9.0.308/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/microsoft.codeanalysis.analyzers/3.3.4/analyzers/dotnet/cs/
@@ -469,5 +514,5 @@ Services/
 <NUGET>/microsoft.entityframeworkcore.analyzers/9.0.4/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/9.0.314/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_default.globalconfig
+<DOTNET>/sdk/9.0.308/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_default.globalconfig
 obj/Debug/net9.0/HorseRacing.GeneratedMSBuildEditorConfig.editorconfig
