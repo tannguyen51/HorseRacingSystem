@@ -1,34 +1,64 @@
+import { useMemo, useState } from "react";
 import "../OwnerSharedLayout.css";
 import "./OwnerRaceConfirmationPage.css";
 
-const confirmations = [
+const initialConfirmations = [
   {
     id: 1,
     race: "Coastal Derby",
-    date: "May 22 · 4:20 PM",
+    date: "June 12 · 4:20 PM",
     horse: "Silver Comet",
     track: "Gulfstream Park",
-    countdown: "3d 4h",
+    gate: "Gate 04",
+    jockey: "Pending assignment",
+    deadline: "June 8, 2026",
+    status: "Pending",
   },
   {
     id: 2,
     race: "Emerald Invitational",
-    date: "May 24 · 2:40 PM",
+    date: "June 16 · 2:40 PM",
     horse: "Thunder Strike",
     track: "Emerald Downs",
-    countdown: "5d 2h",
+    gate: "Gate 07",
+    jockey: "Ariana Blake",
+    deadline: "June 10, 2026",
+    status: "Pending",
   },
   {
     id: 3,
     race: "Golden Mile",
-    date: "May 28 · 5:10 PM",
+    date: "June 21 · 5:10 PM",
     horse: "Midnight Runner",
     track: "Santa Anita",
-    countdown: "9d 6h",
+    gate: "Gate 02",
+    jockey: "Pending assignment",
+    deadline: "June 14, 2026",
+    status: "Confirmed",
   },
 ];
 
 function OwnerRaceConfirmationPage() {
+  const [confirmations, setConfirmations] = useState(initialConfirmations);
+
+  const statusCounts = useMemo(
+    () =>
+      confirmations.reduce(
+        (counts, race) => ({
+          ...counts,
+          [race.status]: (counts[race.status] ?? 0) + 1,
+        }),
+        {},
+      ),
+    [confirmations],
+  );
+
+  const updateStatus = (id, status) => {
+    setConfirmations((current) =>
+      current.map((race) => (race.id === id ? { ...race, status } : race)),
+    );
+  };
+
   return (
     <div className="owner-page owner-race-confirmation">
       <div className="owner-layout">
@@ -40,8 +70,13 @@ function OwnerRaceConfirmationPage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Pending confirmations</p>
-            <h4>3 races</h4>
-            <span>Due within 7 days</span>
+            <h4>{statusCounts.Pending ?? 0} races</h4>
+            <span>Awaiting owner action</span>
+          </div>
+          <div className="owner-sidebar__card">
+            <p className="muted">Confirmed</p>
+            <h4>{statusCounts.Confirmed ?? 0} races</h4>
+            <span>Ready to participate</span>
           </div>
         </aside>
 
@@ -49,6 +84,24 @@ function OwnerRaceConfirmationPage() {
           <section className="page-header">
             <h1>Race confirmations</h1>
             <p>Confirm participation and keep your roster aligned.</p>
+          </section>
+
+          <section className="confirmation-summary">
+            <article>
+              <span>Pending</span>
+              <strong>{statusCounts.Pending ?? 0}</strong>
+              <p>Need a decision</p>
+            </article>
+            <article>
+              <span>Confirmed</span>
+              <strong>{statusCounts.Confirmed ?? 0}</strong>
+              <p>Participation locked</p>
+            </article>
+            <article>
+              <span>Declined</span>
+              <strong>{statusCounts.Declined ?? 0}</strong>
+              <p>Removed from lineup</p>
+            </article>
           </section>
 
           <section className="confirmation-grid">
@@ -59,7 +112,11 @@ function OwnerRaceConfirmationPage() {
                     <h3>{race.race}</h3>
                     <p className="muted">{race.track}</p>
                   </div>
-                  <span className="badge">Pending</span>
+                  <span
+                    className={`confirmation-status confirmation-status--${race.status.toLowerCase()}`}
+                  >
+                    {race.status}
+                  </span>
                 </div>
                 <div className="confirmation-meta">
                   <div>
@@ -71,14 +128,36 @@ function OwnerRaceConfirmationPage() {
                     <strong>{race.horse}</strong>
                   </div>
                   <div>
-                    <span>Countdown</span>
-                    <strong>{race.countdown}</strong>
+                    <span>Gate</span>
+                    <strong>{race.gate}</strong>
+                  </div>
+                  <div>
+                    <span>Jockey</span>
+                    <strong>{race.jockey}</strong>
+                  </div>
+                  <div>
+                    <span>Confirm by</span>
+                    <strong>{race.deadline}</strong>
                   </div>
                 </div>
                 <div className="confirmation-actions">
-                  <button className="primary-button">Confirm</button>
-                  <button className="ghost-button">Reject</button>
-                  <button className="ghost-button">View details</button>
+                  <button
+                    className="confirmation-action confirmation-action--confirm"
+                    onClick={() => updateStatus(race.id, "Confirmed")}
+                    disabled={race.status === "Confirmed"}
+                  >
+                    Confirm participation
+                  </button>
+                  <button
+                    className="confirmation-action confirmation-action--decline"
+                    onClick={() => updateStatus(race.id, "Declined")}
+                    disabled={race.status === "Declined"}
+                  >
+                    Decline
+                  </button>
+                  <button className="confirmation-action confirmation-action--details">
+                    View details
+                  </button>
                 </div>
               </article>
             ))}

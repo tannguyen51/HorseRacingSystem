@@ -1,99 +1,162 @@
-import React from 'react';
+import { useEffect, useMemo, useState } from "react";
+import { formatJockeyDate, getJockeyAssignedRaces } from "../../services/jockeyApi";
 import "../SpectatorSharedLayout.css";
+import "./JockeyPerformancePage.css";
 
-
-const achievementHistory = [
-  { id: 1, raceName: "Kentucky Derby", track: "Churchill Downs", date: "May 02, 2026", horseName: "Thunder Bolt", position: 1, earnings: "$90,000" },
-  { id: 2, raceName: "Preakness Stakes", track: "Pimlico", date: "May 16, 2026", horseName: "Wind Runner", position: 3, earnings: "$25,000" },
-  { id: 3, raceName: "Belmont Stakes", track: "Belmont Park", date: "June 06, 2025", horseName: "Thunder Bolt", position: 2, earnings: "$45,000" },
-  { id: 4, raceName: "Breeders' Cup Classic", track: "Santa Anita", date: "Nov 01, 2025", horseName: "Storm Chaser", position: 1, earnings: "$120,000" },
+const fallbackRaces = [
+  {
+    id: "sample-performance-1",
+    title: "Coastal Derby",
+    scheduledAt: "2026-06-12T09:30:00Z",
+    location: "Gulfstream Park",
+    horseName: "Silver Comet",
+    horseTotalRaces: 12,
+    horseTotalWins: 4,
+    status: "Assigned",
+  },
+  {
+    id: "sample-performance-2",
+    title: "Golden Mile",
+    scheduledAt: "2026-06-17T08:00:00Z",
+    location: "Santa Anita",
+    horseName: "Midnight Runner",
+    horseTotalRaces: 18,
+    horseTotalWins: 6,
+    status: "Scheduled",
+  },
 ];
 
 export function JockeyPerformancePage() {
-  
-  const totalRaces = achievementHistory.length;
-  const winRaces = achievementHistory.filter(item => item.position === 1).length;
-  const winRate = totalRaces > 0 ? ((winRaces / totalRaces) * 100).toFixed(0) + "%" : "0%";
-  
-  const totalEarnings = achievementHistory.reduce((sum, item) => {
-    const value = parseInt(item.earnings.replace(/[^0-9]/g, ''), 10);
-    return sum + value;
-  }, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const [races, setRaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPerformance = async () => {
+      try {
+        setLoading(true);
+        const data = await getJockeyAssignedRaces();
+        if (!cancelled) {
+          setRaces(data);
+          setMessage("");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setRaces(fallbackRaces);
+          setMessage(error.message || "Unable to load performance data.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPerformance();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const summary = useMemo(() => {
+    const assignedRaces = races.length;
+    const confirmed = races.filter((race) => race.jockeyConfirmed).length;
+    const horseStarts = races.reduce(
+      (sum, race) => sum + Number(race.horseTotalRaces || 0),
+      0,
+    );
+    const horseWins = races.reduce(
+      (sum, race) => sum + Number(race.horseTotalWins || 0),
+      0,
+    );
+    const winRate =
+      horseStarts > 0 ? `${Math.round((horseWins / horseStarts) * 100)}%` : "0%";
+
+    return { assignedRaces, confirmed, horseStarts, horseWins, winRate };
+  }, [races]);
 
   return (
     <div className="spectator-page jockey-performance">
       <div className="spectator-layout">
-        
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Jockey Performance</p>
-            <h3>Rider Analytics</h3>
-            <p className="muted">Your official career record.</p>
+            <p className="pill">Performance</p>
+            <h3>Rider summary</h3>
+            <p className="muted">Performance view from current assignments.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Current Standing</p>
-            <h4>Rank #4 Elite Rider</h4>
-            <span>Top 5% League Status</span>
+            <p className="muted">Assigned mounts</p>
+            <h4>{loading ? "Loading..." : summary.assignedRaces}</h4>
+            <span>{summary.confirmed} confirmed</span>
           </div>
         </aside>
 
         <div className="spectator-content">
-          <section className="spectator-stats">
-            <article className="stat-card hover-lift">
-              <p className="muted">Total Career Races</p>
-              <h3>{totalRaces}</h3>
-              <span className="stat-trend">Stable</span>
+          <section className="jockey-performance-header">
+            <div>
+              <span className="pill">Performance Summary</span>
+              <h1>Jockey Performance</h1>
+              <p>
+                Monitor assignment volume, mount win history, and race readiness
+                from the current schedule.
+              </p>
+              {message ? <p className="jockey-performance-message">{message}</p> : null}
+            </div>
+          </section>
+
+          <section className="jockey-performance-stats">
+            <article className="jockey-performance-stat">
+              <span>Assigned races</span>
+              <strong>{summary.assignedRaces}</strong>
+              <p className="muted">Current ride queue</p>
             </article>
-            <article className="stat-card hover-lift">
-              <p className="muted">Win Rate (1st Place)</p>
-              <h3>{winRate}</h3>
-              <span className="stat-trend">+4% this season</span>
+            <article className="jockey-performance-stat">
+              <span>Confirmed rides</span>
+              <strong>{summary.confirmed}</strong>
+              <p className="muted">Jockey-confirmed entries</p>
             </article>
-            <article className="stat-card hover-lift">
-              <p className="muted">Total Earnings</p>
-              <h3>{totalEarnings}</h3>
-              <span className="stat-trend">Gross Stakes</span>
+            <article className="jockey-performance-stat">
+              <span>Mount win rate</span>
+              <strong>{summary.winRate}</strong>
+              <p className="muted">{summary.horseWins} wins / {summary.horseStarts} starts</p>
             </article>
           </section>
 
-          <section className="spectator-section">
+          <section className="jockey-performance-panel">
             <div className="section-heading">
-              <h2>Achievement History</h2>
-              <p>Verified historical race placements and official breakdown.</p>
+              <h2>Assigned Mount Performance</h2>
+              <p>Horse record summary for every race currently assigned to you.</p>
             </div>
-            
-            <table className="leaderboard-table">
-              <thead>
-                <tr className="table-row table-header">
-                  <th scope="col">Date</th>
-                  <th scope="col">Race / Track</th>
-                  <th scope="col">Mount (Horse)</th>
-                  <th scope="col">Position</th>
-                  <th scope="col">Earnings</th>
-                </tr>
-              </thead>
-              <tbody>
-                {achievementHistory.map((row) => (
-                  <tr key={row.id} className="table-row">
-                    <td className="muted">{row.date}</td>
-                    <td>
-                      <strong>{row.raceName}</strong>
-                      <div className="muted" style={{ fontSize: '0.8rem' }}>{row.track}</div>
-                    </td>
-                    <td>🐎 {row.horseName}</td>
-                    <td className={`rank-pill position-${row.position}`}>
-                      {row.position === 1 ? "🥇 1st" : row.position === 2 ? "🥈 2nd" : row.position === 3 ? "🥉 3rd" : `${row.position}th`}
-                    </td>
-                    <td className="earnings" style={{ color: row.position === 1 ? '#166534' : 'inherit' }}>
-                      {row.earnings}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="jockey-performance-table">
+              <div className="jockey-performance-row jockey-performance-row--head">
+                <span>Race</span>
+                <span>Horse</span>
+                <span>Schedule</span>
+                <span>Horse Record</span>
+                <span>Status</span>
+              </div>
+              {races.map((race) => (
+                <div key={race.id} className="jockey-performance-row">
+                  <span>
+                    <strong>{race.title}</strong>
+                    <small>{race.location}</small>
+                  </span>
+                  <span>{race.horseName}</span>
+                  <span>{formatJockeyDate(race.scheduledAt)}</span>
+                  <span>
+                    {race.horseTotalWins || 0} wins / {race.horseTotalRaces || 0} races
+                  </span>
+                  <span className="badge">{race.status}</span>
+                </div>
+              ))}
+              {!loading && races.length === 0 ? (
+                <p className="muted">No performance data available yet.</p>
+              ) : null}
+            </div>
           </section>
         </div>
-
       </div>
     </div>
   );

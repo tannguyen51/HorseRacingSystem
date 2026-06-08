@@ -1,28 +1,176 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getMyHorses } from "../../services/ownerHorseApi";
+import { getOwnerTournaments } from "../../services/ownerApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentRegisterPage.css";
 
-const horses = [
-  { id: 1, name: "Thunder Strike", status: "Active" },
-  { id: 2, name: "Silver Comet", status: "Active" },
-  { id: 3, name: "Midnight Runner", status: "Training" },
+const initialRegistrations = [
+  {
+    id: 1,
+    horse: "Silver Comet",
+    tournament: "Capital Cup",
+    status: "Pending review",
+    submitted: "June 3, 2026",
+  },
+  {
+    id: 2,
+    horse: "Thunder Strike",
+    tournament: "Pacific Classic Series",
+    status: "Approved",
+    submitted: "June 1, 2026",
+  },
 ];
 
-const tournaments = [
-  { id: 1, name: "Pacific Classic Series", status: "Open" },
-  { id: 2, name: "Capital Cup", status: "Open" },
-  { id: 3, name: "Spring Championship Finals", status: "Live" },
-];
+const formatDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "TBD"
+    : new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+};
 
-const eligibilityChecks = [
-  { label: "Age requirement", value: "Eligible" },
-  { label: "Health status", value: "Cleared" },
-  { label: "Speed rating", value: "Above minimum" },
-  { label: "Registration slots", value: "Available" },
-];
+const mapTournament = (tournament) => ({
+  id: tournament?.id ?? tournament?.Id,
+  name: tournament?.name ?? tournament?.Name ?? "Tournament",
+  status: (tournament?.isActive ?? tournament?.IsActive) ? "Open" : "Closed",
+  description:
+    tournament?.description ?? tournament?.Description ?? "No description.",
+  date: formatDate(tournament?.startDate ?? tournament?.StartDate),
+  raceCount: tournament?.raceCount ?? tournament?.RaceCount ?? 0,
+});
 
 function OwnerTournamentRegisterPage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [horses, setHorses] = useState([]);
+  const [selectedHorseId, setSelectedHorseId] = useState("");
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [registrations, setRegistrations] = useState(initialRegistrations);
+  const [isHorseLoading, setIsHorseLoading] = useState(true);
+  const [horseError, setHorseError] = useState("");
+  const [isTournamentLoading, setIsTournamentLoading] = useState(true);
+  const [tournamentError, setTournamentError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchOwnerData = async () => {
+      setIsHorseLoading(true);
+      setIsTournamentLoading(true);
+      setHorseError("");
+      setTournamentError("");
+
+      try {
+        const data = await getMyHorses();
+        const approvedHorses = (Array.isArray(data) ? data : []).filter(
+          (horse) =>
+            horse.approvalStatus === 2 || horse.approvalStatus === "Approved",
+        );
+
+        if (isMounted) {
+          setHorses(approvedHorses);
+          setSelectedHorseId(approvedHorses[0]?.id ?? "");
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setHorses([]);
+          setSelectedHorseId("");
+          setHorseError(fetchError?.message || "Unable to load approved horses.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsHorseLoading(false);
+        }
+      }
+
+      try {
+        const data = await getOwnerTournaments();
+        const openTournaments = (Array.isArray(data) ? data : [])
+          .map(mapTournament)
+          .filter((tournament) => tournament.status === "Open");
+
+        if (isMounted) {
+          setTournaments(openTournaments);
+          setSelectedTournamentId(openTournaments[0]?.id ?? "");
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setTournaments([]);
+          setSelectedTournamentId("");
+          setTournamentError(
+            fetchError?.message || "Unable to load open tournaments.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsTournamentLoading(false);
+        }
+      }
+    };
+
+    fetchOwnerData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const selectedHorse = useMemo(
+    () => horses.find((horse) => horse.id === selectedHorseId),
+    [horses, selectedHorseId],
+  );
+
+  const selectedTournament = useMemo(
+    () => tournaments.find((tournament) => tournament.id === selectedTournamentId),
+    [selectedTournamentId, tournaments],
+  );
+
+  const eligibilityChecks = [
+    {
+      label: "Horse approval",
+      value: selectedHorse ? "Approved" : "No horse selected",
+      tone: selectedHorse ? "success" : "warning",
+    },
+    {
+      label: "Age requirement",
+      value: selectedHorse?.age >= 3 ? "Eligible" : "Too young",
+      tone: selectedHorse?.age >= 3 ? "success" : "warning",
+    },
+    {
+      label: "Race record",
+      value: selectedHorse
+        ? `${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
+        : "-",
+      tone: selectedHorse ? "success" : "warning",
+    },
+    {
+      label: "Tournament races",
+      value: selectedTournament
+        ? `${selectedTournament.raceCount} races scheduled`
+        : "No tournament selected",
+      tone: selectedTournament ? "success" : "warning",
+    },
+  ];
+
+  const handleSubmitRegistration = () => {
+    if (!selectedHorse || !selectedTournament) {
+      return;
+    }
+
+    setRegistrations((current) => [
+      {
+        id: Date.now(),
+        horse: selectedHorse.name,
+        tournament: selectedTournament.name,
+        status: "Pending review",
+        submitted: "June 4, 2026",
+      },
+      ...current,
+    ]);
+    setShowConfirm(false);
+  };
 
   return (
     <div className="owner-page owner-tournament-register">
@@ -35,48 +183,107 @@ function OwnerTournamentRegisterPage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Open registrations</p>
-            <h4>2 tournaments</h4>
+            <h4>{tournaments.length} tournaments</h4>
             <span>Slots available</span>
+          </div>
+          <div className="owner-sidebar__card">
+            <p className="muted">Tracked entries</p>
+            <h4>{registrations.length} requests</h4>
+            <span>Mock status board</span>
           </div>
         </aside>
 
         <div className="owner-content">
           <section className="page-header">
-            <h1>Register tournament</h1>
-            <p>Select a horse and confirm eligibility requirements.</p>
+            <h1>Register horse into tournament</h1>
+            <p>Select a horse, review eligibility, and track each request.</p>
           </section>
 
           <section className="register-grid">
             <form className="register-form">
+              <div className="register-form__heading">
+                <span className="pill">New registration</span>
+                <h2>Tournament entry</h2>
+                <p>Only approved horses are available for registration.</p>
+              </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-horse">
                   Select horse
                 </label>
-                <select id="select-horse" className="form-select">
+                <select
+                  id="select-horse"
+                  className="form-select"
+                  value={selectedHorseId}
+                  onChange={(event) => setSelectedHorseId(event.target.value)}
+                  disabled={isHorseLoading || horses.length === 0}
+                >
+                  {isHorseLoading ? (
+                    <option value="">Loading approved horses...</option>
+                  ) : horses.length === 0 ? (
+                    <option value="">No approved horses available</option>
+                  ) : null}
                   {horses.map((horse) => (
                     <option key={horse.id} value={horse.id}>
-                      {horse.name} ({horse.status})
+                      {horse.name} · Approved · {horse.age ?? "-"} years
                     </option>
                   ))}
                 </select>
+                {horseError ? <p className="form-error">{horseError}</p> : null}
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-tournament">
                   Select tournament
                 </label>
-                <select id="select-tournament" className="form-select">
+                <select
+                  id="select-tournament"
+                  className="form-select"
+                  value={selectedTournamentId}
+                  onChange={(event) =>
+                    setSelectedTournamentId(event.target.value)
+                  }
+                  disabled={isTournamentLoading || tournaments.length === 0}
+                >
+                  {isTournamentLoading ? (
+                    <option value="">Loading open tournaments...</option>
+                  ) : tournaments.length === 0 ? (
+                    <option value="">No open tournaments available</option>
+                  ) : null}
                   {tournaments.map((tournament) => (
                     <option key={tournament.id} value={tournament.id}>
-                      {tournament.name} ({tournament.status})
+                      {tournament.name} · {tournament.status}
                     </option>
                   ))}
                 </select>
+                {tournamentError ? (
+                  <p className="form-error">{tournamentError}</p>
+                ) : null}
+              </div>
+              <div className="selection-summary">
+                <div>
+                  <span>Horse</span>
+                  <strong>{selectedHorse?.name ?? "No approved horse"}</strong>
+                  <p>
+                    {selectedHorse
+                      ? `${selectedHorse.age ?? "-"} years · ${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
+                      : "An approved horse is required."}
+                  </p>
+                </div>
+                <div>
+                  <span>Tournament</span>
+                  <strong>{selectedTournament?.name ?? "No open tournament"}</strong>
+                  <p>
+                    {selectedTournament
+                      ? `${selectedTournament.description} · ${selectedTournament.date}`
+                      : "An open tournament is required."}
+                  </p>
+                </div>
               </div>
               <div className="register-actions">
                 <button
                   className="primary-button"
                   type="button"
                   onClick={() => setShowConfirm(true)}
+                  disabled={!selectedHorse || !selectedTournament}
                 >
                   Review registration
                 </button>
@@ -89,11 +296,14 @@ function OwnerTournamentRegisterPage() {
             <div className="eligibility-card">
               <div className="section-heading">
                 <h2>Eligibility check</h2>
-                <p>Automatic validation for selected entry.</p>
+                <p>Preview for the currently selected entry.</p>
               </div>
               <div className="eligibility-list">
                 {eligibilityChecks.map((check) => (
-                  <div key={check.label} className="eligibility-item">
+                  <div
+                    key={check.label}
+                    className={`eligibility-item eligibility-item--${check.tone}`}
+                  >
                     <span>{check.label}</span>
                     <strong>{check.value}</strong>
                   </div>
@@ -106,6 +316,41 @@ function OwnerTournamentRegisterPage() {
                   submitting.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <section className="registration-status">
+            <div className="section-heading">
+              <h2>Registration status</h2>
+              <p>Track tournament requests submitted by your stable.</p>
+            </div>
+            <div className="registration-table">
+              {registrations.map((registration) => (
+                <article key={registration.id} className="registration-row">
+                  <div>
+                    <span>Horse</span>
+                    <strong>{registration.horse}</strong>
+                  </div>
+                  <div>
+                    <span>Tournament</span>
+                    <strong>{registration.tournament}</strong>
+                  </div>
+                  <div>
+                    <span>Submitted</span>
+                    <strong>{registration.submitted}</strong>
+                  </div>
+                  <div>
+                    <span>Status</span>
+                    <strong
+                      className={`registration-status-pill registration-status-pill--${registration.status
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
+                      {registration.status}
+                    </strong>
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
         </div>
@@ -135,23 +380,28 @@ function OwnerTournamentRegisterPage() {
             <div className="modal-body">
               <div>
                 <h4>Horse</h4>
-                <p>Thunder Strike</p>
+                <p>{selectedHorse?.name}</p>
               </div>
               <div>
                 <h4>Tournament</h4>
-                <p>Pacific Classic Series</p>
+                <p>{selectedTournament?.name}</p>
               </div>
               <div>
-                <h4>Status</h4>
-                <p>Eligible</p>
+                <h4>Description</h4>
+                <p>{selectedTournament?.description}</p>
               </div>
               <div>
-                <h4>Slots</h4>
-                <p>Available</p>
+                <h4>Races</h4>
+                <p>{selectedTournament?.raceCount} scheduled</p>
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary-button">Submit registration</button>
+              <button
+                className="primary-button"
+                onClick={handleSubmitRegistration}
+              >
+                Submit registration
+              </button>
               <button
                 className="ghost-button"
                 onClick={() => setShowConfirm(false)}

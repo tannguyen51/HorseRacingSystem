@@ -20,7 +20,17 @@ public class HorseRepository : IHorseRepository
 
     public Task<List<Horse>> GetByOwnerAsync(Guid ownerId)
     {
-        return _db.Horses.Where(h => h.OwnerId == ownerId).ToListAsync();
+        return _db.Horses
+            .Include(h => h.JockeyInvitations)
+                .ThenInclude(i => i.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
+            .Where(h => h.OwnerId == ownerId)
+            .ToListAsync();
     }
 
     public Task<Horse?> GetByIdAsync(Guid horseId)
@@ -28,12 +38,29 @@ public class HorseRepository : IHorseRepository
         return _db.Horses
             .Include(h => h.Owner)
                 .ThenInclude(o => o!.User)
+            .Include(h => h.JockeyInvitations)
+                .ThenInclude(i => i.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
             .FirstOrDefaultAsync(h => h.Id == horseId);
     }
 
     public Task<Horse?> GetOwnedHorseAsync(Guid horseId, Guid ownerId)
     {
-        return _db.Horses.FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
+        return _db.Horses
+            .Include(h => h.JockeyInvitations)
+                .ThenInclude(i => i.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Jockey)
+                    .ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries)
+                .ThenInclude(e => e.Race)
+            .FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
     }
 
     public Task AddAsync(Horse horse)

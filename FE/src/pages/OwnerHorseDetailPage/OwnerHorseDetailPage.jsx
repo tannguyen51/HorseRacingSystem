@@ -1,8 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getMyHorses } from "../../services/ownerHorseApi";
+import { Link, useParams } from "react-router-dom";
+import { getHorse } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerHorseDetailPage.css";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
+
+const getHorseImageUrl = (imageUrl) => {
+  if (!imageUrl) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(imageUrl)) {
+    return imageUrl;
+  }
+
+  return `${API_BASE_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+};
 
 function OwnerHorseDetailPage() {
   const { id } = useParams();
@@ -25,12 +40,10 @@ function OwnerHorseDetailPage() {
       setIsLoading(true);
       setError("");
       try {
-        const data = await getMyHorses();
-        const list = Array.isArray(data) ? data : [];
-        const match = list.find((item) => item.id === id);
+        const data = await getHorse(id);
         if (isMounted) {
-          setHorse(match || null);
-          if (!match) {
+          setHorse(data || null);
+          if (!data) {
             setError("Horse not found.");
           }
         }
@@ -58,6 +71,11 @@ function OwnerHorseDetailPage() {
   const formattedDob = horse?.dateOfBirth
     ? new Date(horse.dateOfBirth).toLocaleDateString()
     : "-";
+  const imageUrl = getHorseImageUrl(horse?.imageUrl);
+  const winRate =
+    horse?.totalRaces > 0
+      ? Math.round(((horse.totalWins ?? 0) / horse.totalRaces) * 100)
+      : 0;
 
   const primaryDetails = horse
     ? [
@@ -96,12 +114,12 @@ function OwnerHorseDetailPage() {
           <div className="owner-sidebar__card">
             <p className="muted">Current status</p>
             <h4>{statusLabel}</h4>
-            <span>Last updated today</span>
+            <span>{horse?.name || "Loading horse"}</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Assigned jockey</p>
-            <h4>Unassigned</h4>
-            <span>Pending</span>
+            <p className="muted">Win rate</p>
+            <h4>{winRate}%</h4>
+            <span>{horse?.totalWins ?? 0} wins</span>
           </div>
         </aside>
 
@@ -111,32 +129,48 @@ function OwnerHorseDetailPage() {
           {isLoading || !horse ? (
             <p className="muted">Loading horse details...</p>
           ) : (
-            <section className="horse-banner">
-              <div
-                className="horse-banner__image"
-                style={
-                  horse.imageUrl
-                    ? { backgroundImage: `url(${horse.imageUrl})` }
-                    : undefined
-                }
-                aria-hidden="true"
-              />
+            <section className="horse-banner" aria-label={`${horse.name} detail`}>
+              <div className="horse-banner__media">
+                {imageUrl ? (
+                  <img src={imageUrl} alt={horse.name} />
+                ) : (
+                  <div className="horse-banner__placeholder" aria-hidden="true">
+                    {horse.name?.slice(0, 1) || "H"}
+                  </div>
+                )}
+              </div>
               <div className="horse-banner__content">
+                <div className="horse-banner__header">
+                  <span className={`horse-detail-status horse-detail-status--${statusLabel.toLowerCase()}`}>
+                    {statusLabel}
+                  </span>
+                  <Link className="secondary-button" to={`/owner/horses/${horse.id}/edit`}>
+                    Edit profile
+                  </Link>
+                </div>
                 <span className="pill">Horse detail</span>
                 <h1>{horse.name}</h1>
-                <p>{horse.breed || "Unknown breed"}</p>
+                <p>
+                  {horse.breed || "Unknown breed"}
+                  {horse.color ? ` • ${horse.color}` : ""}
+                  {horse.gender ? ` • ${horse.gender}` : ""}
+                </p>
                 <div className="horse-banner__meta">
                   <div>
                     <span>Age</span>
-                    <strong>{horse.age ?? "-"}</strong>
+                    <strong>{horse.age ?? "-"} years</strong>
                   </div>
                   <div>
                     <span>Weight</span>
-                    <strong>{horse.weight ?? "-"}</strong>
+                    <strong>{horse.weight ?? "-"} kg</strong>
                   </div>
                   <div>
                     <span>Height</span>
-                    <strong>{horse.height ?? "-"}</strong>
+                    <strong>{horse.height ?? "-"} cm</strong>
+                  </div>
+                  <div>
+                    <span>Born</span>
+                    <strong>{formattedDob}</strong>
                   </div>
                 </div>
               </div>
@@ -145,19 +179,22 @@ function OwnerHorseDetailPage() {
 
           <section className="stat-grid">
             <article className="stat-card">
+              <span className="stat-card__label">01</span>
               <p className="muted">Total wins</p>
               <h3>{horse?.totalWins ?? 0}</h3>
               <span className="stat-trend">Career total</span>
             </article>
             <article className="stat-card">
+              <span className="stat-card__label">02</span>
               <p className="muted">Total races</p>
               <h3>{horse?.totalRaces ?? 0}</h3>
               <span className="stat-trend">Career total</span>
             </article>
             <article className="stat-card">
-              <p className="muted">Approval status</p>
-              <h3>{statusLabel}</h3>
-              <span className="stat-trend">Current status</span>
+              <span className="stat-card__label">03</span>
+              <p className="muted">Win rate</p>
+              <h3>{winRate}%</h3>
+              <span className="stat-trend">Race performance</span>
             </article>
           </section>
 
@@ -165,15 +202,13 @@ function OwnerHorseDetailPage() {
             <div className="horse-detail-stack">
               <div className="section-heading">
                 <h2>Horse profile</h2>
-                <p>Core profile details from the registry.</p>
+                <p>Core profile details from the horse registry.</p>
               </div>
-              <div className="participation-list">
+              <div className="horse-info-list">
                 {primaryDetails.map((item) => (
-                  <article key={item.label} className="participation-card">
-                    <div>
-                      <h4>{item.label}</h4>
-                      <p className="muted">{item.value}</p>
-                    </div>
+                  <article key={item.label} className="horse-info-card">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
                   </article>
                 ))}
               </div>
@@ -184,13 +219,11 @@ function OwnerHorseDetailPage() {
                 <h2>Physical metrics</h2>
                 <p>Latest recorded measurements.</p>
               </div>
-              <div className="participation-list">
+              <div className="horse-info-list">
                 {metricDetails.map((item) => (
-                  <article key={item.label} className="participation-card">
-                    <div>
-                      <h4>{item.label}</h4>
-                      <p className="muted">{item.value}</p>
-                    </div>
+                  <article key={item.label} className="horse-info-card">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
                   </article>
                 ))}
               </div>
@@ -199,13 +232,11 @@ function OwnerHorseDetailPage() {
                 <h2>Career totals</h2>
                 <p>Wins and races for this horse.</p>
               </div>
-              <div className="participation-list">
+              <div className="horse-info-list">
                 {careerDetails.map((item) => (
-                  <article key={item.label} className="participation-card">
-                    <div>
-                      <h4>{item.label}</h4>
-                      <p className="muted">{item.value}</p>
-                    </div>
+                  <article key={item.label} className="horse-info-card">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
                   </article>
                 ))}
               </div>

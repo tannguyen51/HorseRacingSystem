@@ -126,12 +126,14 @@ function SpectatorTournamentListPage() {
         tournament.location.toLowerCase().includes(query.toLowerCase());
       return matchesStatus && matchesQuery;
     });
-  }, [query, status]);
+  }, [tournaments, query, status]);
 
   const effectivePageSize =
-    filteredTournaments.length <= fullPageSize
-      ? filteredTournaments.length
-      : basePageSize;
+    filteredTournaments.length === 0
+      ? basePageSize
+      : filteredTournaments.length <= fullPageSize
+        ? filteredTournaments.length
+        : basePageSize;
   const pageCount = Math.max(
     1,
     Math.ceil(filteredTournaments.length / effectivePageSize),

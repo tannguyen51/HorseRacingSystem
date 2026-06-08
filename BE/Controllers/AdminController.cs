@@ -9,7 +9,6 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "Admin")]
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
@@ -95,18 +94,27 @@ public class AdminController : ControllerBase
     }
 
     // Horse Management
-    [HttpPost("horses/{horseId:guid}/approve")]
-    public async Task<ActionResult> ApproveHorse(Guid horseId)
+    [HttpGet("users/{userId:guid}/horses")]
+    public async Task<ActionResult> GetOwnerHorses(Guid userId)
     {
-        var result = await _adminService.ApproveHorseAsync(horseId);
+        var result = await _adminService.GetOwnerHorsesAsync(userId);
         return StatusCode(result.StatusCode, result.Result);
     }
 
-    [HttpPost("horses/{horseId:guid}/reject")]
-    public async Task<ActionResult> RejectHorse(Guid horseId, [FromBody] dynamic request)
+    [HttpGet("users/{userId:guid}/horses/{horseId:guid}")]
+    public async Task<ActionResult> GetOwnerHorse(Guid userId, Guid horseId)
     {
-        var reason = request?.reason?.ToString() ?? "No reason provided";
-        var result = await _adminService.RejectHorseAsync(horseId, reason);
+        var result = await _adminService.GetOwnerHorseAsync(userId, horseId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPut("users/{userId:guid}/horses/{horseId:guid}/status")]
+    public async Task<ActionResult> UpdateOwnerHorseStatus(
+        Guid userId,
+        Guid horseId,
+        [FromBody] UpdateHorseApprovalStatusRequest request)
+    {
+        var result = await _adminService.UpdateOwnerHorseStatusAsync(userId, horseId, request);
         return StatusCode(result.StatusCode, result.Result);
     }
 
@@ -119,9 +127,11 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("jockeys/{jockeyId:guid}/reject")]
-    public async Task<ActionResult> RejectJockey(Guid jockeyId, [FromBody] dynamic request)
+    public async Task<ActionResult> RejectJockey(Guid jockeyId, [FromBody] RejectJockeyRequest request)
     {
-        var reason = request?.reason?.ToString() ?? "No reason provided";
+        var reason = string.IsNullOrWhiteSpace(request?.Reason)
+            ? "No reason provided"
+            : request.Reason.Trim();
         var result = await _adminService.RejectJockeyAsync(jockeyId, reason);
         return StatusCode(result.StatusCode, result.Result);
     }

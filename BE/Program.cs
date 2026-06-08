@@ -138,6 +138,8 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"))
     .ExcludeFromDescription();
 
-await AdminSeeder.SeedAsync(app.Services);
-
+if (app.Environment.IsDevelopment())
+{
+    await AdminSeeder.SeedAsync(app.Services);
+}
 app.Run();

@@ -11,7 +11,8 @@ namespace HorseRacing.Data;
 public static class AdminSeeder
 {
     private const string AdminEmail = "Admin@gmail.com";
-    private const string AdminPassword = "Admin123";
+    private static readonly string AdminPassword =
+        Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") ?? string.Empty;
 
     public static async Task SeedAsync(IServiceProvider services)
     {
@@ -21,27 +22,29 @@ public static class AdminSeeder
 
         try
         {
-            var exists = await db.Users.AnyAsync(u => u.Email == AdminEmail);
-            if (exists)
+            var normalizedAdminEmail = AdminEmail.ToLowerInvariant();
+            var admin = await db.Users.FirstOrDefaultAsync(
+                u => u.Email.ToLower() == normalizedAdminEmail);
+
+            if (admin == null)
             {
-                return;
+                admin = new User
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Users.Add(admin);
             }
 
-            var admin = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = AdminEmail,
-                FullName = "System Admin",
-                Role = UserRole.Admin,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
+            admin.Email = AdminEmail;
+            admin.FullName = "System Admin";
+            admin.Role = UserRole.Admin;
+            admin.IsActive = true;
             admin.PasswordHash = new PasswordHasher<User>().HashPassword(admin, AdminPassword);
 
-            db.Users.Add(admin);
             await db.SaveChangesAsync();
 
-            logger.LogInformation("Default admin account created: {Email}", AdminEmail);
+            logger.LogInformation("Default admin account ensured: {Email}", AdminEmail);
         }
         catch (Exception ex)
         {

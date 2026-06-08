@@ -9,5 +9,6 @@ public interface IJockeyInvitationRepository
 {
     Task<List<JockeyInvitation>> GetByJockeyAsync(Guid jockeyId);
     Task<JockeyInvitation?> GetByIdAsync(Guid invitationId, Guid jockeyId);
+    Task<JockeyInvitation?> GetActiveByHorseAsync(Guid horseId);
     Task AddAsync(JockeyInvitation invitation);
 }

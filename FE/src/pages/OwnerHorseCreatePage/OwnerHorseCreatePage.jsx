@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createHorse } from "../../services/ownerHorseApi";
+import { validateHorseStats } from "../../utils/horseValidation";
 import "../OwnerSharedLayout.css";
 import "../OwnerHorseFormPage.css";
 
@@ -54,17 +55,31 @@ function OwnerHorseCreatePage() {
       return;
     }
 
+    const age = parseNumber(formValues.age) ?? 0;
+    const totalRaces = parseNumber(formValues.totalRaces) ?? 0;
+    const totalWins = parseNumber(formValues.totalWins) ?? 0;
+    const validationError = validateHorseStats({
+      dateOfBirth: formValues.dateOfBirth,
+      age,
+      totalRaces,
+      totalWins,
+    });
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     const payload = {
       name,
       breed: formValues.breed.trim() || undefined,
       gender: formValues.gender.trim() || undefined,
       dateOfBirth: formValues.dateOfBirth || undefined,
-      age: parseNumber(formValues.age) ?? 0,
+      age,
       weight: parseNumber(formValues.weight),
       height: parseNumber(formValues.height),
       color: formValues.color.trim() || undefined,
-      totalRaces: parseNumber(formValues.totalRaces) ?? 0,
-      totalWins: parseNumber(formValues.totalWins) ?? 0,
+      totalRaces,
+      totalWins,
       imageUrl: formValues.imageUrl.trim() || undefined,
     };
 
@@ -106,7 +121,15 @@ function OwnerHorseCreatePage() {
               <div className="form-section">
                 <h3>Horse image</h3>
                 <div className="image-upload">
-                  <div className="image-preview" aria-hidden="true" />
+                  <div
+                    className="image-preview"
+                    aria-hidden="true"
+                    style={
+                      formValues.imageUrl
+                        ? { "--horse-image": `url(${formValues.imageUrl})` }
+                        : undefined
+                    }
+                  />
                   <div className="form-field">
                     <label htmlFor="horse-image-url">Image URL</label>
                     <input
@@ -249,6 +272,7 @@ function OwnerHorseCreatePage() {
                         value={formValues.totalWins}
                         onChange={updateField("totalWins")}
                         min={0}
+                        max={formValues.totalRaces || undefined}
                       />
                     </div>
                   </div>
@@ -259,7 +283,11 @@ function OwnerHorseCreatePage() {
             {error ? <p className="form-error">{error}</p> : null}
 
             <div className="form-actions">
-              <button className="ghost-button" type="button">
+              <button
+                className="ghost-button"
+                type="button"
+                onClick={() => navigate("/owner/horses")}
+              >
                 Cancel
               </button>
               <button

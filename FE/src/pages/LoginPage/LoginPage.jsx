@@ -37,7 +37,7 @@ function LoginPage() {
             setSelectedRole(availableRoleValues[0]);
           }
         }
-      } catch (error) {
+      } catch {
         if (!cancelled) {
           setRoles(LOGIN_ROLE_OPTIONS);
         }
@@ -89,16 +89,21 @@ function LoginPage() {
 
       const ROLE_ROUTES = {
         spectator: "/spectator",
-        jockey: "/jockey/invitations",
+        jockey: "/jockey",
         horse_owner: "/owner",
         referee: "/referee",
         admin: "/",
+        admin: "/admin",
         trainer: "/",
       };
 
       navigate(ROLE_ROUTES[apiRole] ?? "/");
     } catch (error) {
-      setErrorMessage(error.message || "Login failed. Please try again.");
+      setErrorMessage(
+        error.status === 401
+          ? "Invalid email or password. Default admin: Admin@gmail.com / Admin123."
+          : error.message || "Login failed. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }

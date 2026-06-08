@@ -5,13 +5,13 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
 import JockeyHeader from "./components/JockeyHeader/JockeyHeader";
 import OwnerHeader from "./components/OwnerHeader/OwnerHeader";
 import RefereeHeader from "./components/RefereeHeader/RefereeHeader";
+import AdminHeader from "./components/AdminHeader/AdminHeader";
 import HomePage from "./pages/HomePage/HomePage";
 import TournamentListPage from "./pages/TournamentListPage/TournamentListPage";
 import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailPage";
@@ -27,6 +27,8 @@ import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/Spe
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
 import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
 import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
+import JockeyInvitationDetailPage from "./pages/JockeyInvitationPage/JockeyInvitationDetailPage";
+import JockeyDashboardPage from "./pages/JockeyDashboardPage/JockeyDashboardPage";
 import { JockeySchedulePage } from "./pages/JockeySchedulePage/JockeySchedulePage";
 import { JockeyPerformancePage } from "./pages/JockeyPerformancePage/JockeyPerformancePage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage/OwnerDashboardPage";
@@ -41,31 +43,38 @@ import RefereeDashboardPage from "./pages/RefereeDashboardPage/RefereeDashboardP
 import { RefereeAssignmentPage } from "./components/RefereeNotification/RefereeAssignmentPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
+import AdminPage from "./pages/AdminPage/AdminPage";
 import "./App.css";
+
+const getStoredAuthUser = () => {
+  const user = localStorage.getItem("authUser");
+  if (!user) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(user);
+  } catch {
+    return null;
+  }
+};
 
 function AppLayout() {
   const location = useLocation();
-  const [authUser, setAuthUser] = useState(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem("authUser");
-
-    if (!user) {
-      setAuthUser(null);
-      return;
-    }
-
-    try {
-      setAuthUser(JSON.parse(user));
-    } catch {
-      setAuthUser(null);
-    }
-  }, [location.pathname]);
+  const authUser = getStoredAuthUser();
+  const hasAuthToken = Boolean(localStorage.getItem("authToken"));
+  const adminPage =
+    hasAuthToken && authUser?.role === "admin" ? (
+      <AdminPage />
+    ) : (
+      <Navigate to="/login" replace />
+    );
 
   const isSpectator = location.pathname.startsWith("/spectator");
   const isJockey = location.pathname.startsWith("/jockey");
   const isOwner = location.pathname.startsWith("/owner");
   const isReferee = location.pathname.startsWith("/referee");
+  const isAdmin = location.pathname.startsWith("/admin");
 
   const renderHeader = () => {
     if (isSpectator || authUser?.role === "spectator") {
@@ -76,12 +85,14 @@ function AppLayout() {
       return <JockeyHeader />;
     }
 
-    if (isOwner || authUser?.role === "owner") {
+    if (isOwner || authUser?.role === "horse_owner") {
       return <OwnerHeader />;
     }
 
     if (isReferee || authUser?.role === "referee") {
       return <RefereeHeader />;
+    if (isAdmin || authUser?.role === "admin") {
+      return <AdminHeader />;
     }
 
     return <Header />;
@@ -126,9 +137,11 @@ function AppLayout() {
             path="/spectator/rewards"
             element={<SpectatorRewardNotificationsPage />}
           />
+          <Route path="/jockey" element={<JockeyDashboardPage />} />
+          <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
           <Route
-            path="/jockey/invitations"
-            element={<JockeyInvitationPage />}
+            path="/jockey/invitations/:id"
+            element={<JockeyInvitationDetailPage />}
           />
           <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
           <Route
@@ -148,11 +161,11 @@ function AppLayout() {
             element={<OwnerTournamentListPage />}
           />
           <Route
-            path="/owner/tournaments/register"
+            path="/owner/register-tournament"
             element={<OwnerTournamentRegisterPage />}
           />
           <Route
-            path="/owner/race-confirmation"
+            path="/owner/race-confirmations"
             element={<OwnerRaceConfirmationPage />}
           />
           <Route path="/referee" element={<RefereeDashboardPage />} />
@@ -160,10 +173,18 @@ function AppLayout() {
             path="/referee/assignments"
             element={<RefereeAssignmentPage />}
           />
+          <Route path="/admin" element={adminPage} />
+          <Route path="/admin/users" element={adminPage} />
+          <Route path="/admin/users/:id" element={adminPage} />
+          <Route path="/admin/users/:userId/horses/:horseId" element={adminPage} />
+          <Route path="/admin/roles" element={adminPage} />
+          <Route path="/admin/tournaments" element={adminPage} />
+          <Route path="/admin/rounds" element={adminPage} />
+          <Route path="/admin/races" element={adminPage} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
+      {!isAdmin && <Footer />}
     </div>
   );
 }

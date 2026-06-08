@@ -34,6 +34,8 @@ public class AuthService : IAuthService
 
     public async Task<ServiceResult<AuthResponse>> RegisterAsync(RegisterRequest request)
     {
+        request.Email = request.Email.Trim();
+
         if (request.Role is not (UserRole.HorseOwner or UserRole.Jockey or UserRole.Spectator))
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Unsupported role.");
@@ -107,7 +109,13 @@ public class AuthService : IAuthService
 
     public async Task<ServiceResult<AuthResponse>> LoginAsync(LoginRequest request)
     {
-        var user = await _users.GetByEmailAsync(request.Email);
+        var email = request.Email.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+        }
+
+        var user = await _users.GetByEmailAsync(email);
         if (user == null)
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
@@ -117,7 +125,8 @@ public class AuthService : IAuthService
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status403Forbidden, "User is deactivated.");
         }
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        var password = request.Password.Trim();
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         if (result == PasswordVerificationResult.Failed)
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
@@ -133,6 +142,39 @@ public class AuthService : IAuthService
         };
 
         return ServiceResult<AuthResponse>.Ok(response);
+    }
+
+    public async Task<ServiceResult<OwnerProfileResponse>> GetOwnerProfileAsync(Guid userId)
+    {
+        var user = await _users.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return ServiceResult<OwnerProfileResponse>.Fail(
+                StatusCodes.Status404NotFound,
+                "User not found.");
+        }
+
+        if (user.Role != UserRole.HorseOwner || user.OwnerProfile == null)
+        {
+            return ServiceResult<OwnerProfileResponse>.Fail(
+                StatusCodes.Status404NotFound,
+                "Owner profile not found.");
+        }
+
+        var owner = user.OwnerProfile;
+        return ServiceResult<OwnerProfileResponse>.Ok(new OwnerProfileResponse
+        {
+            UserId = user.Id,
+            OwnerId = owner.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            Role = user.Role.ToString(),
+            OwnerCode = owner.OwnerCode,
+            OwnerType = owner.OwnerType,
+            Status = owner.Status,
+            JoinDate = owner.JoinDate,
+            HorseCount = owner.Horses.Count
+        });
     }
 
     private static string GenerateOwnerCode() =>

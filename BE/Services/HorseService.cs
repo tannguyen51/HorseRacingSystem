@@ -73,6 +73,12 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
         }
 
+        var validationError = ValidateHorseStats(request.DateOfBirth, request.Age, request.TotalRaces, request.TotalWins);
+        if (validationError != null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, validationError);
+        }
+
         var horse = new Horse
         {
             Id = Guid.NewGuid(),
@@ -109,6 +115,12 @@ public class HorseService : IHorseService
         if (horse == null)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+        }
+
+        var validationError = ValidateHorseStats(request.DateOfBirth, request.Age, request.TotalRaces, request.TotalWins);
+        if (validationError != null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, validationError);
         }
 
         horse.Name = request.Name;
@@ -161,6 +173,16 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
         }
 
+        var activeInvitation = await _invitations.GetActiveByHorseAsync(horseId);
+        if (activeInvitation != null)
+        {
+            var jockeyName = activeInvitation.Jockey?.User?.FullName ?? "another jockey";
+            var status = activeInvitation.Status.ToString().ToLowerInvariant();
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                $"This horse already has a {status} jockey assignment with {jockeyName}.");
+        }
+
         var jockeyExists = await _jockeys.ExistsAsync(request.JockeyId);
         if (!jockeyExists)
         {
@@ -195,6 +217,13 @@ public class HorseService : IHorseService
         if (horse == null)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+        }
+
+        if (horse.ApprovalStatus != ApprovalStatus.Approved)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Only approved horses can be registered for a race.");
         }
 
         var raceExists = await _races.ExistsAsync(raceId);
@@ -246,4 +275,35 @@ public class HorseService : IHorseService
     }
 
     private Task<Owner?> GetOwnerProfileAsync(Guid userId) => _owners.GetByUserIdAsync(userId);
+
+    private static string? ValidateHorseStats(DateTime? dateOfBirth, int age, int totalRaces, int totalWins)
+    {
+        if (dateOfBirth.HasValue)
+        {
+            var birthDate = dateOfBirth.Value.Date;
+            var today = DateTime.Today;
+            if (birthDate > today)
+            {
+                return "Date of birth cannot be in the future.";
+            }
+
+            var expectedAge = today.Year - birthDate.Year;
+            if (birthDate > today.AddYears(-expectedAge))
+            {
+                expectedAge--;
+            }
+
+            if (age != expectedAge)
+            {
+                return $"Age must be {expectedAge} based on the date of birth.";
+            }
+        }
+
+        if (totalWins > totalRaces)
+        {
+            return "Total wins cannot be greater than total races.";
+        }
+
+        return null;
+    }
 }

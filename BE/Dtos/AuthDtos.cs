@@ -38,3 +38,17 @@ public class AuthResponse
     public UserRole Role { get; set; }
     public string Token { get; set; } = string.Empty;
 }
+
+public class OwnerProfileResponse
+{
+    public Guid UserId { get; set; }
+    public Guid OwnerId { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public string? FullName { get; set; }
+    public string Role { get; set; } = string.Empty;
+    public string OwnerCode { get; set; } = string.Empty;
+    public string OwnerType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTime JoinDate { get; set; }
+    public int HorseCount { get; set; }
+}

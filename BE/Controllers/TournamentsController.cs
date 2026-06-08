@@ -22,7 +22,6 @@ public class TournamentsController : ControllerBase
 
     // Tournament CRUD
     [HttpPost]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> CreateTournament([FromBody] CreateTournamentRequest request)
     {
         var result = await _tournamentService.CreateTournamentAsync(request);
@@ -54,7 +53,6 @@ public class TournamentsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> UpdateTournament(Guid id, [FromBody] UpdateTournamentRequest request)
     {
         var result = await _tournamentService.UpdateTournamentAsync(id, request);
@@ -62,7 +60,6 @@ public class TournamentsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteTournament(Guid id)
     {
         var result = await _tournamentService.DeleteTournamentAsync(id);
@@ -71,7 +68,6 @@ public class TournamentsController : ControllerBase
 
     // Rounds Management
     [HttpPost("{tournamentId:guid}/rounds")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> CreateRound(Guid tournamentId, [FromBody] CreateRoundRequest request)
     {
         if (request.TournamentId != tournamentId)
@@ -98,7 +94,6 @@ public class TournamentsController : ControllerBase
     }
 
     [HttpPut("rounds/{roundId:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> UpdateRound(Guid roundId, [FromBody] UpdateRoundRequest request)
     {
         var result = await _roundService.UpdateRoundAsync(roundId, request);
@@ -106,7 +101,6 @@ public class TournamentsController : ControllerBase
     }
 
     [HttpDelete("rounds/{roundId:guid}")]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteRound(Guid roundId)
     {
         var result = await _roundService.DeleteRoundAsync(roundId);

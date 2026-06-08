@@ -1,13 +1,8 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getOwnerProfile, getOwnerTournaments } from "../../services/ownerApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerDashboardPage.css";
-
-const stats = [
-  { label: "Total horses", value: "12", trend: "+2 this month" },
-  { label: "Active races", value: "3", trend: "2 upcoming" },
-  { label: "Total prize money", value: "$185,400", trend: "+12%" },
-  { label: "Pending confirmations", value: "2", trend: "Due this week" },
-];
 
 const upcomingRaces = [
   {
@@ -72,21 +67,6 @@ const performanceSummary = [
   { label: "Avg speed", value: "92" },
 ];
 
-const tournamentParticipation = [
-  {
-    name: "Spring Championship Finals",
-    horses: "2 horses",
-    status: "Live",
-    prize: "$500,000",
-  },
-  {
-    name: "Pacific Classic Series",
-    horses: "1 horse",
-    status: "Open",
-    prize: "$320,000",
-  },
-];
-
 const quickActions = [
   {
     title: "Add a new horse",
@@ -111,6 +91,64 @@ const chartData = [
 
 function OwnerDashboardPage() {
   const navigate = useNavigate();
+  const [owner, setOwner] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
+  const [profileError, setProfileError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDashboardData = async () => {
+      try {
+        const profile = await getOwnerProfile();
+        if (!cancelled) {
+          setOwner(profile);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setProfileError(error.message || "Unable to load owner profile.");
+        }
+      }
+
+      try {
+        const payload = await getOwnerTournaments();
+        if (!cancelled) {
+          setTournaments(Array.isArray(payload) ? payload.slice(0, 2) : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setTournaments([]);
+        }
+      }
+    };
+
+    loadDashboardData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total horses",
+        value: String(owner?.horseCount ?? 0),
+        trend: owner?.ownerCode ?? "Owner profile",
+      },
+      { label: "Active races", value: "3", trend: "2 upcoming" },
+      { label: "Total prize money", value: "$185,400", trend: "+12%" },
+      { label: "Pending confirmations", value: "2", trend: "Due this week" },
+    ],
+    [owner],
+  );
+
+  const tournamentParticipation = tournaments.map((tournament) => ({
+    id: tournament?.id ?? tournament?.Id,
+    name: tournament?.name ?? tournament?.Name ?? "Tournament",
+    races: `${tournament?.raceCount ?? tournament?.RaceCount ?? 0} races`,
+    status: (tournament?.isActive ?? tournament?.IsActive) ? "Open" : "Closed",
+    rounds: `${tournament?.roundCount ?? tournament?.RoundCount ?? 0} rounds`,
+  }));
 
   return (
     <div className="owner-page owner-dashboard">
@@ -122,14 +160,14 @@ function OwnerDashboardPage() {
             <p className="muted">Track horses, entries, and rewards.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Next obligation</p>
-            <h4>Race confirmation</h4>
-            <span>Due in 18 hours</span>
+            <p className="muted">Owner account</p>
+            <h4>{owner?.ownerCode ?? "Loading..."}</h4>
+            <span>{owner?.email ?? "Fetching profile"}</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Prize money YTD</p>
-            <h4>$185,400</h4>
-            <span>Updated today</span>
+            <p className="muted">Profile status</p>
+            <h4>{owner?.status ?? "-"}</h4>
+            <span>{owner?.ownerType ?? "Horse owner"}</span>
           </div>
         </aside>
 
@@ -137,20 +175,26 @@ function OwnerDashboardPage() {
           <section className="owner-hero">
             <div>
               <span className="pill">Owner dashboard</span>
-              <h1>Welcome back, Evelyn</h1>
+              <h1>Welcome back, {owner?.fullName || owner?.email || "Owner"}</h1>
               <p>
                 Manage your stable, monitor race entries, and keep every horse
                 race-ready.
               </p>
+              {profileError ? <p className="form-error">{profileError}</p> : null}
               <div className="owner-hero__actions">
                 <button className="primary-button" onClick={() => navigate("/owner/horses/new")}>Add horse</button>
-                <button className="ghost-button">Register tournament</button>
+                <button
+                  className="ghost-button"
+                  onClick={() => navigate("/owner/register-tournament")}
+                >
+                  Register tournament
+                </button>
               </div>
             </div>
             <div className="owner-hero__panel">
               <div>
                 <span>Horses ready</span>
-                <strong>9</strong>
+                <strong>{owner?.horseCount ?? 0}</strong>
               </div>
               <div>
                 <span>Upcoming races</span>
@@ -205,19 +249,22 @@ function OwnerDashboardPage() {
               </div>
               <div className="tournament-stack">
                 {tournamentParticipation.map((item) => (
-                  <article key={item.name} className="owner-tournament-card">
+                  <article key={item.id} className="owner-tournament-card">
                     <div className="owner-tournament-card__header">
                       <span className="badge">{item.status}</span>
-                      <span className="owner-prize">{item.prize}</span>
+                      <span className="owner-prize">{item.rounds}</span>
                     </div>
                     <h3>{item.name}</h3>
-                    <p className="muted">{item.horses}</p>
+                    <p className="muted">{item.races}</p>
                     <div className="owner-tournament-meta">
-                      <span>Entry status</span>
-                      <strong>Confirmed</strong>
+                      <span>Tournament status</span>
+                      <strong>{item.status}</strong>
                     </div>
                   </article>
                 ))}
+                {tournamentParticipation.length === 0 ? (
+                  <p className="muted">No tournaments available.</p>
+                ) : null}
               </div>
             </div>
 
@@ -301,6 +348,8 @@ function OwnerDashboardPage() {
                     className="ghost-button"
                     onClick={() => {
                       if (action.title === "Add a new horse") navigate("/owner/horses/new");
+                      if (action.title === "Register for tournament") navigate("/owner/register-tournament");
+                      if (action.title === "Confirm race entry") navigate("/owner/race-confirmations");
                     }}
                   >
                     Open

@@ -1,0 +1,157 @@
+import { request } from "./apiClient";
+
+const unwrapResponseData = (response) => response?.data ?? response?.Data ?? response;
+
+const asArray = (payload) => {
+  const data = unwrapResponseData(payload);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.Items)) return data.Items;
+  if (Array.isArray(data?.races)) return data.races;
+  if (Array.isArray(data?.Races)) return data.Races;
+  return [];
+};
+
+const read = (source, ...keys) => {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+export const formatJockeyDate = (value, fallback = "TBD") => {
+  if (!value) return fallback;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const normalizeJockey = (jockey) => ({
+  id: jockey.id ?? jockey.Id,
+  userId: jockey.userId ?? jockey.UserId,
+  fullName: jockey.fullName ?? jockey.FullName ?? "Unnamed jockey",
+  email: jockey.email ?? jockey.Email ?? "",
+  licenseNumber: jockey.licenseNumber ?? jockey.LicenseNumber ?? "",
+  nationality: jockey.nationality ?? jockey.Nationality ?? "",
+  experienceYears: jockey.experienceYears ?? jockey.ExperienceYears ?? 0,
+  totalRaces: jockey.totalRaces ?? jockey.TotalRaces ?? 0,
+  totalWins: jockey.totalWins ?? jockey.TotalWins ?? 0,
+  winRate: jockey.winRate ?? jockey.WinRate ?? 0,
+  rank: jockey.rank ?? jockey.Rank ?? null,
+  status: jockey.status ?? jockey.Status ?? "",
+  approvalStatus: jockey.approvalStatus ?? jockey.ApprovalStatus ?? null,
+  approvalStatusName:
+    jockey.approvalStatusName ?? jockey.ApprovalStatusName ?? "Unknown",
+});
+
+export const getAvailableJockeys = async () =>
+  (unwrapResponseData(await request("/api/jockeys")) ?? []).map(normalizeJockey);
+
+export const normalizeInvitation = (invitation) => {
+  const horse = read(invitation, "horse", "Horse") ?? {};
+  const race = read(invitation, "race", "Race") ?? {};
+  const tournament = read(race, "tournament", "Tournament") ?? {};
+  const rawStatus = read(invitation, "status", "Status", "statusName", "StatusName");
+  const status =
+    typeof rawStatus === "number"
+      ? ["Pending", "Accepted", "Declined"][rawStatus] ?? "Pending"
+      : rawStatus ?? "Pending";
+
+  return {
+    id: read(invitation, "id", "Id"),
+    status,
+    createdAt: read(invitation, "createdAt", "CreatedAt"),
+    raceId: read(invitation, "raceId", "RaceId", "id", "Id"),
+    raceName: read(
+      invitation,
+      "raceName",
+      "RaceName",
+      "title",
+      "Title",
+    ) ?? read(race, "name", "Name") ?? "Race invitation",
+    scheduledAt:
+      read(invitation, "scheduledAt", "ScheduledAt", "date", "Date") ??
+      read(race, "scheduledAt", "ScheduledAt"),
+    location:
+      read(invitation, "track", "Track", "location", "Location") ??
+      read(race, "location", "Location") ??
+      "TBD Track",
+    distance: read(race, "distance", "Distance"),
+    maxParticipants: read(race, "maxParticipants", "MaxParticipants"),
+    raceStatus: read(race, "status", "Status"),
+    tournamentName: read(tournament, "name", "Name") ?? "Tournament TBD",
+    horseId: read(invitation, "horseId", "HorseId") ?? read(horse, "id", "Id"),
+    horseName:
+      read(invitation, "horseName", "HorseName") ??
+      read(horse, "name", "Name") ??
+      "Unknown horse",
+    horseBreed: read(horse, "breed", "Breed"),
+    horseAge: read(horse, "age", "Age"),
+    horseWeight: read(horse, "weight", "Weight"),
+    horseColor: read(horse, "color", "Color"),
+    horseTotalRaces: read(horse, "totalRaces", "TotalRaces"),
+    horseTotalWins: read(horse, "totalWins", "TotalWins"),
+  };
+};
+
+export const normalizeAssignedRace = (entry) => {
+  const race = read(entry, "race", "Race") ?? entry ?? {};
+  const horse = read(entry, "horse", "Horse") ?? {};
+  const tournament = read(race, "tournament", "Tournament") ?? {};
+  const rawStatus =
+    read(entry, "status", "Status", "statusName", "StatusName") ??
+    read(race, "status", "Status");
+
+  return {
+    id: read(entry, "id", "Id") ?? read(race, "id", "Id"),
+    entryId: read(entry, "id", "Id"),
+    raceId: read(entry, "raceId", "RaceId") ?? read(race, "id", "Id"),
+    title:
+      read(entry, "title", "Title", "raceName", "RaceName") ??
+      read(race, "name", "Name") ??
+      "Assigned race",
+    scheduledAt:
+      read(entry, "scheduledAt", "ScheduledAt", "time", "Time") ??
+      read(race, "scheduledAt", "ScheduledAt"),
+    location:
+      read(entry, "track", "Track", "location", "Location") ??
+      read(race, "location", "Location") ??
+      "TBD Track",
+    distance: read(race, "distance", "Distance"),
+    maxParticipants: read(race, "maxParticipants", "MaxParticipants"),
+    description: read(race, "description", "Description"),
+    tournamentName: read(tournament, "name", "Name") ?? "Tournament TBD",
+    status: typeof rawStatus === "number" ? `Status ${rawStatus}` : rawStatus ?? "Assigned",
+    ownerConfirmed: Boolean(read(entry, "ownerConfirmed", "OwnerConfirmed")),
+    jockeyConfirmed: Boolean(read(entry, "jockeyConfirmed", "JockeyConfirmed")),
+    horseName: read(horse, "name", "Name") ?? "Unknown horse",
+    horseBreed: read(horse, "breed", "Breed"),
+    horseGender: read(horse, "gender", "Gender"),
+    horseAge: read(horse, "age", "Age"),
+    horseWeight: read(horse, "weight", "Weight"),
+    horseHeight: read(horse, "height", "Height"),
+    horseColor: read(horse, "color", "Color"),
+    horseTotalRaces: read(horse, "totalRaces", "TotalRaces") ?? 0,
+    horseTotalWins: read(horse, "totalWins", "TotalWins") ?? 0,
+  };
+};
+
+export const getJockeyInvitations = async () =>
+  asArray(await request("/api/jockeys/invitations")).map(normalizeInvitation);
+
+export const respondJockeyInvitation = async (invitationId, accept) =>
+  request(`/api/jockeys/invitations/${invitationId}/respond`, {
+    method: "POST",
+    body: JSON.stringify({ accept }),
+  });
+
+export const getJockeyAssignedRaces = async () =>
+  asArray(await request("/api/jockeys/races")).map(normalizeAssignedRace);

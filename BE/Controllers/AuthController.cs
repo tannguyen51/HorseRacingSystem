@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HorseRacing.Controllers;
 
@@ -34,6 +36,20 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         var result = await _authService.LoginAsync(request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [Authorize(Roles = "HorseOwner")]
+    [HttpGet("me")]
+    public async Task<ActionResult<OwnerProfileResponse>> GetCurrentOwner()
+    {
+        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.GetOwnerProfileAsync(userId);
         return StatusCode(result.StatusCode, result.Result);
     }
 
