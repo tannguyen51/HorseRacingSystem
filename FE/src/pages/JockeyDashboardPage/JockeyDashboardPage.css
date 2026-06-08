@@ -1,0 +1,193 @@
+.jockey-dashboard {
+  display: grid;
+  gap: 32px;
+}
+
+.jockey-dashboard .hover-lift {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jockey-dashboard .hover-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgba(242, 210, 139, 0.35);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+
+.jockey-side-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.jockey-side-link,
+.jockey-text-link {
+  color: #f2d28b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.jockey-side-link {
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.62);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+}
+
+.jockey-side-link:hover,
+.jockey-text-link:hover {
+  color: #fff1bd;
+}
+
+.jockey-hero {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 28px;
+  padding: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.85));
+  border: 1px solid rgba(231, 198, 120, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
+}
+
+.jockey-hero h1 {
+  color: #f8f4e6;
+  font-size: 42px;
+  margin: 12px 0 10px;
+}
+
+.jockey-hero p {
+  color: #aeb6c4;
+  max-width: 620px;
+}
+
+.jockey-inline-warning {
+  margin-top: 14px;
+  color: #f7c56f !important;
+}
+
+.jockey-hero__panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.8);
+  border: 1px solid rgba(231, 198, 120, 0.15);
+  align-content: center;
+}
+
+.jockey-hero__panel span,
+.jockey-stat-card p,
+.jockey-list-item__meta span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.jockey-hero__panel strong {
+  display: block;
+  color: #f2d28b;
+  font-size: 24px;
+  margin-top: 5px;
+}
+
+.jockey-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.jockey-stat-card,
+.jockey-panel,
+.jockey-list-item {
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+}
+
+.jockey-stat-card {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.jockey-stat-card h3 {
+  color: #f8f4e6;
+  font-size: 24px;
+}
+
+.jockey-stat-card span {
+  color: #6ee7b7;
+  font-size: 13px;
+}
+
+.jockey-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.9fr;
+  gap: 24px;
+}
+
+.jockey-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 8px;
+}
+
+.jockey-list {
+  display: grid;
+  gap: 14px;
+}
+
+.jockey-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border-radius: 8px;
+}
+
+.jockey-list-item h3 {
+  color: #f8f4e6;
+  margin: 10px 0 4px;
+}
+
+.jockey-list-item__meta {
+  display: grid;
+  gap: 5px;
+  min-width: 180px;
+  text-align: right;
+}
+
+.jockey-list-item__meta strong {
+  color: #f2d28b;
+}
+
+@media (max-width: 1100px) {
+  .jockey-hero,
+  .jockey-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jockey-stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .jockey-hero {
+    padding: 24px;
+  }
+
+  .jockey-hero h1 {
+    font-size: 34px;
+  }
+
+  .jockey-list-item {
+    flex-direction: column;
+  }
+
+  .jockey-list-item__meta {
+    min-width: 0;
+    text-align: left;
+  }
+}
