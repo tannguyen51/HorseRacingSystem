@@ -1,0 +1,136 @@
+.referee-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 64px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(6, 10, 20, 0.9);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
+}
+
+.referee-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #f8f4e6;
+  text-decoration: none;
+}
+
+.referee-header__nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.referee-header__nav::-webkit-scrollbar {
+  height: 6px;
+}
+
+.referee-header__nav::-webkit-scrollbar-thumb {
+  background: rgba(231, 198, 120, 0.35);
+  border-radius: 999px;
+}
+
+.referee-header__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.referee-header__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f2d28b, #d7aa4d);
+  color: #14100a;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  letter-spacing: 1px;
+  box-shadow: 0 12px 20px rgba(17, 14, 5, 0.4);
+}
+
+.referee-header__brand > div p {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.brand-title {
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0;
+}
+
+.brand-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #e7c678;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: #d3d9e5;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: #f5e4b1;
+  background: rgba(231, 198, 120, 0.1);
+  outline: none;
+}
+
+.nav-link--active {
+  color: #14100a;
+  background: linear-gradient(145deg, #f2d28b, #d7aa4d);
+  box-shadow: 0 10px 20px rgba(16, 12, 5, 0.35);
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid rgba(231, 198, 120, 0.35);
+  color: #f5e4b1;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.ghost-button:hover {
+  background: rgba(231, 198, 120, 0.1);
+}
+
+@media (max-width: 1024px) {
+  .referee-header {
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .referee-header__nav {
+    gap: 6px;
+  }
+}

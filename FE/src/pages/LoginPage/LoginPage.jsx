@@ -91,6 +91,7 @@ function LoginPage() {
         spectator: "/spectator",
         jockey: "/jockey/invitations",
         horse_owner: "/owner",
+        referee: "/referee",
         admin: "/",
         trainer: "/",
       };

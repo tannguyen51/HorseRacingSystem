@@ -11,6 +11,7 @@ import Footer from "./components/Footer/Footer";
 import SpectatorHeader from "./components/SpectatorHeader/SpectatorHeader";
 import JockeyHeader from "./components/JockeyHeader/JockeyHeader";
 import OwnerHeader from "./components/OwnerHeader/OwnerHeader";
+import RefereeHeader from "./components/RefereeHeader/RefereeHeader";
 import HomePage from "./pages/HomePage/HomePage";
 import TournamentListPage from "./pages/TournamentListPage/TournamentListPage";
 import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailPage";
@@ -36,6 +37,8 @@ import OwnerHorseEditPage from "./pages/OwnerHorseEditPage/OwnerHorseEditPage";
 import OwnerTournamentListPage from "./pages/OwnerTournamentListPage/OwnerTournamentListPage";
 import OwnerTournamentRegisterPage from "./pages/OwnerTournamentRegisterPage/OwnerTournamentRegisterPage";
 import OwnerRaceConfirmationPage from "./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage";
+import RefereeDashboardPage from "./pages/RefereeDashboardPage/RefereeDashboardPage";
+import { RefereeAssignmentPage } from "./components/RefereeNotification/RefereeAssignmentPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import "./App.css";
@@ -62,6 +65,7 @@ function AppLayout() {
   const isSpectator = location.pathname.startsWith("/spectator");
   const isJockey = location.pathname.startsWith("/jockey");
   const isOwner = location.pathname.startsWith("/owner");
+  const isReferee = location.pathname.startsWith("/referee");
 
   const renderHeader = () => {
     if (isSpectator || authUser?.role === "spectator") {
@@ -74,6 +78,10 @@ function AppLayout() {
 
     if (isOwner || authUser?.role === "owner") {
       return <OwnerHeader />;
+    }
+
+    if (isReferee || authUser?.role === "referee") {
+      return <RefereeHeader />;
     }
 
     return <Header />;
@@ -146,6 +154,11 @@ function AppLayout() {
           <Route
             path="/owner/race-confirmation"
             element={<OwnerRaceConfirmationPage />}
+          />
+          <Route path="/referee" element={<RefereeDashboardPage />} />
+          <Route
+            path="/referee/assignments"
+            element={<RefereeAssignmentPage />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
