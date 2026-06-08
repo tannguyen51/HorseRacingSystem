@@ -81,7 +81,7 @@ function AppLayout() {
       return <JockeyHeader />;
     }
 
-    if (isOwner || authUser?.role === "owner") {
+    if (isOwner || authUser?.role === "horse_owner") {
       return <OwnerHeader />;
     }
 

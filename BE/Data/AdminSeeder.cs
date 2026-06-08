@@ -11,7 +11,8 @@ namespace HorseRacing.Data;
 public static class AdminSeeder
 {
     private const string AdminEmail = "Admin@gmail.com";
-    private const string AdminPassword = "Admin123";
+    private static readonly string AdminPassword =
+        Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") ?? string.Empty;
 
     public static async Task SeedAsync(IServiceProvider services)
     {
