@@ -1,67 +1,268 @@
-.card-header-row {
+.jockey-schedule-header,
+.jockey-schedule-main,
+.jockey-schedule-detail,
+.jockey-calendar-panel,
+.jockey-schedule-loading,
+.jockey-schedule-empty {
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  border-radius: 8px;
+}
+
+.jockey-schedule-header {
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.86));
+}
+
+.jockey-schedule-header h1 {
+  color: #f8f4e6;
+  font-size: 40px;
+  margin: 12px 0 8px;
+}
+
+.jockey-schedule-header p {
+  color: #aeb6c4;
+  max-width: 700px;
+}
+
+.jockey-schedule-message {
+  color: #f2d28b !important;
+  margin-top: 12px;
+}
+
+.jockey-schedule .primary-button {
+  background: #d7aa4d;
+  border: 1px solid #d7aa4d;
+  color: #080c14;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.jockey-schedule .primary-button:hover:not(:disabled) {
+  background: #f2d28b;
+}
+
+.jockey-schedule .skeleton-line {
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(231, 198, 120, 0.08), rgba(231, 198, 120, 0.2), rgba(231, 198, 120, 0.08));
+}
+
+.jockey-schedule .skeleton-line.wide {
+  width: 75%;
+}
+
+.jockey-schedule-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.jockey-schedule-main,
+.jockey-schedule-detail,
+.jockey-calendar-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.jockey-race-card-list {
+  display: grid;
+  gap: 14px;
+}
+
+.jockey-race-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(170px, 0.55fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.58);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.jockey-race-card--active {
+  border-color: rgba(242, 210, 139, 0.45);
+}
+
+.jockey-race-card h3 {
+  color: #f8f4e6;
+  margin: 10px 0 4px;
+}
+
+.jockey-race-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  color: #c4ccda;
+  font-size: 13px;
+}
+
+.jockey-race-card__horse,
+.jockey-schedule-info-row {
+  display: grid;
+  gap: 6px;
+}
+
+.jockey-race-card__horse span,
+.jockey-schedule-info-row span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.jockey-race-card__horse strong,
+.jockey-schedule-info-row strong {
+  color: #f8f4e6;
+}
+
+.jockey-race-card__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.jockey-race-card__actions .ghost-button,
+.jockey-race-card__actions .primary-button {
+  border-radius: 6px;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+.jockey-detail-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 4px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.72);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.jockey-detail-tabs button {
+  border: 0;
+  border-radius: 6px;
+  padding: 10px;
+  color: #d3d9e5;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.jockey-detail-tabs button.active {
+  color: #080c14;
+  background: #d7aa4d;
+}
+
+.jockey-schedule-detail__body {
+  display: grid;
+  gap: 12px;
+}
+
+.jockey-schedule-info-row {
+  grid-template-columns: 1fr auto;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.jockey-schedule-info-row:last-child {
+  border-bottom: 0;
+}
+
+.jockey-calendar-list {
+  display: grid;
+  gap: 14px;
+}
+
+.jockey-calendar-day {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.58);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.jockey-calendar-day h3 {
+  color: #f2d28b;
+}
+
+.jockey-calendar-day > div {
+  display: grid;
+  gap: 10px;
+}
+
+.jockey-calendar-day button {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(10, 16, 28, 0.8);
+  color: #dbe2ef;
+  cursor: pointer;
+  text-align: left;
+}
+
+.jockey-calendar-day button:hover {
+  border-color: rgba(242, 210, 139, 0.45);
+}
+
+.jockey-calendar-day button span {
+  color: #98a1b3;
+}
+
+.jockey-schedule-loading,
+.jockey-schedule-empty {
+  padding: 28px;
+}
+
+.jockey-schedule-loading {
+  display: grid;
+  gap: 12px;
+}
+
+.jockey-schedule-empty h3 {
+  color: #f8f4e6;
   margin-bottom: 8px;
 }
 
-.status-badge {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-.status-badge.confirmed { background: #dcfce7; color: #166534; }
-.status-badge.pending { background: #fef9c3; color: #854d0e; }
+@media (max-width: 1180px) {
+  .jockey-schedule-layout,
+  .jockey-race-card {
+    grid-template-columns: 1fr;
+  }
 
-.track-name {
-  display: block;
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin: 6px 0 12px 0;
+  .jockey-race-card__actions {
+    justify-content: flex-start;
+  }
 }
 
-.card-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid #f3f4f6;
-  padding-top: 10px;
-}
+@media (max-width: 720px) {
+  .jockey-schedule-header {
+    padding: 24px;
+  }
 
-.horse-tag {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
+  .jockey-schedule-header h1 {
+    font-size: 32px;
+  }
 
+  .jockey-race-card__actions,
+  .jockey-calendar-day,
+  .jockey-calendar-day button {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  .jockey-schedule-info-row {
+    grid-template-columns: 1fr;
+  }
 }
-.modal-content {
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.close-button {
-  background: none; border: none; font-size: 1.5rem; cursor: pointer;
-}
-.info-group h3 { margin-bottom: 10px; color: #1f2937; }
-.info-group p { margin: 6px 0; font-size: 0.95rem; color: #4b5563; }
-.form-badge { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-weight: bold;}

@@ -22,32 +22,29 @@ public static class AdminSeeder
 
         try
         {
-            if (string.IsNullOrWhiteSpace(AdminPassword))
+            var normalizedAdminEmail = AdminEmail.ToLowerInvariant();
+            var admin = await db.Users.FirstOrDefaultAsync(
+                u => u.Email.ToLower() == normalizedAdminEmail);
+
+            if (admin == null)
             {
-                logger.LogInformation("Skipping default admin seeding because DEFAULT_ADMIN_PASSWORD is not set.");
-                return;
+                admin = new User
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Users.Add(admin);
             }
 
-            var exists = await db.Users.AnyAsync(u => u.Email == AdminEmail);
-            if (exists)
-            {
-                return;
-            }
-            var admin = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = AdminEmail,
-                FullName = "System Admin",
-                Role = UserRole.Admin,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
+            admin.Email = AdminEmail;
+            admin.FullName = "System Admin";
+            admin.Role = UserRole.Admin;
+            admin.IsActive = true;
             admin.PasswordHash = new PasswordHasher<User>().HashPassword(admin, AdminPassword);
 
-            db.Users.Add(admin);
             await db.SaveChangesAsync();
 
-            logger.LogInformation("Default admin account created: {Email}", AdminEmail);
+            logger.LogInformation("Default admin account ensured: {Email}", AdminEmail);
         }
         catch (Exception ex)
         {

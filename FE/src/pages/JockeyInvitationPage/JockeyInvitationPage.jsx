@@ -1,108 +1,80 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  formatJockeyDate,
+  getJockeyInvitations,
+  respondJockeyInvitation,
+} from "../../services/jockeyApi";
 import "../SpectatorSharedLayout.css";
 import "./JockeyInvitationPage.css";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
+const fallbackInvitations = [
+  {
+    id: "sample-invitation-1",
+    status: "Pending",
+    raceName: "Bluegrass Sprint",
+    scheduledAt: "2026-06-10T10:10:00Z",
+    location: "Churchill Downs",
+    tournamentName: "Summer Racing Cup",
+    horseName: "Thunder Strike",
+    horseBreed: "Thoroughbred",
+    horseAge: 5,
+  },
+  {
+    id: "sample-invitation-2",
+    status: "Pending",
+    raceName: "Coastal Derby",
+    scheduledAt: "2026-06-12T09:30:00Z",
+    location: "Gulfstream Park",
+    tournamentName: "Elite Track Series",
+    horseName: "Silver Comet",
+    horseBreed: "Arabian",
+    horseAge: 4,
+  },
+];
 
 export function JockeyInvitationPage() {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
+  const [message, setMessage] = useState("");
 
-  const normalizeInvitations = (payload) => {
-    const list = Array.isArray(payload)
-      ? payload
-      : payload && Array.isArray(payload.data)
-        ? payload.data
-        : payload && Array.isArray(payload.Data)
-          ? payload.Data
-          : payload && Array.isArray(payload.items)
-            ? payload.items
-            : [];
-
-    return list.map((invitation) => ({
-      id: invitation.id ?? invitation.Id,
-      raceName:
-        invitation.raceName ??
-        invitation.RaceName ??
-        invitation.race?.name ??
-        invitation.Race?.Name ??
-        "Race invitation",
-      date:
-        invitation.date ??
-        invitation.Date ??
-        invitation.createdAt ??
-        invitation.CreatedAt ??
-        "Pending review",
-      horseName:
-        invitation.horseName ??
-        invitation.HorseName ??
-        invitation.horse?.name ??
-        invitation.Horse?.Name ??
-        "Unknown horse",
-      track:
-        invitation.track ??
-        invitation.Track ??
-        invitation.race?.trackName ??
-        invitation.Race?.TrackName ??
-        "TBD Track",
-    }));
-  };
-
-  const fetchInvitations = async () => {
+  const loadInvitations = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`${BASE_URL}/api/jockeys/invitations`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      if (!response.ok) throw new Error("Network response error");
-      const data = await response.json();
-      setInvitations(normalizeInvitations(data));
+      const data = await getJockeyInvitations();
+      setInvitations(data);
+      setMessage("");
     } catch (error) {
-      console.error("Error fetching invitations:", error);
-
-      setInvitations([]);
+      setInvitations(fallbackInvitations);
+      setMessage(error.message || "Unable to load invitations.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInvitations();
+    loadInvitations();
   }, []);
 
-  const handleResponse = async (id, action) => {
+  const pendingInvitations = useMemo(
+    () =>
+      invitations.filter((invitation) =>
+        String(invitation.status).toLowerCase().includes("pending"),
+      ),
+    [invitations],
+  );
+
+  const handleResponse = async (id, accept) => {
     setLoadingId(id);
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(
-        `${BASE_URL}/api/jockeys/invitations/${id}/respond`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({
-            accept: action === "ACCEPT",
-          }),
-        },
+      await respondJockeyInvitation(id, accept);
+      setInvitations((current) =>
+        current.filter((invitation) => invitation.id !== id),
       );
-
-      if (!response.ok) throw new Error("Response submission failed");
-
-      alert(
-        `Successfully ${action === "ACCEPT" ? "accepted" : "rejected"} the invitation!`,
-      );
-      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+      setMessage(accept ? "Invitation accepted." : "Invitation rejected.");
     } catch (error) {
-      console.error("Error submitting response:", error);
-      alert("Failed to process the invitation. Please try again.");
+      setMessage(error.message || "Failed to process invitation.");
     } finally {
       setLoadingId(null);
     }
@@ -113,90 +85,113 @@ export function JockeyInvitationPage() {
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Jockey Panel</p>
-            <h3>Rider Center</h3>
-            <p className="muted">Manage your races and invitations.</p>
+            <p className="pill">Invitation Management</p>
+            <h3>Race offers</h3>
+            <p className="muted">Accept or reject owner race invitations.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Pending Requests</p>
-            <h4>Active Invitations</h4>
-            <span>{invitations.length} requires attention</span>
+            <p className="muted">Pending invitations</p>
+            <h4>{loading ? "Loading..." : pendingInvitations.length}</h4>
+            <span>Requires response</span>
           </div>
         </aside>
 
         <div className="spectator-content">
-          <section className="spectator-hero">
+          <section className="jockey-page-header">
             <div>
-              <span className="pill">Action Required</span>
-              <h1>Race Invitations</h1>
+              <span className="pill">Invitations</span>
+              <h1>Invitation Management</h1>
               <p>
-                Review and respond to race invitations assigned to you by the
-                organizers. Please accept early to secure your jockey
-                registration slot.
+                Review race invitations, inspect assigned horses, and respond
+                before the race card closes.
               </p>
-            </div>
-            <div className="spectator-hero__panel">
-              <div>
-                <span>Total Pending</span>
-                <strong>{invitations.length}</strong>
-              </div>
+              {message ? <p className="jockey-message">{message}</p> : null}
             </div>
           </section>
 
-          <section className="spectator-section">
+          <section className="jockey-invitation-toolbar">
+            <div>
+              <span>All invitations</span>
+              <strong>{loading ? "--" : invitations.length}</strong>
+            </div>
+            <div>
+              <span>Pending</span>
+              <strong>{loading ? "--" : pendingInvitations.length}</strong>
+            </div>
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={loadInvitations}
+              disabled={loading}
+            >
+              Refresh
+            </button>
+          </section>
+
+          <section className="jockey-table-panel">
             <div className="section-heading">
-              <h2>Pending Invitations</h2>
-              <p>Respond to your designated race setups below.</p>
+              <h2>Invitations</h2>
+              <p>Open the detail page for full horse and race information.</p>
             </div>
 
             {loading ? (
-              <div className="invitation-loading">
-                <div className="skeleton-line" />
+              <div className="jockey-loading-panel">
                 <div className="skeleton-line wide" />
+                <div className="skeleton-line" />
               </div>
             ) : invitations.length === 0 ? (
-              <div className="empty-state">
-                <h4>No pending invitations</h4>
-                <p>
-                  You are all caught up! New race invitations from organizers
-                  will appear here.
-                </p>
+              <div className="jockey-empty-state">
+                <h3>No invitations</h3>
+                <p className="muted">New invitations will appear here.</p>
               </div>
             ) : (
-              <div className="live-grid">
-                {invitations.map((inv) => (
-                  <article key={inv.id} className="live-card hover-lift">
-                    <div className="live-card__header">
-                      <span className="badge">Pending</span>
-                      <span className="muted">{inv.date}</span>
-                    </div>
-
-                    <h3>{inv.raceName}</h3>
-                    <p>{inv.track || "TBD Track"}</p>
-
-                    <div className="live-card__meta">
-                      <div>
-                        <span>Assigned Horse</span>
-                        <strong>{inv.horseName}</strong>
+              <div className="jockey-invitation-list">
+                {invitations.map((invitation) => (
+                  <article key={invitation.id} className="jockey-invitation-card">
+                    <div className="jockey-invitation-card__main">
+                      <span className="badge">{invitation.status}</span>
+                      <h3>{invitation.raceName}</h3>
+                      <p className="muted">{invitation.tournamentName}</p>
+                      <div className="jockey-invitation-meta">
+                        <span>{formatJockeyDate(invitation.scheduledAt)}</span>
+                        <span>{invitation.location}</span>
+                        <span>Horse: {invitation.horseName}</span>
                       </div>
                     </div>
 
-                    <div className="invitation-actions">
+                    <div className="jockey-invitation-card__horse">
+                      <span>Assigned horse</span>
+                      <strong>{invitation.horseName}</strong>
+                      <p className="muted">
+                        {[invitation.horseBreed, invitation.horseAge && `${invitation.horseAge} years`]
+                          .filter(Boolean)
+                          .join(" / ") || "Profile pending"}
+                      </p>
+                    </div>
+
+                    <div className="jockey-invitation-actions">
+                      <Link
+                        className="ghost-button"
+                        to={`/jockey/invitations/${invitation.id}`}
+                        state={{ invitation }}
+                      >
+                        View Detail
+                      </Link>
                       <button
                         type="button"
                         className="ghost-button"
                         disabled={loadingId !== null}
-                        onClick={() => handleResponse(inv.id, "REJECT")}
+                        onClick={() => handleResponse(invitation.id, false)}
                       >
-                        Decline
+                        Reject
                       </button>
                       <button
                         type="button"
                         className="primary-button"
                         disabled={loadingId !== null}
-                        onClick={() => handleResponse(inv.id, "ACCEPT")}
+                        onClick={() => handleResponse(invitation.id, true)}
                       >
-                        {loadingId === inv.id ? "Processing..." : "Accept Race"}
+                        {loadingId === invitation.id ? "Processing..." : "Accept"}
                       </button>
                     </div>
                   </article>

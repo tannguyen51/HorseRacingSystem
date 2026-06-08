@@ -26,6 +26,8 @@ import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/Spe
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
 import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
 import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
+import JockeyInvitationDetailPage from "./pages/JockeyInvitationPage/JockeyInvitationDetailPage";
+import JockeyDashboardPage from "./pages/JockeyDashboardPage/JockeyDashboardPage";
 import { JockeySchedulePage } from "./pages/JockeySchedulePage/JockeySchedulePage";
 import { JockeyPerformancePage } from "./pages/JockeyPerformancePage/JockeyPerformancePage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage/OwnerDashboardPage";
@@ -129,9 +131,11 @@ function AppLayout() {
             path="/spectator/rewards"
             element={<SpectatorRewardNotificationsPage />}
           />
+          <Route path="/jockey" element={<JockeyDashboardPage />} />
+          <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
           <Route
-            path="/jockey/invitations"
-            element={<JockeyInvitationPage />}
+            path="/jockey/invitations/:id"
+            element={<JockeyInvitationDetailPage />}
           />
           <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
           <Route

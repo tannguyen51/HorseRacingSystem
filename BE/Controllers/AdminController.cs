@@ -127,9 +127,11 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("jockeys/{jockeyId:guid}/reject")]
-    public async Task<ActionResult> RejectJockey(Guid jockeyId, [FromBody] dynamic request)
+    public async Task<ActionResult> RejectJockey(Guid jockeyId, [FromBody] RejectJockeyRequest request)
     {
-        var reason = request?.reason?.ToString() ?? "No reason provided";
+        var reason = string.IsNullOrWhiteSpace(request?.Reason)
+            ? "No reason provided"
+            : request.Reason.Trim();
         var result = await _adminService.RejectJockeyAsync(jockeyId, reason);
         return StatusCode(result.StatusCode, result.Result);
     }

@@ -34,6 +34,8 @@ public class AuthService : IAuthService
 
     public async Task<ServiceResult<AuthResponse>> RegisterAsync(RegisterRequest request)
     {
+        request.Email = request.Email.Trim();
+
         if (request.Role is not (UserRole.HorseOwner or UserRole.Jockey or UserRole.Spectator))
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Unsupported role.");
@@ -107,7 +109,13 @@ public class AuthService : IAuthService
 
     public async Task<ServiceResult<AuthResponse>> LoginAsync(LoginRequest request)
     {
-        var user = await _users.GetByEmailAsync(request.Email);
+        var email = request.Email.Trim();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+        }
+
+        var user = await _users.GetByEmailAsync(email);
         if (user == null)
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
@@ -117,7 +125,8 @@ public class AuthService : IAuthService
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status403Forbidden, "User is deactivated.");
         }
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        var password = request.Password.Trim();
+        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         if (result == PasswordVerificationResult.Failed)
         {
             return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");

@@ -95,6 +95,11 @@ public class UpdateHorseApprovalStatusRequest
     public string? Note { get; set; }
 }
 
+public class RejectJockeyRequest
+{
+    public string? Reason { get; set; }
+}
+
 // Live Race Result DTOs
 public class LiveRaceResultResponse
 {
