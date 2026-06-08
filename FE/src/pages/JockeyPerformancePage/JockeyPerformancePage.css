@@ -1,0 +1,114 @@
+.jockey-performance-header,
+.jockey-performance-stat,
+.jockey-performance-panel {
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  border-radius: 8px;
+}
+
+.jockey-performance-header {
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.86));
+}
+
+.jockey-performance-header h1 {
+  color: #f8f4e6;
+  font-size: 40px;
+  margin: 12px 0 8px;
+}
+
+.jockey-performance-header p {
+  color: #aeb6c4;
+  max-width: 700px;
+}
+
+.jockey-performance-message {
+  color: #f2d28b !important;
+  margin-top: 12px;
+}
+
+.jockey-performance-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.jockey-performance-stat {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+
+.jockey-performance-stat span,
+.jockey-performance-row--head span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.jockey-performance-stat strong {
+  color: #f8f4e6;
+  font-size: 26px;
+}
+
+.jockey-performance-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.jockey-performance-table {
+  display: grid;
+  gap: 10px;
+}
+
+.jockey-performance-row {
+  display: grid;
+  grid-template-columns: 1.25fr 0.8fr 0.8fr 0.85fr 0.6fr;
+  gap: 14px;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  background: rgba(6, 10, 20, 0.58);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+}
+
+.jockey-performance-row--head {
+  background: transparent;
+  border-color: rgba(231, 198, 120, 0.14);
+}
+
+.jockey-performance-row strong {
+  display: block;
+  color: #f8f4e6;
+  margin-bottom: 3px;
+}
+
+.jockey-performance-row small {
+  color: #98a1b3;
+}
+
+@media (max-width: 1050px) {
+  .jockey-performance-stats {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+
+  .jockey-performance-row {
+    grid-template-columns: 1fr;
+  }
+
+  .jockey-performance-row--head {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .jockey-performance-header {
+    padding: 24px;
+  }
+
+  .jockey-performance-header h1 {
+    font-size: 32px;
+  }
+}

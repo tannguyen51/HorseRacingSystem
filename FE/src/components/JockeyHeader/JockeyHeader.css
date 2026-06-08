@@ -1,0 +1,138 @@
+.jockey-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background-color: rgba(10, 16, 28, 0.95);
+  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.jockey-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: #f8f4e6;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+.jockey-header__brand:hover {
+  opacity: 0.8;
+}
+
+.brand-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+.jockey-header__brand > div p {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.brand-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8f4e6;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: #98a1b3;
+}
+
+.jockey-header__nav {
+  display: flex;
+  gap: 2rem;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-link {
+  color: #d3d9e5;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+}
+
+.nav-link:hover {
+  color: #f5e4b1;
+  border-bottom-color: rgba(231, 198, 120, 0.5);
+}
+
+.nav-link.nav-link--active {
+  color: #f2d28b;
+  border-bottom-color: #f2d28b;
+}
+
+.jockey-header__actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid rgba(231, 198, 120, 0.3);
+  color: #d3d9e5;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.ghost-button:hover {
+  border-color: rgba(231, 198, 120, 0.6);
+  color: #f5e4b1;
+  background-color: rgba(231, 198, 120, 0.05);
+}
+
+.ghost-button:active {
+  background-color: rgba(231, 198, 120, 0.1);
+}
+
+@media (max-width: 768px) {
+  .jockey-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .jockey-header__nav {
+    flex-basis: 100%;
+    order: 3;
+    gap: 1rem;
+  }
+
+  .jockey-header__brand {
+    flex-basis: auto;
+    order: 1;
+  }
+
+  .jockey-header__actions {
+    flex-basis: auto;
+    order: 2;
+  }
+}

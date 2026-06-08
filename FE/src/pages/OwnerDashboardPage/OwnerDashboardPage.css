@@ -1,0 +1,341 @@
+.owner-dashboard {
+  display: grid;
+  gap: 32px;
+}
+
+.owner-hero {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 28px;
+  padding: 32px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.85));
+  border: 1px solid rgba(231, 198, 120, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.owner-hero h1 {
+  color: #f8f4e6;
+  font-size: 42px;
+  margin: 12px 0 10px;
+}
+
+.owner-hero p {
+  color: #aeb6c4;
+  max-width: 520px;
+}
+
+.owner-hero__actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.owner-hero__panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(6, 10, 20, 0.8);
+  border: 1px solid rgba(231, 198, 120, 0.15);
+  align-content: center;
+}
+
+.owner-hero__panel span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.owner-hero__panel strong {
+  display: block;
+  font-size: 22px;
+  color: #f2d28b;
+  margin-top: 4px;
+}
+
+.owner-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 10px;
+}
+
+.stat-card h3 {
+  margin: 0;
+  color: #f8f4e6;
+  font-size: 24px;
+}
+
+.stat-trend {
+  color: #6ee7b7;
+  font-size: 13px;
+}
+
+.owner-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.owner-stack {
+  display: grid;
+  gap: 24px;
+}
+
+.owner-card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.owner-upcoming-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  padding: 22px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 12px;
+}
+
+.owner-upcoming-card h3 {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+.owner-upcoming-card p {
+  margin: 0;
+  color: #98a1b3;
+}
+
+.owner-upcoming-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.owner-upcoming-card__meta span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.owner-upcoming-card__meta strong {
+  display: block;
+  color: #f2d28b;
+  margin-top: 6px;
+}
+
+.tournament-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.owner-tournament-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  padding: 22px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 12px;
+}
+
+.owner-tournament-card h3 {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+.owner-tournament-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.owner-tournament-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #98a1b3;
+}
+
+.owner-prize {
+  color: #f2d28b;
+  font-weight: 600;
+}
+
+.notification-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-item {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.notification-item h4 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.notification-item p {
+  margin: 0;
+  color: #98a1b3;
+}
+
+.performance-card {
+  padding: 24px;
+  border-radius: 22px;
+  background: linear-gradient(140deg, rgba(13, 20, 34, 0.95), rgba(7, 11, 20, 0.9));
+  border: 1px solid rgba(231, 198, 120, 0.2);
+  display: grid;
+  gap: 20px;
+}
+
+.performance-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.performance-summary span {
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.performance-summary strong {
+  display: block;
+  color: #f2d28b;
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.performance-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 40px;
+  gap: 12px;
+  align-items: center;
+  color: #98a1b3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.chart-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(231, 198, 120, 0.12);
+  overflow: hidden;
+}
+
+.chart-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f2d28b, #d7aa4d);
+}
+
+.chart-row strong {
+  color: #f2d28b;
+  font-size: 13px;
+  text-align: right;
+}
+
+.owner-section {
+  display: grid;
+  gap: 20px;
+}
+
+.activity-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.activity-item {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.activity-item h4 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.activity-item p {
+  margin: 0;
+  color: #98a1b3;
+}
+
+.quick-action-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.quick-action-card {
+  background: rgba(10, 16, 28, 0.88);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  display: grid;
+  gap: 12px;
+}
+
+.quick-action-card h4 {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+@media (max-width: 1100px) {
+  .owner-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .notification-item,
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .chart-row strong {
+    text-align: left;
+  }
+}

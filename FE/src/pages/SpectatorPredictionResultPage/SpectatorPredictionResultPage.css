@@ -1,0 +1,190 @@
+.spectator-prediction-result-page {
+  display: grid;
+  gap: 32px;
+}
+
+.prediction-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-detail {
+  color: #98a1b3;
+  font-size: 13px;
+}
+
+.accuracy-panel {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.12);
+}
+
+.accuracy-panel h2 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.accuracy-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(6, 10, 20, 0.8);
+  overflow: hidden;
+  border: 1px solid rgba(231, 198, 120, 0.15);
+}
+
+.accuracy-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(231, 198, 120, 0.8), rgba(231, 198, 120, 0.4));
+}
+
+.prediction-columns {
+  display: grid;
+  gap: 24px;
+}
+
+.prediction-table {
+  display: grid;
+  gap: 12px;
+}
+
+.prediction-table .table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr 0.8fr 0.6fr;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  color: #f8f4e6;
+}
+
+.prediction-table .table-header {
+  background: transparent;
+  border: none;
+  color: #98a1b3;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.prediction-table strong {
+  display: block;
+}
+
+.prediction-table p {
+  margin: 6px 0 0;
+  color: #98a1b3;
+}
+
+.prediction-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  width: max-content;
+}
+
+.prediction-badge--success {
+  background: rgba(110, 231, 183, 0.15);
+  color: #6ee7b7;
+}
+
+.prediction-badge--fail {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.reward-list {
+  display: grid;
+  gap: 14px;
+}
+
+.prediction-reward-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.prediction-reward-card h4 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.prediction-reward-meta {
+  text-align: right;
+  display: grid;
+  gap: 4px;
+}
+
+.prediction-reward-meta span {
+  color: #98a1b3;
+  font-size: 12px;
+}
+
+.prediction-reward-meta strong {
+  color: #f2d28b;
+}
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(231, 198, 120, 0.12);
+  margin-bottom: 10px;
+}
+
+.skeleton-line.wide {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@media (max-width: 960px) {
+  .prediction-table .table-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 8px;
+  }
+
+  .prediction-table .table-row span:nth-child(n + 3),
+  .prediction-table .table-row div:nth-child(n + 3) {
+    display: none;
+  }
+
+  .prediction-table .table-header {
+    display: none;
+  }
+}

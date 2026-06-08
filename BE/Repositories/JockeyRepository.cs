@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HorseRacing.Data;
 using HorseRacing.Models;
@@ -19,6 +20,23 @@ public class JockeyRepository : IJockeyRepository
     public Task<bool> ExistsAsync(Guid jockeyId)
     {
         return _db.Jockeys.AnyAsync(j => j.Id == jockeyId);
+    }
+
+    public Task<List<Jockey>> GetAllAsync()
+    {
+        return _db.Jockeys
+            .Include(j => j.User)
+            .ToListAsync();
+    }
+
+    public Task<List<Jockey>> GetAvailableAsync()
+    {
+        return _db.Jockeys
+            .Include(j => j.User)
+            .Where(j => j.User == null || j.User.IsActive)
+            .OrderBy(j => j.Rank ?? int.MaxValue)
+            .ThenBy(j => j.User!.FullName)
+            .ToListAsync();
     }
 
     public Task<Jockey?> GetByIdAsync(Guid jockeyId)

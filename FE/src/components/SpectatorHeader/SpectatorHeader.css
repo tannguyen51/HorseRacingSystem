@@ -1,0 +1,61 @@
+.spectator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 64px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(6, 10, 20, 0.9);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
+}
+
+.spectator-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #f8f4e6;
+  text-decoration: none;
+}
+
+.spectator-header__nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.spectator-header__nav::-webkit-scrollbar {
+  height: 6px;
+}
+
+.spectator-header__nav::-webkit-scrollbar-thumb {
+  background: rgba(231, 198, 120, 0.35);
+  border-radius: 999px;
+}
+
+.spectator-header__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.spectator-header__actions {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .spectator-header {
+    flex-direction: column;
+    gap: 18px;
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .spectator-header__nav {
+    gap: 6px;
+  }
+}

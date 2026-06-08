@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import heroImage from "../../assets/racing.png";
 import "./HomePage.css";
 
 function HomePage() {
@@ -21,24 +22,29 @@ function HomePage() {
             </Link>
           </div>
         </div>
-        <div className="hero-panel">
-          <h3>Next Championship Race</h3>
-          <div className="countdown-grid">
-            <div>
-              <strong>33</strong>
-              <span>Days</span>
-            </div>
-            <div>
-              <strong>03</strong>
-              <span>Hours</span>
-            </div>
-            <div>
-              <strong>33</strong>
-              <span>Minutes</span>
-            </div>
-            <div>
-              <strong>26</strong>
-              <span>Seconds</span>
+        <div className="hero-media">
+          <div className="hero-image">
+            <img src={heroImage} alt="Champion horses racing" />
+          </div>
+          <div className="hero-panel">
+            <h3>Next Championship Race</h3>
+            <div className="countdown-grid">
+              <div>
+                <strong>33</strong>
+                <span>Days</span>
+              </div>
+              <div>
+                <strong>03</strong>
+                <span>Hours</span>
+              </div>
+              <div>
+                <strong>33</strong>
+                <span>Minutes</span>
+              </div>
+              <div>
+                <strong>26</strong>
+                <span>Seconds</span>
+              </div>
             </div>
           </div>
         </div>

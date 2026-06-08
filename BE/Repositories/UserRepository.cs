@@ -19,25 +19,29 @@ public class UserRepository : IUserRepository
 
     public Task<bool> EmailExistsAsync(string email)
     {
-        return _db.Users.AnyAsync(u => u.Email == email);
+        var normalizedEmail = email.Trim().ToLower();
+        return _db.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail);
     }
 
     public Task<User?> GetByEmailAsync(string email)
     {
-        return _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var normalizedEmail = email.Trim().ToLower();
+        return _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
     }
 
     public Task<User?> GetByIdAsync(Guid userId)
     {
         return _db.Users
-            .Include(u => u.Horses)
+            .Include(u => u.OwnerProfile)
+                .ThenInclude(o => o!.Horses)
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     public Task<List<User>> GetAllAsync()
     {
         return _db.Users
-            .Include(u => u.Horses)
+            .Include(u => u.OwnerProfile)
+                .ThenInclude(o => o!.Horses)
             .ToListAsync();
     }
 

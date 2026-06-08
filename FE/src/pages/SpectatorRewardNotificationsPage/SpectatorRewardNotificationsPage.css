@@ -1,0 +1,176 @@
+.spectator-reward-page {
+  display: grid;
+  gap: 32px;
+}
+
+.reward-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-detail {
+  color: #98a1b3;
+  font-size: 13px;
+}
+
+.reward-columns {
+  display: grid;
+  gap: 24px;
+}
+
+.notification-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.notification-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+}
+
+.notification-card--claimed {
+  opacity: 0.7;
+}
+
+.notification-card h4 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.reward-date {
+  display: block;
+  margin-top: 8px;
+  color: #98a1b3;
+  font-size: 12px;
+}
+
+.reward-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.reward-actions strong {
+  color: #f2d28b;
+  font-size: 18px;
+}
+
+.reward-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  background: rgba(231, 198, 120, 0.2);
+  color: #f5e4b1;
+  border: 1px solid rgba(231, 198, 120, 0.25);
+}
+
+.reward-icon--trophy {
+  background: rgba(231, 198, 120, 0.25);
+}
+
+.reward-icon--coins {
+  background: rgba(231, 198, 120, 0.2);
+}
+
+.reward-icon--streak {
+  background: rgba(110, 231, 183, 0.2);
+  color: #6ee7b7;
+}
+
+.reward-history {
+  display: grid;
+  gap: 14px;
+}
+
+.reward-history-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.reward-history-card h4 {
+  margin: 0 0 6px;
+  color: #f8f4e6;
+}
+
+.reward-meta {
+  text-align: right;
+  display: grid;
+  gap: 4px;
+}
+
+.reward-meta span {
+  color: #98a1b3;
+  font-size: 12px;
+}
+
+.reward-meta strong {
+  color: #f2d28b;
+}
+
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(231, 198, 120, 0.12);
+  margin-bottom: 10px;
+}
+
+.skeleton-line.wide {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+@media (max-width: 960px) {
+  .notification-card {
+    grid-template-columns: 1fr;
+  }
+
+  .reward-actions {
+    justify-items: start;
+  }
+
+  .reward-meta {
+    text-align: left;
+  }
+}

@@ -1,22 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { register } from "../../services/authApi";
+import { getRoles, register } from "../../services/authApi";
+import {
+  buildRegisterRoleOptions,
+  normalizeApiRole,
+  REGISTER_ROLE_OPTIONS,
+  ROLE_ID_BY_VALUE,
+  unwrapResponseData,
+} from "../../services/authRoleUtils";
 import "./RegisterPage.css";
 
-const ROLES = [
-  { value: "horse_owner", label: "Horse Owner" },
-  { value: "jockey", label: "Jockey" },
-  { value: "spectator", label: "Spectator" },
-];
-
-const ROLE_MAP = {
-  horse_owner: 1,
-  jockey: 2,
-  spectator: 3,
-};
-
 function RegisterPage() {
-  const [selectedRole, setSelectedRole] = useState("horse_owner");
+  const [roles, setRoles] = useState(REGISTER_ROLE_OPTIONS);
+
+  const [selectedRole, setSelectedRole] = useState("jockey");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +22,41 @@ function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [rolesReady, setRolesReady] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRoles = async () => {
+      try {
+        const apiRolesResponse = await getRoles();
+        const apiRoles = unwrapResponseData(apiRolesResponse);
+        const roleOptions = buildRegisterRoleOptions(apiRoles);
+        const availableRoleValues = roleOptions.map((role) => role.value);
+
+        if (!cancelled && roleOptions.length > 0) {
+          setRoles(roleOptions);
+          if (!availableRoleValues.includes(selectedRole)) {
+            setSelectedRole(availableRoleValues[0]);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setRoles(REGISTER_ROLE_OPTIONS);
+        }
+      } finally {
+        if (!cancelled) {
+          setRolesReady(true);
+        }
+      }
+    };
+
+    loadRoles();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -37,7 +68,7 @@ function RegisterPage() {
       return;
     }
 
-    const roleValue = ROLE_MAP[selectedRole];
+    const roleValue = ROLE_ID_BY_VALUE[selectedRole];
     if (!roleValue) {
       setErrorMessage("Unsupported role selected.");
       return;
@@ -54,17 +85,25 @@ function RegisterPage() {
         licenseNumber:
           selectedRole === "jockey" ? licenseNumber.trim() || null : null,
       });
-      localStorage.setItem("authToken", response.token);
+      const payload = unwrapResponseData(response);
+      const apiRole = normalizeApiRole(payload?.role ?? payload?.Role);
+
+      localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
         "authUser",
         JSON.stringify({
-          userId: response.userId,
-          email: response.email,
-          role: response.role,
+          userId: payload?.userId,
+          email: payload?.email,
+          role: apiRole || selectedRole,
         }),
       );
       setSuccessMessage("Account created successfully.");
-      navigate("/");
+
+      if ((apiRole || selectedRole) === "jockey") {
+        navigate("/jockey/invitations");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       setErrorMessage(
         error.message || "Registration failed. Please try again.",
@@ -92,6 +131,8 @@ function RegisterPage() {
             <input
               id="fullname"
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="Ariana Blake"
               className="form-input"
               value={fullName}
@@ -107,6 +148,8 @@ function RegisterPage() {
             <input
               id="email"
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="you@stable.com"
               className="form-input"
               value={email}
@@ -122,6 +165,8 @@ function RegisterPage() {
             <input
               id="password"
               type="password"
+              name="password"
+              autoComplete="new-password"
               placeholder="••••••••"
               className="form-input"
               value={password}
@@ -137,6 +182,8 @@ function RegisterPage() {
             <input
               id="confirm-password"
               type="password"
+              name="confirmPassword"
+              autoComplete="new-password"
               placeholder="••••••••"
               className="form-input"
               value={confirmPassword}
@@ -155,7 +202,7 @@ function RegisterPage() {
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
-              {ROLES.map((role) => (
+              {roles.map((role) => (
                 <option key={role.value} value={role.value}>
                   {role.label}
                 </option>
@@ -171,10 +218,12 @@ function RegisterPage() {
               <input
                 id="license"
                 type="text"
+                name="license"
                 placeholder="JCK-2026-001"
                 className="form-input"
                 value={licenseNumber}
                 onChange={(event) => setLicenseNumber(event.target.value)}
+                required
               />
             </div>
           ) : null}
@@ -203,7 +252,7 @@ function RegisterPage() {
           <button
             type="submit"
             className="primary-button btn-block"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !rolesReady}
           >
             {isSubmitting ? "Creating..." : "Create Account"}
           </button>

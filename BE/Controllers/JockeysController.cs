@@ -10,7 +10,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/jockeys")]
-[Authorize(Roles = "Jockey")]
+[Authorize]
 public class JockeysController : ControllerBase
 {
     private readonly IJockeyService _jockeyService;
@@ -20,7 +20,16 @@ public class JockeysController : ControllerBase
         _jockeyService = jockeyService;
     }
 
+    [HttpGet]
+    [Authorize(Roles = "HorseOwner,Admin")]
+    public async Task<ActionResult> GetAvailableJockeys()
+    {
+        var result = await _jockeyService.GetAvailableJockeysAsync();
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpGet("invitations")]
+    [Authorize(Roles = "Jockey")]
     public async Task<ActionResult> GetInvitations()
     {
         var userId = GetUserId();
@@ -29,6 +38,7 @@ public class JockeysController : ControllerBase
     }
 
     [HttpPost("invitations/{id:guid}/respond")]
+    [Authorize(Roles = "Jockey")]
     public async Task<ActionResult> RespondInvitation(Guid id, JockeyInvitationRespondRequest request)
     {
         var userId = GetUserId();
@@ -37,6 +47,7 @@ public class JockeysController : ControllerBase
     }
 
     [HttpGet("races")]
+    [Authorize(Roles = "Jockey")]
     public async Task<ActionResult> GetAssignedRaces()
     {
         var userId = GetUserId();
