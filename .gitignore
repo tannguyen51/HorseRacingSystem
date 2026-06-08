@@ -15,6 +15,7 @@ BE/obj/
 # User/IDE files
 .vs/
 .vscode/
+.agents/
 *.user
 *.suo
 *.userprefs
@@ -22,5 +23,9 @@ BE/obj/
 
 # Logs
 *.log
+
+.md
+!README.md
+
 
 BE/Migrations/
