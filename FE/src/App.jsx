@@ -41,6 +41,8 @@ import OwnerTournamentRegisterPage from "./pages/OwnerTournamentRegisterPage/Own
 import OwnerRaceConfirmationPage from "./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage";
 import RefereeDashboardPage from "./pages/RefereeDashboardPage/RefereeDashboardPage";
 import { RefereeAssignmentPage } from "./components/RefereeNotification/RefereeAssignmentPage";
+import RefereeHealthCheckPage from "./pages/RefereeHealthCheckPage/RefereeHealthCheckPage";
+import RefereeViolationPage from "./pages/RefereeViolationPage/RefereeViolationPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import AdminPage from "./pages/AdminPage/AdminPage";
@@ -91,6 +93,7 @@ function AppLayout() {
 
     if (isReferee || authUser?.role === "referee") {
       return <RefereeHeader />;
+    }
     if (isAdmin || authUser?.role === "admin") {
       return <AdminHeader />;
     }
@@ -173,10 +176,19 @@ function AppLayout() {
             path="/referee/assignments"
             element={<RefereeAssignmentPage />}
           />
+          <Route
+            path="/referee/health-checks"
+            element={<RefereeHealthCheckPage />}
+          />
+          <Route
+            path="/referee/violations"
+            element={<RefereeViolationPage />}
+          />
           <Route path="/admin" element={adminPage} />
           <Route path="/admin/users" element={adminPage} />
           <Route path="/admin/users/:id" element={adminPage} />
           <Route path="/admin/users/:userId/horses/:horseId" element={adminPage} />
+          <Route path="/admin/registrations" element={adminPage} />
           <Route path="/admin/roles" element={adminPage} />
           <Route path="/admin/tournaments" element={adminPage} />
           <Route path="/admin/rounds" element={adminPage} />

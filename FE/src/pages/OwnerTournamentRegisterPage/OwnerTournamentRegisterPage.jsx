@@ -1,25 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { getMyHorses } from "../../services/ownerHorseApi";
+import { getMyHorses, registerHorseForRace } from "../../services/ownerHorseApi";
 import { getOwnerTournaments } from "../../services/ownerApi";
+import { getTournamentRaces } from "../../services/adminApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentRegisterPage.css";
-
-const initialRegistrations = [
-  {
-    id: 1,
-    horse: "Silver Comet",
-    tournament: "Capital Cup",
-    status: "Pending review",
-    submitted: "June 3, 2026",
-  },
-  {
-    id: 2,
-    horse: "Thunder Strike",
-    tournament: "Pacific Classic Series",
-    status: "Approved",
-    submitted: "June 1, 2026",
-  },
-];
 
 const formatDate = (value) => {
   const date = new Date(value);
@@ -45,14 +29,29 @@ const mapTournament = (tournament) => ({
 function OwnerTournamentRegisterPage() {
   const [tournaments, setTournaments] = useState([]);
   const [horses, setHorses] = useState([]);
+  const [races, setRaces] = useState([]);
   const [selectedHorseId, setSelectedHorseId] = useState("");
   const [selectedTournamentId, setSelectedTournamentId] = useState("");
+  const [selectedRaceId, setSelectedRaceId] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [registrations, setRegistrations] = useState(initialRegistrations);
+  const [registrations, setRegistrations] = useState([]);
   const [isHorseLoading, setIsHorseLoading] = useState(true);
   const [horseError, setHorseError] = useState("");
   const [isTournamentLoading, setIsTournamentLoading] = useState(true);
   const [tournamentError, setTournamentError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const loadRaces = async () => {
+    if (!selectedTournamentId) { setRaces([]); return; }
+    try {
+      const data = await getTournamentRaces(selectedTournamentId);
+      setRaces(Array.isArray(data) ? data : []);
+    } catch { setRaces([]); }
+  };
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadRaces(); }, [selectedTournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let isMounted = true;
@@ -154,22 +153,30 @@ function OwnerTournamentRegisterPage() {
     },
   ];
 
-  const handleSubmitRegistration = () => {
-    if (!selectedHorse || !selectedTournament) {
-      return;
+  const handleSubmitRegistration = async () => {
+    if (!selectedHorse || !selectedTournament || !selectedRaceId) return;
+    setIsSubmitting(true);
+    setMsg("");
+    try {
+      await registerHorseForRace(selectedHorse.id, selectedRaceId, {});
+      setRegistrations((current) => [
+        {
+          id: Date.now(),
+          horse: selectedHorse.name,
+          tournament: selectedTournament.name,
+          race: races.find((r) => (r.id ?? r.Id) === selectedRaceId)?.name ?? selectedRaceId,
+          status: "Pending review",
+          submitted: new Date().toISOString().slice(0, 10),
+        },
+        ...current,
+      ]);
+      setMsg("Registration submitted successfully!");
+    } catch (err) {
+      setMsg("Error: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirm(false);
     }
-
-    setRegistrations((current) => [
-      {
-        id: Date.now(),
-        horse: selectedHorse.name,
-        tournament: selectedTournament.name,
-        status: "Pending review",
-        submitted: "June 4, 2026",
-      },
-      ...current,
-    ]);
-    setShowConfirm(false);
   };
 
   return (
@@ -258,6 +265,31 @@ function OwnerTournamentRegisterPage() {
                   <p className="form-error">{tournamentError}</p>
                 ) : null}
               </div>
+              <div className="form-field">
+                <label className="label-required" htmlFor="select-race">
+                  Select race
+                </label>
+                <select
+                  id="select-race"
+                  className="form-select"
+                  value={selectedRaceId}
+                  onChange={(event) => setSelectedRaceId(event.target.value)}
+                  disabled={!selectedTournamentId || races.length === 0}
+                >
+                  {!selectedTournamentId ? (
+                    <option value="">Select a tournament first</option>
+                  ) : races.length === 0 ? (
+                    <option value="">No races available</option>
+                  ) : (
+                    <option value="">-- Choose a race --</option>
+                  )}
+                  {races.map((race) => (
+                    <option key={race.id ?? race.Id} value={race.id ?? race.Id}>
+                      {race.name ?? race.Name} · {race.status ?? race.Status ?? "Scheduled"}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="selection-summary">
                 <div>
                   <span>Horse</span>
@@ -279,13 +311,14 @@ function OwnerTournamentRegisterPage() {
                 </div>
               </div>
               <div className="register-actions">
+                {msg && <p className={msg.startsWith("Error") ? "form-error" : "form-success"}>{msg}</p>}
                 <button
                   className="primary-button"
                   type="button"
                   onClick={() => setShowConfirm(true)}
-                  disabled={!selectedHorse || !selectedTournament}
+                  disabled={!selectedHorse || !selectedTournament || !selectedRaceId || isSubmitting}
                 >
-                  Review registration
+                  {isSubmitting ? "Submitting..." : "Review registration"}
                 </button>
                 <button className="ghost-button" type="button">
                   Save draft

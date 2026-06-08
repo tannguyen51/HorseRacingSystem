@@ -1,6 +1,10 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
+using HorseRacing.Models;
+using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +19,26 @@ public class RefereesController : ControllerBase
     private readonly IRefereeHtmlCheckService _healthCheckService;
     private readonly IViolationRecordService _violationService;
     private readonly IRaceReportService _reportService;
+    private readonly IRefereeRepository _refereeRepo;
+    private readonly IRefereeAssignmentRepository _assignmentRepo;
+    private readonly IRaceEntryRepository _entryRepo;
 
     public RefereesController(
         IRefereeService refereeService,
         IRefereeHtmlCheckService healthCheckService,
         IViolationRecordService violationService,
-        IRaceReportService reportService)
+        IRaceReportService reportService,
+        IRefereeRepository refereeRepo,
+        IRefereeAssignmentRepository assignmentRepo,
+        IRaceEntryRepository entryRepo)
     {
         _refereeService = refereeService;
         _healthCheckService = healthCheckService;
         _violationService = violationService;
         _reportService = reportService;
+        _refereeRepo = refereeRepo;
+        _assignmentRepo = assignmentRepo;
+        _entryRepo = entryRepo;
     }
 
     // Referee Management
@@ -109,6 +122,81 @@ public class RefereesController : ControllerBase
         request.AssignmentId = assignmentId;
         var result = await _refereeService.ConfirmAssignmentAsync(request);
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpGet("my-assignments")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> GetMyAssignments([FromQuery] string? status)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var referee = await _refereeRepo.GetByUserIdAsync(userId);
+        if (referee is null)
+            return NotFound(new { message = "Referee profile not found." });
+
+        var result = await _refereeService.GetRefereeAssignmentsAsync(referee.Id);
+        if (result.StatusCode != 200)
+            return StatusCode(result.StatusCode, result.Result);
+
+        if (!string.IsNullOrEmpty(status)
+            && result.Result.Data is System.Collections.Generic.IEnumerable<RefereeAssignmentResponse> all)
+        {
+            var filtered = all
+                .Where(a => string.Equals(a.Status, status, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            return Ok(ApiResult<IEnumerable<RefereeAssignmentResponse>>.Ok(filtered));
+        }
+
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("assignments/{assignmentId:guid}/respond")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> RespondToAssignment(Guid assignmentId, [FromBody] RespondToAssignmentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Response)
+            || request.Response is not ("Accept" or "Reject"))
+            return BadRequest(new { message = "Response must be 'Accept' or 'Reject'." });
+
+        var assignment = await _assignmentRepo.GetByIdAsync(assignmentId);
+        if (assignment is null)
+            return NotFound(new { message = "Assignment not found." });
+
+        if (string.Equals(request.Response, "Accept", StringComparison.OrdinalIgnoreCase))
+        {
+            assignment.Status = RefereeAssignmentStatus.Confirmed;
+            assignment.ConfirmedAt = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(request.Notes))
+                assignment.Notes = request.Notes;
+        }
+        else
+        {
+            assignment.Status = RefereeAssignmentStatus.Cancelled;
+            assignment.CompletedAt = DateTime.UtcNow;
+            assignment.Notes = request.Notes ?? "Rejected by referee";
+        }
+
+        await _assignmentRepo.UpdateAsync(assignment);
+        return Ok(new { message = $"Assignment {request.Response.ToLowerInvariant()}ed." });
+    }
+
+    [HttpGet("race/{raceId:guid}/entries")]
+    [Authorize(Roles = "Referee,Admin")]
+    public async Task<ActionResult> GetRaceEntries(Guid raceId)
+    {
+        var entries = await _entryRepo.GetByRaceAsync(raceId);
+        var result = entries.Select(e => new
+        {
+            EntryId = e.Id,
+            HorseId = e.HorseId,
+            HorseName = e.Horse?.Name ?? e.HorseId.ToString(),
+            JockeyId = e.JockeyId,
+            JockeyName = e.Jockey?.User?.FullName,
+            Status = e.Status.ToString()
+        });
+        return Ok(result);
     }
 
     // Health Checks

@@ -80,3 +80,24 @@ export const assignHorseToRace = (raceId, payload) =>
     method: "POST",
     body: JSON.stringify(payload),
   });
+
+export const startRace = (raceId) =>
+  request(`/api/races/management/${raceId}/start`, { method: "POST" });
+
+export const endRace = (raceId) =>
+  request(`/api/races/management/${raceId}/end`, { method: "POST" });
+
+export const cancelRace = (raceId) =>
+  request(`/api/races/management/${raceId}/cancel`, { method: "POST" });
+
+export const getPendingRegistrations = async () =>
+  unwrap(await request("/api/admin/registrations/pending"));
+
+export const approveRegistration = (id) =>
+  request(`/api/admin/registrations/${id}/approve`, { method: "POST" });
+
+export const rejectRegistration = (id, reason) =>
+  request(`/api/admin/registrations/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });

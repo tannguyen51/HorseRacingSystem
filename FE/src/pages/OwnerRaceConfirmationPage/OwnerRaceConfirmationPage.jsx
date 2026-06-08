@@ -1,62 +1,69 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { confirmRaceEntry, getMyHorses } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerRaceConfirmationPage.css";
 
-const initialConfirmations = [
-  {
-    id: 1,
-    race: "Coastal Derby",
-    date: "June 12 · 4:20 PM",
-    horse: "Silver Comet",
-    track: "Gulfstream Park",
-    gate: "Gate 04",
-    jockey: "Pending assignment",
-    deadline: "June 8, 2026",
-    status: "Pending",
-  },
-  {
-    id: 2,
-    race: "Emerald Invitational",
-    date: "June 16 · 2:40 PM",
-    horse: "Thunder Strike",
-    track: "Emerald Downs",
-    gate: "Gate 07",
-    jockey: "Ariana Blake",
-    deadline: "June 10, 2026",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    race: "Golden Mile",
-    date: "June 21 · 5:10 PM",
-    horse: "Midnight Runner",
-    track: "Santa Anita",
-    gate: "Gate 02",
-    jockey: "Pending assignment",
-    deadline: "June 14, 2026",
-    status: "Confirmed",
-  },
-];
-
 function OwnerRaceConfirmationPage() {
-  const [confirmations, setConfirmations] = useState(initialConfirmations);
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const horses = await getMyHorses();
+        const list = Array.isArray(horses) ? horses : [];
+        const all = [];
+        for (const horse of list) {
+          const raceEntries = horse.raceEntries || horse.RaceEntries || [];
+          for (const entry of raceEntries) {
+            all.push({
+              horseName: horse.name || horse.Name || "Unknown",
+              horseId: horse.id || horse.Id,
+              entryId: entry.id || entry.Id || entry.entryId || entry.EntryId,
+              raceId: entry.raceId || entry.RaceId,
+              raceName: entry.raceName || entry.RaceName || entry.raceId || entry.RaceId,
+              status: entry.status || entry.Status || "Pending",
+            });
+          }
+        }
+        if (!ignore) setEntries(all);
+      } catch (e) {
+        if (!ignore) setMsg("Error loading entries: " + e.message);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+    load();
+    return () => { ignore = true; };
+  }, []);
 
   const statusCounts = useMemo(
     () =>
-      confirmations.reduce(
-        (counts, race) => ({
+      entries.reduce(
+        (counts, entry) => ({
           ...counts,
-          [race.status]: (counts[race.status] ?? 0) + 1,
+          [entry.status]: (counts[entry.status] ?? 0) + 1,
         }),
         {},
       ),
-    [confirmations],
+    [entries],
   );
 
-  const updateStatus = (id, status) => {
-    setConfirmations((current) =>
-      current.map((race) => (race.id === id ? { ...race, status } : race)),
-    );
+  const handleConfirm = async (raceId, entryId) => {
+    try {
+      await confirmRaceEntry(raceId, entryId);
+      setMsg("Entry confirmed!");
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.entryId === entryId ? { ...e, status: "Confirmed" } : e,
+        ),
+      );
+    } catch (e) {
+      setMsg("Error: " + e.message);
+    }
   };
 
   return (
@@ -70,12 +77,12 @@ function OwnerRaceConfirmationPage() {
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Pending confirmations</p>
-            <h4>{statusCounts.Pending ?? 0} races</h4>
+            <h4>{statusCounts.Pending ?? 0} pending</h4>
             <span>Awaiting owner action</span>
           </div>
           <div className="owner-sidebar__card">
             <p className="muted">Confirmed</p>
-            <h4>{statusCounts.Confirmed ?? 0} races</h4>
+            <h4>{statusCounts.Confirmed ?? 0} confirmed</h4>
             <span>Ready to participate</span>
           </div>
         </aside>
@@ -83,84 +90,49 @@ function OwnerRaceConfirmationPage() {
         <div className="owner-content">
           <section className="page-header">
             <h1>Race confirmations</h1>
-            <p>Confirm participation and keep your roster aligned.</p>
+            <p>Confirm your horses' participation in scheduled races.</p>
           </section>
 
           <section className="confirmation-summary">
-            <article>
-              <span>Pending</span>
-              <strong>{statusCounts.Pending ?? 0}</strong>
-              <p>Need a decision</p>
-            </article>
-            <article>
-              <span>Confirmed</span>
-              <strong>{statusCounts.Confirmed ?? 0}</strong>
-              <p>Participation locked</p>
-            </article>
-            <article>
-              <span>Declined</span>
-              <strong>{statusCounts.Declined ?? 0}</strong>
-              <p>Removed from lineup</p>
-            </article>
+            <article><span>Pending</span><strong>{statusCounts.Pending ?? 0}</strong><p>Need a decision</p></article>
+            <article><span>Confirmed</span><strong>{statusCounts.Confirmed ?? 0}</strong><p>Participation locked</p></article>
+            <article><span>Total</span><strong>{entries.length}</strong><p>Total entries</p></article>
           </section>
 
           <section className="confirmation-grid">
-            {confirmations.map((race) => (
-              <article key={race.id} className="confirmation-card">
-                <div className="confirmation-header">
-                  <div>
-                    <h3>{race.race}</h3>
-                    <p className="muted">{race.track}</p>
+            {loading ? (
+              <p>Loading entries...</p>
+            ) : entries.length === 0 ? (
+              <p className="muted">No pending race entries found. Register your horses in tournaments first.</p>
+            ) : (
+              entries.map((entry) => (
+                <article key={entry.entryId} className="confirmation-card">
+                  <div className="confirmation-header">
+                    <div>
+                      <h3>{entry.horseName}</h3>
+                      <p className="muted">Race: {entry.raceName}</p>
+                    </div>
+                    <span className={`confirmation-status confirmation-status--${(entry.status || "pending").toLowerCase()}`}>
+                      {entry.status || "Pending"}
+                    </span>
                   </div>
-                  <span
-                    className={`confirmation-status confirmation-status--${race.status.toLowerCase()}`}
-                  >
-                    {race.status}
-                  </span>
-                </div>
-                <div className="confirmation-meta">
-                  <div>
-                    <span>Race date</span>
-                    <strong>{race.date}</strong>
+                  <div className="confirmation-meta">
+                    <div><span>Entry ID</span><strong>{entry.entryId}</strong></div>
+                    <div><span>Race ID</span><strong>{entry.raceId}</strong></div>
                   </div>
-                  <div>
-                    <span>Horse</span>
-                    <strong>{race.horse}</strong>
+                  <div className="confirmation-actions">
+                    <button
+                      className="confirmation-action confirmation-action--confirm"
+                      onClick={() => handleConfirm(entry.raceId, entry.entryId)}
+                      disabled={entry.status === "Confirmed"}
+                    >
+                      Confirm participation
+                    </button>
                   </div>
-                  <div>
-                    <span>Gate</span>
-                    <strong>{race.gate}</strong>
-                  </div>
-                  <div>
-                    <span>Jockey</span>
-                    <strong>{race.jockey}</strong>
-                  </div>
-                  <div>
-                    <span>Confirm by</span>
-                    <strong>{race.deadline}</strong>
-                  </div>
-                </div>
-                <div className="confirmation-actions">
-                  <button
-                    className="confirmation-action confirmation-action--confirm"
-                    onClick={() => updateStatus(race.id, "Confirmed")}
-                    disabled={race.status === "Confirmed"}
-                  >
-                    Confirm participation
-                  </button>
-                  <button
-                    className="confirmation-action confirmation-action--decline"
-                    onClick={() => updateStatus(race.id, "Declined")}
-                    disabled={race.status === "Declined"}
-                  >
-                    Decline
-                  </button>
-                  <button className="confirmation-action confirmation-action--details">
-                    View details
-                  </button>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
+            {msg && <p className={msg.startsWith("Error") ? "form-error" : "form-success"}>{msg}</p>}
           </section>
         </div>
       </div>

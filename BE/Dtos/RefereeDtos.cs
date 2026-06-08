@@ -48,6 +48,13 @@ public class ConfirmRefereeAssignmentRequest
     public string? Notes { get; set; }
 }
 
+public class RespondToAssignmentRequest
+{
+    public Guid AssignmentId { get; set; }
+    public string Response { get; set; } = string.Empty; // "Accept" or "Reject"
+    public string? Notes { get; set; }
+}
+
 public class RefereeAssignmentResponse
 {
     public Guid Id { get; set; }

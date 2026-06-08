@@ -1,0 +1,48 @@
+.referee-violations .violation-form {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.referee-violations .violation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.referee-violations .violation-card {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.referee-violations .violation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.badge--dangerousbehavior { background: #fee2e2; color: #991b1b; }
+.badge--falsestart { background: #fed7aa; color: #9a3412; }
+.badge--interference { background: #fef3c7; color: #92400e; }
+.badge--animalwelfare { background: #fce7f3; color: #9d174d; }
+.badge--equipmentviolation { background: #e0e7ff; color: #3730a3; }
+
+.side-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+.side-list li {
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+}

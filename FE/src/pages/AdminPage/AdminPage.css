@@ -50,6 +50,7 @@
 .status--pending { color: #f2d28b; background: rgba(231,198,120,.1); }
 .status--rejected { color: #fca5a5; background: rgba(248,113,113,.1); }
 .admin-actions { display: flex; gap: 7px; }
+.admin-race-actions { margin-top: 0.75rem; }
 .admin-actions button, .admin-danger, .admin-role-grid button { border: 1px solid rgba(231,198,120,.2); background: transparent; color: #e7c678; border-radius: 8px; padding: 7px 10px; cursor: pointer; }
 .admin-actions button:disabled { opacity: .4; cursor: not-allowed; }
 .admin-danger { color: #fca5a5; border-color: rgba(248,113,113,.25); }

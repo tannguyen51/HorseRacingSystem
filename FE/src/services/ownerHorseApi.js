@@ -38,3 +38,18 @@ export const inviteJockeyToHorse = async (horseId, payload) =>
       body: JSON.stringify(payload),
     }),
   );
+
+export const registerHorseForRace = async (horseId, raceId, payload) =>
+  unwrapResponseData(
+    await request(`/api/horses/${horseId}/races/${raceId}/registrations`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  );
+
+export const confirmRaceEntry = async (raceId, entryId) =>
+  unwrapResponseData(
+    await request(`/api/horses/races/${raceId}/entries/${entryId}/owner-confirm`, {
+      method: "POST",
+    }),
+  );

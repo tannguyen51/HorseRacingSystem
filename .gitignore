@@ -23,8 +23,9 @@ BE/obj/
 
 # Logs
 *.log
-
-.md
+*.lscache
+skills-lock.json
+*.md
 !README.md
 
 

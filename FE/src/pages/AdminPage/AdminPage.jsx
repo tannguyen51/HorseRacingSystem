@@ -2,21 +2,27 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   approveJockey,
+  approveRegistration,
   assignHorseToRace,
+  cancelRace,
   createRace,
   createRound,
   createTournament,
   deleteTournament,
+  endRace,
   getAdminDashboard,
   getAdminUser,
   getAdminUsers,
   getAdminTournaments,
   getOwnerHorse,
   getOwnerHorses,
+  getPendingRegistrations,
   getTournamentRaces,
   getTournamentRounds,
   rejectJockey,
+  rejectRegistration,
   setUserActive,
+  startRace,
   updateOwnerHorseStatus,
   updateTournament,
 } from "../../services/adminApi";
@@ -29,6 +35,7 @@ const navGroups = [
     label: "User Management",
     items: [
       { to: "/admin/users", label: "User List" },
+      { to: "/admin/registrations", label: "Registrations" },
       { to: "/admin/roles", label: "Role Management" },
     ],
   },
@@ -683,6 +690,18 @@ function ScheduleManagement({ type }) {
     } catch (err) { setMessage(err.message); }
   };
 
+  const handleRaceAction = async (raceId, action) => {
+    const labels = { start: "start", end: "end", cancel: "cancel" };
+    if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} this race?`)) return;
+    try {
+      if (action === "start") await startRace(raceId);
+      else if (action === "end") await endRace(raceId);
+      else if (action === "cancel") await cancelRace(raceId);
+      setMessage(`Race ${labels[action]}ed successfully.`);
+      setItems(await getTournamentRaces(selected));
+    } catch (err) { setMessage(err.message); }
+  };
+
   const title = type === "round" ? "Round management" : "Race management & scheduling";
   return (
     <>
@@ -734,7 +753,115 @@ function ScheduleManagement({ type }) {
           No approved jockeys are available. Approve jockey accounts in Role Management before assigning one to a race.
         </p>
       ) : null}
-      <section className="admin-card-grid">{items.map((item) => <article key={item.id ?? item.Id} className="admin-simple-card"><span className="badge">{item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span><h3>{item.name ?? item.Name}</h3><p>{formatDate(item.scheduledAt ?? item.ScheduledAt ?? item.scheduledStartDate ?? item.ScheduledStartDate)}</p><small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} races` : `${item.entriesCount ?? item.EntriesCount ?? 0} assigned horses`}</small></article>)}</section>
+      <section className="admin-card-grid">{items.map((item) => {
+        const itemId = item.id ?? item.Id;
+        const itemStatus = (item.status ?? item.Status ?? "").toLowerCase();
+        return <article key={itemId} className="admin-simple-card">
+          <span className="badge">{item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
+          <h3>{item.name ?? item.Name}</h3>
+          <p>{formatDate(item.scheduledAt ?? item.ScheduledAt ?? item.scheduledStartDate ?? item.ScheduledStartDate)}</p>
+          <small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} races` : `${item.entriesCount ?? item.EntriesCount ?? 0} assigned horses`}</small>
+          {type === "race" && (
+            <div className="admin-actions admin-race-actions">
+              {itemStatus !== "inprogress" && itemStatus !== "finished" && (
+                <button onClick={() => handleRaceAction(itemId, "start")} disabled={itemStatus === "cancelled"}>
+                  Start
+                </button>
+              )}
+              {itemStatus === "inprogress" && (
+                <button onClick={() => handleRaceAction(itemId, "end")}>
+                  End
+                </button>
+              )}
+              {itemStatus !== "finished" && itemStatus !== "cancelled" && (
+                <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          )}
+        </article>;
+      })}</section>
+    </>
+  );
+}
+
+function RegistrationManagement() {
+  const [items, setItems] = useState([]);
+  const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
+
+  const load = () =>
+    getPendingRegistrations()
+      .then((data) => setItems(Array.isArray(data) ? data : []))
+      .catch((err) => setMessage(err.message));
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() =>
+    items.filter((item) => {
+      const search = `${item.fullName ?? item.FullName ?? ""} ${item.email ?? item.Email ?? ""} ${item.requestedRole ?? item.RequestedRole ?? ""}`.toLowerCase();
+      return search.includes(query.toLowerCase());
+    }),
+  [query, items]);
+
+  const approve = async (registration) => {
+    const id = registration.id ?? registration.Id;
+    try {
+      await approveRegistration(id);
+      setMessage("Registration approved.");
+      load();
+    } catch (err) { setMessage(err.message); }
+  };
+
+  const reject = async (registration) => {
+    const id = registration.id ?? registration.Id;
+    const reason = window.prompt("Rejection reason (optional):");
+    if (reason === null) return;
+    try {
+      await rejectRegistration(id, reason || "Rejected by admin");
+      setMessage("Registration rejected.");
+      load();
+    } catch (err) { setMessage(err.message); }
+  };
+
+  return (
+    <>
+      <PageTitle eyebrow="User Management" title="Registration approvals" description="Review and approve new user registrations before they can access the platform." />
+      <div className="admin-toolbar">
+        <input placeholder="Search by name, email, or role..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <span>{filtered.length} pending</span>
+      </div>
+      <Notice message={message} />
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            {filtered.map((item) => {
+              const id = item.id ?? item.Id;
+              const status = item.status ?? item.Status ?? "Pending";
+              return (
+                <tr key={id}>
+                  <td><strong>{item.fullName ?? item.FullName ?? "N/A"}</strong></td>
+                  <td>{item.email ?? item.Email}</td>
+                  <td>{item.requestedRole ?? item.RequestedRole}</td>
+                  <td><span className={`status status--${status.toLowerCase()}`}>{status}</span></td>
+                  <td>{formatDate(item.createdAt ?? item.CreatedAt)}</td>
+                  <td>
+                    <div className="admin-actions">
+                      <button disabled={status !== "Pending"} onClick={() => approve(item)}>Approve</button>
+                      <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Reject</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && (
+              <tr><td colSpan={6}>No pending registrations found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }
@@ -743,6 +870,7 @@ function AdminPage() {
   const location = useLocation();
   let content = <Dashboard />;
   if (location.pathname === "/admin/users") content = <UserList />;
+  else if (location.pathname === "/admin/registrations") content = <RegistrationManagement />;
   else if (location.pathname.includes("/horses/")) content = <HorseDetail />;
   else if (location.pathname.startsWith("/admin/users/")) content = <UserDetail />;
   else if (location.pathname === "/admin/roles") content = <Roles />;
