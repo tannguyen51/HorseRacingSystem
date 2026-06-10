@@ -8,6 +8,13 @@ import { getAvailableJockeys } from "../../services/jockeyApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerHorseListPage.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
+const getImageUrl = (url) => {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const statusFilters = ["All", "Pending", "Approved", "Rejected"];
 const approvalStatusMap = {
   1: "Pending",
@@ -304,8 +311,9 @@ function OwnerHorseListPage() {
               pageItems.map((horse) => {
                 const statusLabel = getStatusLabel(horse);
                 const assignment = getHorseAssignment(horse);
-                const imageStyle = horse.imageUrl
-                  ? { "--horse-image": `url(${horse.imageUrl})` }
+                const imageUrl = getImageUrl(horse.imageUrl ?? horse.ImageUrl);
+                const imageStyle = imageUrl
+                  ? { "--horse-image": `url(${imageUrl})` }
                   : undefined;
                 return (
                   <article key={horse.id} className="horse-card hover-lift">

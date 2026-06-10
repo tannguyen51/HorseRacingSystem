@@ -53,6 +53,8 @@
 .admin-race-actions { margin-top: 0.75rem; }
 .admin-actions button, .admin-danger, .admin-role-grid button { border: 1px solid rgba(231,198,120,.2); background: transparent; color: #e7c678; border-radius: 8px; padding: 7px 10px; cursor: pointer; }
 .admin-actions button:disabled { opacity: .4; cursor: not-allowed; }
+.admin-actions button:hover:not(:disabled), .admin-danger:hover:not(:disabled) { border-color: rgba(231,198,120,.4); background: rgba(231,198,120,.12); }
+.admin-danger:hover:not(:disabled) { border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.1); }
 .admin-danger { color: #fca5a5; border-color: rgba(248,113,113,.25); }
 .admin-notice { padding: 11px 14px; color: #6ee7b7; border-radius: 10px; background: rgba(52,211,153,.08); font-size: 13px; }
 .admin-notice--error { color: #fca5a5; background: rgba(248,113,113,.08); }
@@ -103,3 +105,73 @@
 .admin-tournament-card dd { margin: 5px 0 0; color: #dbe2ef; font-size: 12px; }
 @media (max-width: 980px) { .admin-layout { grid-template-columns: 1fr; } .admin-sidebar { position: static; } .admin-nav { grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); } .admin-panel-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .admin-title, .admin-toolbar { align-items: stretch; flex-direction: column; } .admin-title h1 { font-size: 32px; } .admin-profile { grid-template-columns: 1fr; } .admin-horse-grid { grid-template-columns: 1fr; } .admin-horse-card__actions { grid-template-columns: 1fr; } .admin-horse-detail__hero { grid-template-columns: 1fr; } .admin-horse-detail__image { width: 100%; } }
+
+/* ── Section Headings ── */
+.section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-heading h2 { color: #f8f4e6; font-size: 20px; margin: 0; }
+.section-heading p { color: #98a1b3; font-size: 13px; margin: 6px 0 0; }
+
+/* ── Badge Variants ── */
+.badge { display: inline-flex; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.badge--draft { color: #98a1b3; background: rgba(152,161,179,.15); }
+.badge--active { color: #6ee7b7; background: rgba(52,211,153,.12); }
+.badge--expired { color: #fca5a5; background: rgba(248,113,113,.1); }
+.badge--terminated { color: #fca5a5; background: rgba(248,113,113,.12); }
+.badge--renewed { color: #f2d28b; background: rgba(231,198,120,.12); }
+.badge--minor { color: #6ee7b7; background: rgba(52,211,153,.08); }
+.badge--moderate { color: #f2d28b; background: rgba(231,198,120,.1); }
+.badge--severe { color: #fb923c; background: rgba(251,146,60,.12); }
+.badge--critical { color: #fca5a5; background: rgba(248,113,113,.14); }
+
+/* ── Empty State ── */
+.empty-state { text-align: center; padding: 48px 24px; border: 1px dashed rgba(231,198,120,.1); border-radius: 16px; background: rgba(10,16,28,.5); }
+.empty-state h3 { color: #98a1b3; margin: 16px 0 8px; font-size: 16px; }
+.empty-state p { color: #7f899a; font-size: 13px; max-width: 360px; margin: 0 auto; }
+.empty-state-icon { font-size: 36px; opacity: .5; }
+
+/* ── Page Controls (Prev/Next) ── */
+.page-controls { display: flex; gap: 6px; align-items: center; }
+.page-controls button { padding: 5px 12px; border: 1px solid rgba(231,198,120,.15); border-radius: 8px; background: transparent; color: #e7c678; cursor: pointer; font-size: 12px; transition: all .15s; }
+.page-controls button:hover:not(:disabled) { background: rgba(231,198,120,.1); border-color: rgba(231,198,120,.3); }
+.page-controls button:disabled { opacity: .3; cursor: not-allowed; }
+.page-controls .page-info { color: #e7c678; font-size: 12px; min-width: 50px; text-align: center; }
+
+/* ── Modal Overlay (global) ── */
+.modal-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: rgba(0,0,0,.65); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.owner-modal { width: min(520px, 92vw); max-height: 85vh; overflow-y: auto; padding: 28px; border: 1px solid rgba(231,198,120,.15); border-radius: 22px; background: linear-gradient(160deg, rgba(15,22,36,.98), rgba(8,14,25,.96)); box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h3 { color: #f8f4e6; font-size: 20px; margin: 0; }
+.modal-body { display: grid; gap: 14px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── Form Elements ── */
+.form-group { display: grid; gap: 6px; }
+.form-group label { color: #b7c0cf; font-size: 12px; font-weight: 500; }
+.form-input, .form-select, .form-textarea { min-height: 42px; padding: 10px 13px; color: #e7edf6; border: 1px solid rgba(231,198,120,.16); border-radius: 11px; background: rgba(6,10,20,.8); font-size: 13px; font-family: inherit; width: 100%; box-sizing: border-box; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select { cursor: pointer; }
+.form-select option { background: #0a101c; color: #e7edf6; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: rgba(231,198,120,.35); box-shadow: 0 0 0 2px rgba(231,198,120,.08); }
+.form-error { padding: 10px 14px; color: #fca5a5; background: rgba(248,113,113,.08); border-radius: 10px; font-size: 13px; }
+
+/* ── Primary/Secondary Buttons ── */
+.primary-button { padding: 10px 20px; border: none; border-radius: 10px; background: linear-gradient(135deg, #d7aa4d, #c4902e); color: #14100a; font-weight: 600; font-size: 13px; cursor: pointer; transition: all .15s; }
+.primary-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(215,170,77,.3); }
+.primary-button:disabled { opacity: .4; cursor: not-allowed; }
+.ghost-button { padding: 10px 18px; border: 1px solid rgba(231,198,120,.15); border-radius: 10px; background: transparent; color: #e7edf6; cursor: pointer; font-size: 13px; transition: all .15s; }
+.ghost-button:hover { border-color: rgba(231,198,120,.3); background: rgba(231,198,120,.05); }
+
+/* ── Section Cards for Management Pages ── */
+.admin-section-card { padding: 24px; border: 1px solid rgba(231,198,120,.1); border-radius: 18px; background: rgba(10,16,28,.88); }
+.admin-section-card h2 { margin: 0 0 6px; color: #f8f4e6; font-size: 20px; }
+.admin-section-card .subtitle { color: #98a1b3; font-size: 13px; margin-bottom: 20px; }
+
+/* ── Loading Skeleton ── */
+.skeleton { background: linear-gradient(90deg, rgba(231,198,120,.04) 25%, rgba(231,198,120,.1) 50%, rgba(231,198,120,.04) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+.skeleton-row { height: 48px; margin-bottom: 8px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Inline Form (Prize/Quick-Action) ── */
+.inline-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 16px; border: 1px solid rgba(231,198,120,.1); border-radius: 14px; background: rgba(10,16,28,.6); margin-bottom: 20px; }
+.inline-form input, .inline-form select { min-height: 40px; padding: 8px 12px; color: #e7edf6; border: 1px solid rgba(231,198,120,.16); border-radius: 10px; background: rgba(6,10,20,.8); font-size: 13px; }
+.inline-form input:focus, .inline-form select:focus { outline: none; border-color: rgba(231,198,120,.35); }

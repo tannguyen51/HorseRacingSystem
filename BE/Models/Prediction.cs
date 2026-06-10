@@ -27,5 +27,19 @@ public class Prediction
 
     public PredictionStatus Status { get; set; }
 
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal BetAmount { get; set; } = 0;
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal Odds { get; set; } = 0;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PotentialPayout { get; set; } = 0;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? PayoutAmount { get; set; }
+
     public DateTime CreatedAt { get; set; }
+
+    public DateTime? SettledAt { get; set; }
 }

@@ -21,6 +21,22 @@ public class Tournament
     [MaxLength(1000)]
     public string? Description { get; set; }
 
+    [MaxLength(100)]
+    public string? Category { get; set; } // Grade 1, Grade 2, Listed, etc.
+
+    [MaxLength(200)]
+    public string? Venue { get; set; }
+
+    [MaxLength(100)]
+    public string? Country { get; set; }
+
+    public SurfaceType? SurfaceType { get; set; }
+
+    public int MaxRounds { get; set; } = 1;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PrizePool { get; set; } = 0;
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

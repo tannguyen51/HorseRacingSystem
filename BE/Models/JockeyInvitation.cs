@@ -26,5 +26,13 @@ public class JockeyInvitation
 
     public JockeyInvitationStatus Status { get; set; }
 
+    [MaxLength(500)]
+    public string? Message { get; set; }
+
+    [MaxLength(500)]
+    public string? ResponseNote { get; set; }
+
     public DateTime CreatedAt { get; set; }
+
+    public DateTime? RespondedAt { get; set; }
 }

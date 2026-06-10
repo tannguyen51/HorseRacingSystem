@@ -1,74 +1,40 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { getTournament, getRoundsByTournament } from "../../services/spectatorApi";
 import "./TournamentDetailPage.css";
 
 function TournamentDetailPage() {
+  const { id } = useParams();
+  const [tournament, setTournament] = useState(null);
+  const [rounds, setRounds] = useState([]);
+
+  useEffect(() => {
+    getTournament(id).then((d) => setTournament(d?.data ?? d)).catch(() => {});
+    getRoundsByTournament(id).then((d) => setRounds(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [])).catch(() => {});
+  }, [id]);
+
+  if (!tournament) return <div className="page"><p>Loading...</p></div>;
+
   return (
     <div className="tournament-detail-page">
-      <section className="detail-hero">
-        <div>
-          <span className="pill">Championship</span>
-          <h1>Spring Championship Finals</h1>
-          <p>June 15, 2026 · Churchill Downs</p>
-          <div className="detail-actions">
-            <button className="primary-button">Register Team</button>
-            <button className="ghost-button">Download Rules</button>
-          </div>
-        </div>
-        <div className="detail-panel">
-          <h3>Prize Pool</h3>
-          <strong>$500,000</strong>
-          <p>Broadcast live across 24 countries.</p>
-        </div>
+      <section className="page-header">
+        <h1>{tournament.name ?? tournament.Name}</h1>
+        <p>{tournament.description ?? tournament.Description}</p>
       </section>
-
-      <section className="detail-grid">
-        <div>
-          <h3>Overview</h3>
-          <p>
-            The Spring Championship Finals gathers the top 12 stables with
-            qualifying points. Expect high-speed sprints, elite jockeys, and a
-            packed crowd of over 40,000 spectators.
-          </p>
+      <div className="detail-grid">
+        <div><span>Category</span><strong>{tournament.category ?? tournament.Category ?? "-"}</strong></div>
+        <div><span>Venue</span><strong>{tournament.venue ?? tournament.Venue ?? "-"}</strong></div>
+        <div><span>Country</span><strong>{tournament.country ?? tournament.Country ?? "-"}</strong></div>
+        <div><span>Rounds</span><strong>{rounds.length}</strong></div>
+        <div><span>Prize Pool</span><strong>${tournament.prizePool ?? tournament.PrizePool ?? 0}</strong></div>
+      </div>
+      <h2>Rounds</h2>
+      {rounds.length === 0 ? <p>No rounds yet.</p> : rounds.map((r) => (
+        <div key={r.id ?? r.Id} className="round-card" style={{ padding: 16, marginBottom: 12, border: "1px solid rgba(231,198,120,.1)", borderRadius: 12 }}>
+          <h3>{r.name ?? r.Name} (#{r.roundNumber ?? r.RoundNumber})</h3>
+          <p>{r.description ?? r.Description ?? ""}</p>
         </div>
-        <div>
-          <h3>Key Details</h3>
-          <ul>
-            <li>Distance: 1.5 miles</li>
-            <li>Entries: 12 / 15</li>
-            <li>Surface: Dirt</li>
-            <li>Category: Grade 1</li>
-          </ul>
-        </div>
-        <div>
-          <h3>Officials</h3>
-          <ul>
-            <li>Chief Judge: Amara Reed</li>
-            <li>Race Director: Louis Knight</li>
-            <li>Medical Lead: Dr. Cindy Park</li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="timeline">
-        <h2>Race Day Timeline</h2>
-        <div className="timeline-grid">
-          <div>
-            <h4>09:00 AM</h4>
-            <p>Stable inspections and safety briefings</p>
-          </div>
-          <div>
-            <h4>12:00 PM</h4>
-            <p>Jockey weigh-in and press conference</p>
-          </div>
-          <div>
-            <h4>01:30 PM</h4>
-            <p>Parade and warm-up laps</p>
-          </div>
-          <div>
-            <h4>02:00 PM</h4>
-            <p>Finals start with live broadcast</p>
-          </div>
-        </div>
-      </section>
+      ))}
     </div>
   );
 }

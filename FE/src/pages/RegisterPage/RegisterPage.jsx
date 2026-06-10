@@ -41,7 +41,7 @@ function RegisterPage() {
             setSelectedRole(availableRoleValues[0]);
           }
         }
-      } catch (error) {
+      } catch {
         if (!cancelled) {
           setRoles(REGISTER_ROLE_OPTIONS);
         }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
+using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +11,21 @@ using System.Security.Claims;
 
 namespace HorseRacing.Controllers;
 
-/// <summary>
-/// Xử lý đăng ký, đăng nhập và tra cứu vai trò người dùng.
-/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IUserRepository _userRepo;
+    private readonly IJockeyRepository _jockeyRepo;
+    private readonly IRefereeRepository _refereeRepo;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IUserRepository userRepo, IJockeyRepository jockeyRepo, IRefereeRepository refereeRepo)
     {
         _authService = authService;
+        _userRepo = userRepo;
+        _jockeyRepo = jockeyRepo;
+        _refereeRepo = refereeRepo;
     }
 
     // Authentication
@@ -51,6 +55,44 @@ public class AuthController : ControllerBase
 
         var result = await _authService.GetOwnerProfileAsync(userId);
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult> GetProfile()
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(uid, out var userId)) return Unauthorized();
+
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user is null) return NotFound();
+
+        return Ok(user.Role switch
+        {
+            UserRole.HorseOwner => user.OwnerProfile is not null
+                ? new { user.Id, user.Email, user.FullName, Role = "HorseOwner", Type = "HorseOwner", Code = user.OwnerProfile.OwnerCode, Horses = user.OwnerProfile.Horses.Count, user.CreatedAt }
+                : new { user.Id, user.Email, user.FullName, Role = "HorseOwner", Type = "HorseOwner", user.CreatedAt },
+            UserRole.Jockey => await BuildJockeyProfileAsync(user),
+            UserRole.Referee => await BuildRefereeProfileAsync(user),
+            UserRole.Admin => new { user.Id, user.Email, user.FullName, Role = "Admin", Type = "Admin", user.CreatedAt },
+            _ => new { user.Id, user.Email, user.FullName, Role = "Spectator", Type = "Spectator", user.CreatedAt }
+        });
+    }
+
+    private async Task<object> BuildJockeyProfileAsync(User user)
+    {
+        var jockey = await _jockeyRepo.GetByUserIdAsync(user.Id);
+        return jockey is null
+            ? new { user.Id, user.Email, user.FullName, Role = "Jockey", Type = "Jockey", user.CreatedAt }
+            : new { user.Id, user.Email, user.FullName, Role = "Jockey", Type = "Jockey", jockey.LicenseNumber, jockey.ExperienceYears, jockey.TotalRaces, jockey.TotalWins, WinRate = jockey.WinRate, jockey.Rank, jockey.Nationality, jockey.Status, user.CreatedAt };
+    }
+
+    private async Task<object> BuildRefereeProfileAsync(User user)
+    {
+        var referee = await _refereeRepo.GetByUserIdAsync(user.Id);
+        return referee is null
+            ? new { user.Id, user.Email, user.FullName, Role = "Referee", Type = "Referee", user.CreatedAt }
+            : new { user.Id, user.Email, user.FullName, Role = "Referee", Type = "Referee", referee.LicenseNumber, referee.Specialization, referee.Rating, referee.TotalOfficiated, referee.Nationality, IsActive = referee.IsActive, user.CreatedAt };
     }
 
     // Roles

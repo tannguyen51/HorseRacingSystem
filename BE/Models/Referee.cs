@@ -27,6 +27,17 @@ public class Referee
 
     public bool IsActive { get; set; } = true;
 
+    [Column(TypeName = "decimal(3,2)")]
+    public decimal Rating { get; set; } = 0; // 0.00 - 5.00
+
+    public int TotalOfficiated { get; set; } = 0;
+
+    [MaxLength(200)]
+    public string? Specialization { get; set; } // Chief, Veterinary, Equipment, etc.
+
+    [MaxLength(100)]
+    public string? Nationality { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

@@ -147,6 +147,7 @@ function SpectatorLiveRankingPage() {
         </aside>
 
         <div className="spectator-content">
+          {errorMessage && <div className="form-error">{errorMessage}</div>}
           <section className="page-header">
             <h1>Live Ranking</h1>
             <p>Follow live point changes for horses and jockeys.</p>

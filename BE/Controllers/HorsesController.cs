@@ -1,7 +1,12 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
+using HorseRacing.Models;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +23,30 @@ public class HorsesController : ControllerBase
     public HorsesController(IHorseService horseService)
     {
         _horseService = horseService;
+    }
+
+    [HttpGet("my-entries")]
+    public async Task<ActionResult> GetMyRaceEntries()
+    {
+        var ownerId = GetUserId();
+        var horses = await _horseService.GetMyHorsesAsync(ownerId);
+        if (horses.StatusCode != 200) return StatusCode(horses.StatusCode, horses.Result);
+
+        var list = (horses.Result.Data as System.Collections.IEnumerable)?.Cast<Horse>() ?? Enumerable.Empty<Horse>();
+        var entries = list.SelectMany(h => (h.RaceEntries ?? new List<RaceEntry>()).Select(e => new
+        {
+            EntryId = e.Id,
+            HorseId = h.Id,
+            HorseName = h.Name,
+            RaceId = e.RaceId,
+            RaceName = e.Race?.Name ?? e.RaceId.ToString(),
+            Status = e.Status.ToString(),
+            OwnerConfirmed = e.OwnerConfirmed,
+            JockeyConfirmed = e.JockeyConfirmed,
+            GateNumber = e.GateNumber,
+            FinishPosition = e.FinishPosition
+        }));
+        return Ok(entries);
     }
 
     [HttpGet]
@@ -74,6 +103,31 @@ public class HorsesController : ControllerBase
         var ownerId = GetUserId();
         var result = await _horseService.RegisterHorseAsync(ownerId, horseId, raceId, request);
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("upload-image")]
+    public async Task<ActionResult> UploadImage(IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "No file uploaded." });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext is not ".jpg" and not ".jpeg" and not ".png" and not ".gif" and not ".webp")
+            return BadRequest(new { message = "Only JPG, PNG, GIF, WEBP allowed." });
+
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest(new { message = "Max 5MB." });
+
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "horses");
+        Directory.CreateDirectory(uploadsDir);
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var url = $"/uploads/horses/{fileName}";
+        return Ok(new { url });
     }
 
     [HttpPost("races/{raceId:guid}/entries/{entryId:guid}/owner-confirm")]

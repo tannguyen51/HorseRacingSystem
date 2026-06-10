@@ -40,7 +40,7 @@ export function RefereeNotificationCard({ assignment, onResponse, onRemove }) {
 
     try {
       // Call the API to respond to the assignment
-      const result = await respondToRefereeAssignment(assignment.id, response);
+      await respondToRefereeAssignment(assignment.id, response);
 
       // Update local status
       const newStatus = response === "Accept" ? "accepted" : "rejected";

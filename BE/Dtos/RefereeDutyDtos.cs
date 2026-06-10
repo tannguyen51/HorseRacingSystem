@@ -3,6 +3,11 @@ using System;
 namespace HorseRacing.Dtos;
 
 // Health Check DTOs
+public class RejectHealthCheckRequest
+{
+    public string? Reason { get; set; }
+}
+
 public class CreateHealthCheckRequest
 {
     public Guid HorseId { get; set; }

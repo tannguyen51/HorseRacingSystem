@@ -18,7 +18,6 @@ import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailP
 import RaceSchedulePage from "./pages/RaceSchedulePage/RaceSchedulePage";
 import LiveResultsPage from "./pages/LiveResultsPage/LiveResultsPage";
 import LeaderboardPage from "./pages/LeaderboardPage/LeaderboardPage";
-import AuthPage from "./pages/AuthPage/AuthPage";
 import SpectatorDashboardPage from "./pages/SpectatorDashboardPage/SpectatorDashboardPage";
 import SpectatorTournamentListPage from "./pages/SpectatorTournamentListPage/SpectatorTournamentListPage";
 import SpectatorRaceSchedulePage from "./pages/SpectatorRaceSchedulePage/SpectatorRaceSchedulePage";
@@ -43,6 +42,7 @@ import RefereeDashboardPage from "./pages/RefereeDashboardPage/RefereeDashboardP
 import { RefereeAssignmentPage } from "./components/RefereeNotification/RefereeAssignmentPage";
 import RefereeHealthCheckPage from "./pages/RefereeHealthCheckPage/RefereeHealthCheckPage";
 import RefereeViolationPage from "./pages/RefereeViolationPage/RefereeViolationPage";
+import { OwnerProfilePage, JockeyProfilePage, RefereeProfilePage, SpectatorProfilePage } from "./pages/ProfilePages";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import AdminPage from "./pages/AdminPage/AdminPage";
@@ -112,7 +112,6 @@ function AppLayout() {
           <Route path="/schedule" element={<RaceSchedulePage />} />
           <Route path="/live-results" element={<LiveResultsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/auth" element={<AuthPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/spectator" element={<SpectatorDashboardPage />} />
@@ -140,6 +139,7 @@ function AppLayout() {
             path="/spectator/rewards"
             element={<SpectatorRewardNotificationsPage />}
           />
+          <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
           <Route path="/jockey" element={<JockeyDashboardPage />} />
           <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
           <Route
@@ -151,6 +151,7 @@ function AppLayout() {
             path="/jockey/performance"
             element={<JockeyPerformancePage />}
           />
+          <Route path="/jockey/profile" element={<JockeyProfilePage />} />
           <Route path="/owner" element={<OwnerDashboardPage />} />
           <Route path="/owner/horses" element={<OwnerHorseListPage />} />
           <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
@@ -171,6 +172,7 @@ function AppLayout() {
             path="/owner/race-confirmations"
             element={<OwnerRaceConfirmationPage />}
           />
+          <Route path="/owner/profile" element={<OwnerProfilePage />} />
           <Route path="/referee" element={<RefereeDashboardPage />} />
           <Route
             path="/referee/assignments"
@@ -184,6 +186,7 @@ function AppLayout() {
             path="/referee/violations"
             element={<RefereeViolationPage />}
           />
+          <Route path="/referee/profile" element={<RefereeProfilePage />} />
           <Route path="/admin" element={adminPage} />
           <Route path="/admin/users" element={adminPage} />
           <Route path="/admin/users/:id" element={adminPage} />
@@ -193,6 +196,13 @@ function AppLayout() {
           <Route path="/admin/tournaments" element={adminPage} />
           <Route path="/admin/rounds" element={adminPage} />
           <Route path="/admin/races" element={adminPage} />
+          <Route path="/admin/prizes" element={adminPage} />
+          <Route path="/admin/protests" element={adminPage} />
+          <Route path="/admin/transfers" element={adminPage} />
+          <Route path="/admin/contracts" element={adminPage} />
+          <Route path="/admin/injuries" element={adminPage} />
+          <Route path="/admin/audit" element={adminPage} />
+          <Route path="/admin/notifications" element={adminPage} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

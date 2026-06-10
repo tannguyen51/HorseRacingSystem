@@ -49,8 +49,12 @@
 }
 
 .horse-card--active {
-  border-color: rgba(231, 198, 120, 0.5);
-  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+  border-color: #d7aa4d !important;
+  border-width: 2px;
+  box-shadow: 0 0 28px rgba(215, 170, 77, .35), inset 0 0 28px rgba(215, 170, 77, .06);
+  background: linear-gradient(145deg, rgba(215, 170, 77, .12), rgba(10, 16, 28, .92));
+  transform: translateY(-3px);
+  outline: none;
 }
 
 .horse-card__meta {

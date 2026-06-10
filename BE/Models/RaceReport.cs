@@ -34,6 +34,14 @@ public class RaceReport
 
     public bool IsOfficialReport { get; set; }
 
+    [MaxLength(100)]
+    public string? WeatherCondition { get; set; }
+
+    [MaxLength(100)]
+    public string? TrackCondition { get; set; } // Fast, Good, Muddy, etc.
+
+    public int? Attendance { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

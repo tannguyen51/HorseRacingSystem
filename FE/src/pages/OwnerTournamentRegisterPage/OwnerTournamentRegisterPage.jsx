@@ -50,7 +50,6 @@ function OwnerTournamentRegisterPage() {
     } catch { setRaces([]); }
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadRaces(); }, [selectedTournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -172,7 +171,11 @@ function OwnerTournamentRegisterPage() {
       ]);
       setMsg("Registration submitted successfully!");
     } catch (err) {
-      setMsg("Error: " + err.message);
+      if (err.message?.includes("already registered")) {
+        setMsg("This horse is already registered for this race. Please choose a different horse or a different race.");
+      } else {
+        setMsg("Error: " + err.message);
+      }
     } finally {
       setIsSubmitting(false);
       setShowConfirm(false);
@@ -319,9 +322,6 @@ function OwnerTournamentRegisterPage() {
                   disabled={!selectedHorse || !selectedTournament || !selectedRaceId || isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Review registration"}
-                </button>
-                <button className="ghost-button" type="button">
-                  Save draft
                 </button>
               </div>
             </form>

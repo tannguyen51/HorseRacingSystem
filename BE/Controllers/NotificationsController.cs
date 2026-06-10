@@ -22,15 +22,18 @@ public class NotificationsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all notifications for the current user
-    /// </summary>
+    private Guid GetUserId()
+    {
+        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(uid, out var id) ? id : Guid.Empty;
+    }
+
     [HttpGet("user")]
     public async Task<IActionResult> GetUserNotifications()
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirst("UserId")?.Value ?? "");
+            var userId = GetUserId();
             var result = await _notificationService.GetUserNotificationsAsync(userId);
 
             if (result.StatusCode == 200)
@@ -53,7 +56,7 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirst("UserId")?.Value ?? "");
+            var userId = GetUserId();
             var result = await _notificationService.GetUnreadNotificationsAsync(userId);
 
             if (result.StatusCode == 200)
@@ -76,7 +79,7 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirst("UserId")?.Value ?? "");
+            var userId = GetUserId();
             var result = await _notificationService.GetNotificationsWithFilterAsync(userId, filter);
 
             if (result.StatusCode == 200)
@@ -196,7 +199,7 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirst("UserId")?.Value ?? "");
+            var userId = GetUserId();
             var result = await _notificationService.GetUnreadCountAsync(userId);
 
             if (result.StatusCode == 200)
@@ -219,7 +222,7 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var userId = Guid.Parse(User.FindFirst("UserId")?.Value ?? "");
+            var userId = GetUserId();
             var result = await _notificationService.GetNotificationStatsAsync(userId);
 
             if (result.StatusCode == 200)
