@@ -109,3 +109,69 @@ public enum AuditAction
     Export = 10,
     Other = 11
 }
+
+public enum SurfaceType
+{
+    Dirt = 1,
+    Turf = 2,
+    Synthetic = 3,
+    Sand = 4
+}
+
+public enum ProtestStatus
+{
+    Pending = 1,
+    UnderReview = 2,
+    Upheld = 3,
+    Rejected = 4,
+    Withdrawn = 5
+}
+
+public enum BetStatus
+{
+    Placed = 1,
+    Won = 2,
+    Lost = 3,
+    Refunded = 4
+}
+
+public enum TransferStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3,
+    Cancelled = 4
+}
+
+public enum TransferType
+{
+    Sale = 1,
+    Gift = 2,
+    Lease = 3
+}
+
+public enum InjurySeverity
+{
+    Minor = 1,
+    Moderate = 2,
+    Severe = 3,
+    Critical = 4
+}
+
+public enum InjuryStatus
+{
+    Active = 1,
+    Recovering = 2,
+    Recovered = 3,
+    Chronic = 4,
+    CareerEnding = 5
+}
+
+public enum ContractStatus
+{
+    Draft = 1,
+    Active = 2,
+    Expired = 3,
+    Terminated = 4,
+    Renewed = 5
+}

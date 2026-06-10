@@ -1,58 +1,31 @@
+import { useEffect, useState } from "react";
+import { getRaces } from "../../services/spectatorApi";
 import "./RaceSchedulePage.css";
 
+const fDate = (v) => v ? new Date(v).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "TBD";
+
 function RaceSchedulePage() {
+  const [races, setRaces] = useState([]);
+
+  useEffect(() => {
+    getRaces().then((d) => setRaces(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+
   return (
     <div className="race-schedule-page">
-      <section className="page-header">
-        <h1>Race Schedule</h1>
-        <p>Live scheduling for qualifiers, heats, and championship races.</p>
-      </section>
-
-      <div className="schedule-grid">
-        {[
-          {
-            date: "July 12, 2026",
-            track: "Del Mar",
-            title: "Summer Sprint Championship",
-            time: "2:30 PM",
-            status: "Full",
-          },
-          {
-            date: "July 20, 2026",
-            track: "Pimlico",
-            title: "Heritage Cup",
-            time: "3:00 PM",
-            status: "Open",
-          },
-          {
-            date: "July 27, 2026",
-            track: "Aqueduct",
-            title: "Metropolitan Mile",
-            time: "1:30 PM",
-            status: "Open",
-          },
-          {
-            date: "August 3, 2026",
-            track: "Santa Anita Park",
-            title: "Pacific Classic",
-            time: "4:30 PM",
-            status: "Open",
-          },
-        ].map((race) => (
-          <article key={race.title} className="schedule-card">
-            <div>
-              <span className="badge">{race.status}</span>
-              <h3>{race.title}</h3>
-              <p>{race.date}</p>
-              <p>{race.track}</p>
+      <section className="page-header"><h1>Race Schedule</h1><p>Upcoming and past races.</p></section>
+      {races.length === 0 ? <p>No races scheduled.</p> : (
+        <div className="race-grid">
+          {races.map((r) => (
+            <div key={r.id ?? r.Id} className="race-card">
+              <span className="badge">{r.status ?? r.Status}</span>
+              <h3>{r.name ?? r.Name}</h3>
+              <p>{r.location ?? r.Location ?? "TBD"} | {r.distance ?? r.Distance ?? "-"}m</p>
+              <p className="time">{fDate(r.scheduledAt ?? r.ScheduledAt)}</p>
             </div>
-            <div className="schedule-meta">
-              <span>{race.time}</span>
-              <button className="ghost-button">View Details</button>
-            </div>
-          </article>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

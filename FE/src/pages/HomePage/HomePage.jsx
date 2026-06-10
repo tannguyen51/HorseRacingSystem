@@ -1,155 +1,60 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getActiveTournaments } from "../../services/spectatorApi";
 import heroImage from "../../assets/racing.png";
 import "./HomePage.css";
 
 function HomePage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getActiveTournaments()
+      .then((d) => setTournaments(Array.isArray(d) ? d.slice(0, 3) : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="home-page">
       <section className="hero">
         <div>
           <span className="pill">2026 Championship Season</span>
           <h1>Elite Horse Racing Tournament Platform</h1>
-          <p>
-            Welcome to the world’s premier horse racing management system with
-            advanced analytics, live results, and season-wide standings.
-          </p>
+          <p>Welcome to the world's premier horse racing management system with advanced analytics, live results, and season-wide standings.</p>
           <div className="hero-actions">
-            <Link className="primary-button" to="/tournaments">
-              View Tournaments
-            </Link>
-            <Link className="ghost-button" to="/live-results">
-              Live Results
-            </Link>
+            <Link className="primary-button" to="/tournaments">View Tournaments</Link>
+            <Link className="ghost-button" to="/live-results">Live Results</Link>
           </div>
         </div>
         <div className="hero-media">
-          <div className="hero-image">
-            <img src={heroImage} alt="Champion horses racing" />
-          </div>
+          <div className="hero-image"><img src={heroImage} alt="Champion horses racing" /></div>
           <div className="hero-panel">
-            <h3>Next Championship Race</h3>
-            <div className="countdown-grid">
-              <div>
-                <strong>33</strong>
-                <span>Days</span>
-              </div>
-              <div>
-                <strong>03</strong>
-                <span>Hours</span>
-              </div>
-              <div>
-                <strong>33</strong>
-                <span>Minutes</span>
-              </div>
-              <div>
-                <strong>26</strong>
-                <span>Seconds</span>
-              </div>
-            </div>
+            <h3>{loading ? "Loading..." : (tournaments[0]?.name ?? tournaments[0]?.Name ?? "Upcoming Races")}</h3>
+            <p>{loading ? "" : `${tournaments.length} active tournament(s)`}</p>
           </div>
         </div>
       </section>
 
-      <section className="featured">
-        <div className="section-heading">
-          <h2>Featured Upcoming Tournament</h2>
-          <p>Don’t miss the championship finale at Churchill Downs.</p>
-        </div>
-        <div className="featured-card">
-          <div>
-            <span className="badge">Featured</span>
-            <h3>Spring Championship Finals</h3>
-            <p className="muted">June 15, 2026 · Churchill Downs</p>
-            <div className="stats-row">
-              <div>
-                <strong>12</strong>
-                <span>Entries</span>
-              </div>
-              <div>
-                <strong>1.5 mi</strong>
-                <span>Distance</span>
-              </div>
-              <div>
-                <strong>2:00 PM</strong>
-                <span>Start Time</span>
-              </div>
-              <div>
-                <strong>Open</strong>
-                <span>Status</span>
-              </div>
-            </div>
+      <section className="features">
+        <h2>Active Tournaments</h2>
+        {loading ? <p>Loading...</p> : tournaments.length === 0 ? <p>No active tournaments.</p> : (
+          <div className="feature-grid">
+            {tournaments.map((t) => (
+              <Link key={t.id ?? t.Id} to={`/tournaments/${t.id ?? t.Id}`} className="feature-card">
+                <h3>{t.name ?? t.Name}</h3>
+                <p>{t.description ?? t.Description ?? "No description"}</p>
+                <span>{t.raceCount ?? t.RaceCount ?? 0} races</span>
+              </Link>
+            ))}
           </div>
-          <div className="featured-highlight">
-            <span>$500K</span>
-            <p>Prize Pool</p>
-            <Link className="primary-button" to="/schedule">
-              View Full Schedule
-            </Link>
-          </div>
-        </div>
+        )}
       </section>
 
-      <section className="two-column">
-        <div>
-          <h2>Top Horses</h2>
-          <p className="muted">Featured champions across the circuit.</p>
-          <div className="rank-list">
-            <div className="rank-card">
-              <span className="rank">#1</span>
-              <div>
-                <h4>Thunder Strike</h4>
-                <p>12 wins</p>
-              </div>
-              <strong>98</strong>
-            </div>
-            <div className="rank-card">
-              <span className="rank">#2</span>
-              <div>
-                <h4>Golden Dawn</h4>
-                <p>10 wins</p>
-              </div>
-              <strong>96</strong>
-            </div>
-            <div className="rank-card">
-              <span className="rank">#3</span>
-              <div>
-                <h4>Midnight Runner</h4>
-                <p>15 wins</p>
-              </div>
-              <strong>99</strong>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h2>Top Jockeys</h2>
-          <p className="muted">Elite riders by win percentage.</p>
-          <div className="rank-list">
-            <div className="rank-card">
-              <span className="rank">#1</span>
-              <div>
-                <h4>Marcus Rodriguez</h4>
-                <p>45 wins</p>
-              </div>
-              <strong>68%</strong>
-            </div>
-            <div className="rank-card">
-              <span className="rank">#2</span>
-              <div>
-                <h4>Sarah Chen</h4>
-                <p>38 wins</p>
-              </div>
-              <strong>65%</strong>
-            </div>
-            <div className="rank-card">
-              <span className="rank">#3</span>
-              <div>
-                <h4>James O'Connor</h4>
-                <p>52 wins</p>
-              </div>
-              <strong>71%</strong>
-            </div>
-          </div>
-        </div>
+      <section className="cta">
+        <h2>Ready to Participate?</h2>
+        <p>Register as a Horse Owner, Jockey, or Spectator to join the action.</p>
+        <Link className="primary-button" to="/register">Get Started</Link>
       </section>
     </div>
   );

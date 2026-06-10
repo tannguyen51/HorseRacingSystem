@@ -53,3 +53,6 @@ export const confirmRaceEntry = async (raceId, entryId) =>
       method: "POST",
     }),
   );
+
+export const getMyRaceEntries = async () =>
+  unwrapResponseData(await request("/api/horses/my-entries"));

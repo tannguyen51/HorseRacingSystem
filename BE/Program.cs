@@ -46,7 +46,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.MultipleCollectionIncludeWarning)));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var frontendOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
     ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173" };
@@ -78,6 +79,11 @@ builder.Services.AddScoped<IUserRegistrationRepository, UserRegistrationReposito
 builder.Services.AddScoped<IRaceManagementRepository, RaceManagementRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<IPrizeRepository, PrizeRepository>();
+builder.Services.AddScoped<IProtestRepository, ProtestRepository>();
+builder.Services.AddScoped<IHorseTransferRepository, HorseTransferRepository>();
+builder.Services.AddScoped<IContractRepository, ContractRepository>();
+builder.Services.AddScoped<IInjuryRecordRepository, InjuryRecordRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
@@ -95,6 +101,11 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ILiveResultService, LiveResultService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IPrizeService, PrizeService>();
+builder.Services.AddScoped<IProtestService, ProtestService>();
+builder.Services.AddScoped<IHorseTransferService, HorseTransferService>();
+builder.Services.AddScoped<IContractService, ContractService>();
+builder.Services.AddScoped<IInjuryRecordService, InjuryRecordService>();
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -126,7 +137,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.UseCors("Frontend");
-app.UseHttpsRedirection();
+
+app.UseStaticFiles(); // serve uploaded images from wwwroot
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -138,8 +152,16 @@ app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"))
     .ExcludeFromDescription();
 
-if (app.Environment.IsDevelopment())
+// Auto-create/migrate database + seed demo data on first run
+using (var scope = app.Services.CreateScope())
 {
-    await AdminSeeder.SeedAsync(app.Services);
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
+    if (app.Environment.IsDevelopment())
+    {
+        await DemoSeeder.SeedAsync(app.Services);
+    }
 }
+
 app.Run();

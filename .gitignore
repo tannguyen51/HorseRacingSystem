@@ -16,6 +16,7 @@ BE/obj/
 .vs/
 .vscode/
 .agents/
+appsettings.Development.json
 *.user
 *.suo
 *.userprefs
@@ -29,4 +30,3 @@ skills-lock.json
 !README.md
 
 
-BE/Migrations/

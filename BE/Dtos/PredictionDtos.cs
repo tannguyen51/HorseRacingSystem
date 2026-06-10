@@ -10,4 +10,6 @@ public class PredictionCreateRequest
 
     [Required]
     public Guid PredictedHorseId { get; set; }
+
+    public decimal BetAmount { get; set; } = 0;
 }

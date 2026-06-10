@@ -20,7 +20,24 @@ public class RaceResult
 
     public Horse? WinningHorse { get; set; }
 
+    public int TotalParticipants { get; set; }
+
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal? WinnerFinishTime { get; set; } // seconds
+
     public DateTime RecordedAt { get; set; }
+
+    public DateTime? PublishedAt { get; set; }
+
+    public bool IsDisputed { get; set; } = false;
+
+    public bool IsOfficial { get; set; } = false;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? WinnerPurse { get; set; }
+
+    [MaxLength(4000)]
+    public string? RankingsJson { get; set; } // JSON: [{position, horseId, horseName, jockeyName, time, margin}]
 
     [MaxLength(1000)]
     public string? Notes { get; set; }

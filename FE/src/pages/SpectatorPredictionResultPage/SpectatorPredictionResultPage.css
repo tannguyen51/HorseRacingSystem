@@ -1,7 +1,7 @@
-.spectator-prediction-result-page {
-  display: grid;
-  gap: 32px;
-}
+.spectator-prediction-result-page { display: grid; gap: 32px; }
+.badge--won { background: rgba(52,211,153,.12); color: #6ee7b7; }
+.badge--lost { background: rgba(248,113,113,.1); color: #fca5a5; }
+.badge--pending { background: rgba(231,198,120,.1); color: #f2d28b; }
 
 .prediction-stats {
   display: grid;

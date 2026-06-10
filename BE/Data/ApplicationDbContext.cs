@@ -28,6 +28,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserRegistration> UserRegistrations => Set<UserRegistration>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Prize> Prizes => Set<Prize>();
+    public DbSet<Protest> Protests => Set<Protest>();
+    public DbSet<HorseTransfer> HorseTransfers => Set<HorseTransfer>();
+    public DbSet<InjuryRecord> InjuryRecords => Set<InjuryRecord>();
+    public DbSet<Contract> Contracts => Set<Contract>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -306,5 +311,129 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<AuditLog>()
             .HasIndex(a => a.CreatedAt);
+
+        // Tournament enhanced
+        modelBuilder.Entity<Tournament>()
+            .Property(t => t.SurfaceType)
+            .HasConversion<string>();
+
+        // Prize Model
+        modelBuilder.Entity<Prize>()
+            .HasOne(p => p.Tournament)
+            .WithMany()
+            .HasForeignKey(p => p.TournamentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Prize>()
+            .HasOne(p => p.Race)
+            .WithMany()
+            .HasForeignKey(p => p.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Protest Model
+        modelBuilder.Entity<Protest>()
+            .HasOne(p => p.Race)
+            .WithMany()
+            .HasForeignKey(p => p.RaceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Protest>()
+            .HasOne(p => p.FiledByUser)
+            .WithMany()
+            .HasForeignKey(p => p.FiledByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Protest>()
+            .HasOne(p => p.AgainstEntry)
+            .WithMany()
+            .HasForeignKey(p => p.AgainstEntryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Protest>()
+            .HasOne(p => p.RuledByUser)
+            .WithMany()
+            .HasForeignKey(p => p.RuledByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Protest>()
+            .Property(p => p.Status)
+            .HasConversion<string>();
+
+        // HorseTransfer Model
+        modelBuilder.Entity<HorseTransfer>()
+            .HasOne(t => t.Horse)
+            .WithMany()
+            .HasForeignKey(t => t.HorseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseTransfer>()
+            .HasOne(t => t.FromOwner)
+            .WithMany()
+            .HasForeignKey(t => t.FromOwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseTransfer>()
+            .HasOne(t => t.ToOwner)
+            .WithMany()
+            .HasForeignKey(t => t.ToOwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseTransfer>()
+            .HasOne(t => t.ApprovedByUser)
+            .WithMany()
+            .HasForeignKey(t => t.ApprovedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<HorseTransfer>()
+            .Property(t => t.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<HorseTransfer>()
+            .Property(t => t.TransferType)
+            .HasConversion<string>();
+
+        // InjuryRecord Model
+        modelBuilder.Entity<InjuryRecord>()
+            .HasOne(i => i.Horse)
+            .WithMany()
+            .HasForeignKey(i => i.HorseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<InjuryRecord>()
+            .HasOne(i => i.ReportedByUser)
+            .WithMany()
+            .HasForeignKey(i => i.ReportedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<InjuryRecord>()
+            .Property(i => i.Severity)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<InjuryRecord>()
+            .Property(i => i.Status)
+            .HasConversion<string>();
+
+        // Contract Model
+        modelBuilder.Entity<Contract>()
+            .HasOne(c => c.Owner)
+            .WithMany()
+            .HasForeignKey(c => c.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Contract>()
+            .HasOne(c => c.Jockey)
+            .WithMany()
+            .HasForeignKey(c => c.JockeyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Contract>()
+            .HasOne(c => c.Horse)
+            .WithMany()
+            .HasForeignKey(c => c.HorseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Contract>()
+            .Property(c => c.Status)
+            .HasConversion<string>();
     }
 }

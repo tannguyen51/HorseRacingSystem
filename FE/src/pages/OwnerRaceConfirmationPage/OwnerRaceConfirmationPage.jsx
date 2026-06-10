@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { confirmRaceEntry, getMyHorses } from "../../services/ownerHorseApi";
+import { confirmRaceEntry, getMyRaceEntries } from "../../services/ownerHorseApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerRaceConfirmationPage.css";
 
@@ -13,22 +13,16 @@ function OwnerRaceConfirmationPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const horses = await getMyHorses();
-        const list = Array.isArray(horses) ? horses : [];
-        const all = [];
-        for (const horse of list) {
-          const raceEntries = horse.raceEntries || horse.RaceEntries || [];
-          for (const entry of raceEntries) {
-            all.push({
-              horseName: horse.name || horse.Name || "Unknown",
-              horseId: horse.id || horse.Id,
-              entryId: entry.id || entry.Id || entry.entryId || entry.EntryId,
-              raceId: entry.raceId || entry.RaceId,
-              raceName: entry.raceName || entry.RaceName || entry.raceId || entry.RaceId,
-              status: entry.status || entry.Status || "Pending",
-            });
-          }
-        }
+        const data = await getMyRaceEntries();
+        const list = Array.isArray(data) ? data : [];
+        const all = list.map((entry) => ({
+          horseName: entry.horseName ?? entry.HorseName ?? "Unknown",
+          horseId: entry.horseId ?? entry.HorseId,
+          entryId: entry.entryId ?? entry.EntryId ?? entry.id,
+          raceId: entry.raceId ?? entry.RaceId,
+          raceName: entry.raceName ?? entry.RaceName ?? entry.raceId ?? entry.RaceId,
+          status: entry.status ?? entry.Status ?? "Pending",
+        }));
         if (!ignore) setEntries(all);
       } catch (e) {
         if (!ignore) setMsg("Error loading entries: " + e.message);
@@ -117,8 +111,8 @@ function OwnerRaceConfirmationPage() {
                     </span>
                   </div>
                   <div className="confirmation-meta">
-                    <div><span>Entry ID</span><strong>{entry.entryId}</strong></div>
-                    <div><span>Race ID</span><strong>{entry.raceId}</strong></div>
+                    <div><span>Gate</span><strong>{entry.gateNumber ?? "-"}</strong></div>
+                    <div><span>Jockey</span><strong>{entry.jockeyConfirmed ? "Confirmed" : "Pending"}</strong></div>
                   </div>
                   <div className="confirmation-actions">
                     <button

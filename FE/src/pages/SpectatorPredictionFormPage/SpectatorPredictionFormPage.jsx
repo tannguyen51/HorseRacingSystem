@@ -6,6 +6,7 @@ import {
   getRaces,
   getTournaments,
 } from "../../services/spectatorApi";
+import { getRaceEntries } from "../../services/refereeApi";
 import "../SpectatorSharedLayout.css";
 import "./SpectatorPredictionFormPage.css";
 
@@ -60,6 +61,7 @@ function SpectatorPredictionFormPage() {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
   const [selectedHorseId, setSelectedHorseId] = useState(null);
+  const [betAmount, setBetAmount] = useState("");
   const [raceDetail, setRaceDetail] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,10 +133,14 @@ function SpectatorPredictionFormPage() {
       setSubmitError("");
 
       try {
-        const response = await getRace(selectedRace);
-        const payload = unwrapResponseData(response);
+        const [raceResponse, entriesResponse] = await Promise.all([
+          getRace(selectedRace),
+          getRaceEntries(selectedRace),
+        ]);
+        const payload = unwrapResponseData(raceResponse);
+        const entriesList = Array.isArray(entriesResponse) ? entriesResponse : (entriesResponse?.data ?? []);
         if (!cancelled) {
-          setRaceDetail(payload ?? null);
+          setRaceDetail({ ...(payload ?? {}), entries: entriesList });
           setSelectedHorseId(null);
         }
       } catch (error) {
@@ -175,11 +181,11 @@ function SpectatorPredictionFormPage() {
   );
 
   const horseOptions = useMemo(() => {
-    const entries = raceDetail?.entries ?? raceDetail?.Entries ?? [];
+    const entries = raceDetail?.entries ?? [];
     return entries.map((entry) => ({
-      id: entry?.horseId ?? entry?.HorseId,
-      name: entry?.horse?.name ?? entry?.Horse?.Name ?? "Unknown",
-      jockey: "Jockey TBD",
+      id: entry.horseId ?? entry.HorseId,
+      name: entry.horseName ?? entry.HorseName ?? "Unknown",
+      jockey: entry.jockeyName ?? entry.JockeyName ?? "TBD",
       odds: "TBD",
       form: "Form pending",
     }));
@@ -209,6 +215,7 @@ function SpectatorPredictionFormPage() {
       await createPrediction({
         raceId: selectedRace,
         predictedHorseId: selectedHorseId,
+        betAmount: parseFloat(betAmount) || 0,
       });
       setShowConfirmation(false);
     } catch (error) {
@@ -235,6 +242,7 @@ function SpectatorPredictionFormPage() {
         </aside>
 
         <div className="spectator-content">
+          {errorMessage && <div className="form-error">{errorMessage}</div>}
           <section className="page-header">
             <h1>Prediction Form</h1>
             <p>Choose a race, pick a winner, and submit your odds.</p>
@@ -339,15 +347,16 @@ function SpectatorPredictionFormPage() {
               </div>
 
               <div className="prediction-actions">
+                <div className="form-group" style={{ marginBottom: 16 }}>
+                  <label htmlFor="bet-amount" className="label-required">Bet Amount ($)</label>
+                  <input id="bet-amount" className="form-input" type="number" min="0" step="1" placeholder="50" value={betAmount} onChange={(e) => setBetAmount(e.target.value)} style={{ maxWidth: 200 }} />
+                </div>
                 <button
                   type="submit"
                   className="primary-button"
                   disabled={!selectedHorseId || isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Submit prediction"}
-                </button>
-                <button type="button" className="ghost-button">
-                  Save for later
                 </button>
               </div>
             </form>
@@ -433,6 +442,10 @@ function SpectatorPredictionFormPage() {
               <div>
                 <h4>Odds</h4>
                 <p>{selectedHorse?.odds}</p>
+              </div>
+              <div>
+                <h4>Bet Amount</h4>
+                <p>${parseFloat(betAmount) || 0}</p>
               </div>
               {submitError ? (
                 <div className="form-error">{submitError}</div>

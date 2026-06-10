@@ -49,6 +49,7 @@ public class PredictionService : IPredictionService
             PredictedHorseId = request.PredictedHorseId,
             SpectatorUserId = userId,
             Status = PredictionStatus.Pending,
+            BetAmount = request.BetAmount,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -61,6 +62,21 @@ public class PredictionService : IPredictionService
     public async Task<ServiceResult<object>> GetMyPredictionsAsync(Guid userId)
     {
         var predictions = await _predictions.GetByUserAsync(userId);
-        return ServiceResult<object>.Ok(predictions);
+        var result = predictions.Select(p => new
+        {
+            p.Id,
+            p.RaceId,
+            RaceName = p.Race?.Name ?? p.RaceId.ToString(),
+            PredictedHorseId = p.PredictedHorseId,
+            PredictedHorseName = p.PredictedHorse?.Name ?? p.PredictedHorseId.ToString(),
+            Status = p.Status.ToString(),
+            p.BetAmount,
+            p.Odds,
+            p.PotentialPayout,
+            p.PayoutAmount,
+            p.CreatedAt,
+            p.SettledAt
+        });
+        return ServiceResult<object>.Ok(result);
     }
 }

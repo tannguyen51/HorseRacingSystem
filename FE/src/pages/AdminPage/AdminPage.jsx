@@ -27,6 +27,14 @@ import {
   updateTournament,
 } from "../../services/adminApi";
 import { getAvailableJockeys } from "../../services/jockeyApi";
+import {
+  PrizeManagement,
+  ProtestManagement,
+  TransferManagement,
+  ContractManagement,
+  InjuryManagement,
+} from "./AdminOperations";
+import { AuditLogViewer, NotificationManager } from "./AdminAudit";
 import "./AdminPage.css";
 
 const navGroups = [
@@ -45,6 +53,23 @@ const navGroups = [
       { to: "/admin/tournaments", label: "Tournaments" },
       { to: "/admin/rounds", label: "Rounds" },
       { to: "/admin/races", label: "Races & Scheduling" },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { to: "/admin/prizes", label: "Prize Money" },
+      { to: "/admin/protests", label: "Protests" },
+      { to: "/admin/transfers", label: "Horse Transfers" },
+      { to: "/admin/contracts", label: "Contracts" },
+      { to: "/admin/injuries", label: "Injury Records" },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { to: "/admin/audit", label: "Audit Logs" },
+      { to: "/admin/notifications", label: "Notifications" },
     ],
   },
 ];
@@ -877,6 +902,13 @@ function AdminPage() {
   else if (location.pathname === "/admin/tournaments") content = <TournamentManagement />;
   else if (location.pathname === "/admin/rounds") content = <ScheduleManagement type="round" />;
   else if (location.pathname === "/admin/races") content = <ScheduleManagement type="race" />;
+  else if (location.pathname === "/admin/prizes") content = <PrizeManagement />;
+  else if (location.pathname === "/admin/protests") content = <ProtestManagement />;
+  else if (location.pathname === "/admin/transfers") content = <TransferManagement />;
+  else if (location.pathname === "/admin/contracts") content = <ContractManagement />;
+  else if (location.pathname === "/admin/injuries") content = <InjuryManagement />;
+  else if (location.pathname === "/admin/audit") content = <AuditLogViewer />;
+  else if (location.pathname === "/admin/notifications") content = <NotificationManager />;
 
   return <AdminShell>{content}</AdminShell>;
 }

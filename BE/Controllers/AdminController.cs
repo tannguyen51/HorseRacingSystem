@@ -137,13 +137,6 @@ public class AdminController : ControllerBase
     }
 
     // Operations
-    [HttpPost("referees/assign")]
-    public async Task<ActionResult> AssignReferee([FromBody] AssignRefereeRequest request)
-    {
-        var result = await _adminService.AssignRefereeToRaceAsync(request);
-        return StatusCode(result.StatusCode, result.Result);
-    }
-
     [HttpPost("races/{raceId:guid}/publish-result")]
     public async Task<ActionResult> PublishRaceResult(Guid raceId, [FromBody] RaceResultRequest request)
     {
