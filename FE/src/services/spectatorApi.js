@@ -1,21 +1,26 @@
 import { request } from "./apiClient";
 
-export const getTournaments = () => request("/api/tournaments");
-export const getActiveTournaments = () => request("/api/tournaments/active");
-export const getTournament = (id) => request(`/api/tournaments/${id}`);
-export const getRoundsByTournament = (tournamentId) =>
-  request(`/api/tournaments/${tournamentId}/rounds`);
+const unwrap = (response) => response?.data ?? response?.Data ?? response;
 
-export const getRaces = () => request("/api/races");
-export const getRace = (id) => request(`/api/races/${id}`);
-export const getRaceResult = (id) => request(`/api/races/${id}/result`);
+export const getTournaments = async () => unwrap(await request("/api/tournaments"));
+export const getActiveTournaments = async () =>
+  unwrap(await request("/api/tournaments/active"));
+export const getTournament = async (id) =>
+  unwrap(await request(`/api/tournaments/${id}`));
+export const getRoundsByTournament = (tournamentId) =>
+  request(`/api/tournaments/${tournamentId}/rounds`).then(unwrap);
+
+export const getRaces = async () => unwrap(await request("/api/races"));
+export const getRace = async (id) => unwrap(await request(`/api/races/${id}`));
+export const getRaceResult = async (id) =>
+  unwrap(await request(`/api/races/${id}/result`));
 
 export const getLiveRaceResult = (raceId) =>
-  request(`/api/live-results/race/${raceId}`);
+  request(`/api/live-results/race/${raceId}`).then(unwrap);
 export const getLivePositions = (raceId) =>
-  request(`/api/live-results/race/${raceId}/positions`);
+  request(`/api/live-results/race/${raceId}/positions`).then(unwrap);
 export const getLiveRanking = (raceId) =>
-  request(`/api/live-results/race/${raceId}/ranking`);
+  request(`/api/live-results/race/${raceId}/ranking`).then(unwrap);
 
 export const createPrediction = (payload) =>
   request("/api/predictions", {

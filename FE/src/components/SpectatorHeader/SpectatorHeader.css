@@ -6,16 +6,17 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(6, 10, 20, 0.9);
+  background: rgba(255, 251, 242, 0.98);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
+  border-bottom: 1px solid rgba(23, 32, 51, 0.12);
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.1);
 }
 
 .spectator-header__brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #f8f4e6;
+  color: #172033;
   text-decoration: none;
 }
 

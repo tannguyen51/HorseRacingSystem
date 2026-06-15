@@ -1,11 +1,11 @@
 /* RefereeNotificationCard Styling */
 
 .referee-notification-card {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.1);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(23, 32, 51, 0.12);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@
 }
 
 .referee-notification-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(23, 32, 51, 0.12);
   border-color: rgba(231, 198, 120, 0.2);
   transform: translateY(-2px);
 }
@@ -39,13 +39,13 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .tournament-name {
   margin: 6px 0 0 0;
   font-size: 13px;
-  color: #98a1b3;
+  color: #657086;
 }
 
 /* Status Badge */
@@ -88,12 +88,12 @@
 .assignment-details p {
   margin: 0;
   font-size: 14px;
-  color: #d3d9e5;
+  color: #34415b;
   line-height: 1.5;
 }
 
 .assignment-details strong {
-  color: #f2d28b;
+  color: #8f6420;
   font-weight: 600;
 }
 
@@ -102,7 +102,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #98a1b3;
+  color: #657086;
   font-size: 13px;
 }
 

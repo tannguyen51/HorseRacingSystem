@@ -9,19 +9,19 @@
   gap: 28px;
   padding: 32px;
   border-radius: 26px;
-  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.85));
-  border: 1px solid rgba(231, 198, 120, 0.12);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
+  box-shadow: 0 20px 50px rgba(23, 32, 51, 0.12);
 }
 
 .owner-hero h1 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 42px;
   margin: 12px 0 10px;
 }
 
 .owner-hero p {
-  color: #aeb6c4;
+  color: #657086;
   max-width: 520px;
 }
 
@@ -37,13 +37,13 @@
   gap: 16px;
   padding: 20px;
   border-radius: 20px;
-  background: rgba(6, 10, 20, 0.8);
-  border: 1px solid rgba(231, 198, 120, 0.15);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
   align-content: center;
 }
 
 .owner-hero__panel span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -52,7 +52,7 @@
 .owner-hero__panel strong {
   display: block;
   font-size: 22px;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 4px;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .stat-card {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 18px;
   padding: 20px;
   border: 1px solid rgba(231, 198, 120, 0.1);
@@ -73,7 +73,7 @@
 
 .stat-card h3 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 24px;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .owner-upcoming-card {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 20px;
   padding: 22px;
   border: 1px solid rgba(231, 198, 120, 0.1);
@@ -110,12 +110,12 @@
 
 .owner-upcoming-card h3 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .owner-upcoming-card p {
   margin: 0;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .owner-upcoming-card__header {
@@ -125,7 +125,7 @@
 }
 
 .owner-upcoming-card__meta span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -133,7 +133,7 @@
 
 .owner-upcoming-card__meta strong {
   display: block;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 6px;
 }
 
@@ -143,7 +143,7 @@
 }
 
 .owner-tournament-card {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 20px;
   padding: 22px;
   border: 1px solid rgba(231, 198, 120, 0.1);
@@ -153,7 +153,7 @@
 
 .owner-tournament-card h3 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .owner-tournament-card__header {
@@ -166,11 +166,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .owner-prize {
-  color: #f2d28b;
+  color: #8f6420;
   font-weight: 600;
 }
 
@@ -180,10 +180,10 @@
 }
 
 .notification-item {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 18px;
   padding: 18px;
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -191,18 +191,18 @@
 
 .notification-item h4 {
   margin: 0 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .notification-item p {
   margin: 0;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .performance-card {
   padding: 24px;
   border-radius: 22px;
-  background: linear-gradient(140deg, rgba(13, 20, 34, 0.95), rgba(7, 11, 20, 0.9));
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.78));
   border: 1px solid rgba(231, 198, 120, 0.2);
   display: grid;
   gap: 20px;
@@ -215,7 +215,7 @@
 }
 
 .performance-summary span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -223,7 +223,7 @@
 
 .performance-summary strong {
   display: block;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 6px;
   font-size: 20px;
 }
@@ -238,7 +238,7 @@
   grid-template-columns: 80px 1fr 40px;
   gap: 12px;
   align-items: center;
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -258,7 +258,7 @@
 }
 
 .chart-row strong {
-  color: #f2d28b;
+  color: #8f6420;
   font-size: 13px;
   text-align: right;
 }
@@ -274,10 +274,10 @@
 }
 
 .activity-item {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 18px;
   padding: 18px;
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -285,12 +285,12 @@
 
 .activity-item h4 {
   margin: 0 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .activity-item p {
   margin: 0;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .quick-action-grid {
@@ -300,7 +300,7 @@
 }
 
 .quick-action-card {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 20px;
   padding: 20px;
   border: 1px solid rgba(231, 198, 120, 0.1);
@@ -310,7 +310,7 @@
 
 .quick-action-card h4 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 @media (max-width: 1100px) {

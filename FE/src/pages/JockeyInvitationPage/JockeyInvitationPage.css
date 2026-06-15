@@ -3,24 +3,24 @@
   gap: 16px;
   padding: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.86));
-  border: 1px solid rgba(231, 198, 120, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
 }
 
 .jockey-page-header h1 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 40px;
   margin: 12px 0 8px;
 }
 
 .jockey-page-header p {
-  color: #aeb6c4;
+  color: #657086;
   max-width: 680px;
 }
 
 .jockey-message {
   margin-top: 12px;
-  color: #f2d28b !important;
+  color: #8f6420 !important;
 }
 
 .jockey-invitations .skeleton-line,
@@ -41,7 +41,7 @@
 .jockey-response-panel,
 .jockey-loading-panel,
 .jockey-empty-state {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.1);
   border-radius: 8px;
 }
@@ -62,7 +62,7 @@
 .jockey-invitation-toolbar span,
 .jockey-detail-row span,
 .jockey-invitation-card__horse span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -71,7 +71,7 @@
 .jockey-invitation-toolbar strong,
 .jockey-detail-row strong,
 .jockey-invitation-card__horse strong {
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .jockey-table-panel,
@@ -93,12 +93,12 @@
   align-items: center;
   padding: 18px;
   border-radius: 8px;
-  background: rgba(6, 10, 20, 0.58);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .jockey-invitation-card h3 {
-  color: #f8f4e6;
+  color: #172033;
   margin: 10px 0 4px;
 }
 
@@ -145,7 +145,7 @@
 
 .jockey-invitations .primary-button:hover:not(:disabled),
 .jockey-invitation-detail .primary-button:hover:not(:disabled) {
-  background: #f2d28b;
+  background: #d8a84b;
 }
 
 .jockey-invitations .primary-button:disabled,
@@ -167,7 +167,7 @@
 }
 
 .jockey-empty-state h3 {
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 8px;
 }
 
@@ -198,12 +198,12 @@
 }
 
 .jockey-response-panel h2 {
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 6px;
 }
 
 .jockey-back-link {
-  color: #f2d28b;
+  color: #8f6420;
   text-decoration: none;
   font-weight: 600;
 }

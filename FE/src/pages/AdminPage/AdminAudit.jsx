@@ -31,10 +31,10 @@ export function AuditLogViewer() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2>Audit Logs</h2>
-          <p style={{ color: "#98a1b3", marginBottom: 16 }}>Track all system actions and changes.</p>
+          <p style={{ color: "#657086", marginBottom: 16 }}>Track all system actions and changes.</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ color: "#98a1b3", fontSize: 13 }}>{total} records</span>
+          <span style={{ color: "#657086", fontSize: 13 }}>{total} records</span>
           <button disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
           <span style={{ color: "#e7c678" }}>{page + 1}/{maxPage + 1}</span>
           <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Next</button>
@@ -94,10 +94,10 @@ export function NotificationManager() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2>Notifications</h2>
-          <p style={{ color: "#98a1b3", marginBottom: 16 }}>View and manage system notifications.</p>
+          <p style={{ color: "#657086", marginBottom: 16 }}>View and manage system notifications.</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ color: "#98a1b3", fontSize: 13 }}>{items.length} records</span>
+          <span style={{ color: "#657086", fontSize: 13 }}>{items.length} records</span>
           <button disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
           <span style={{ color: "#e7c678" }}>{page + 1}/{maxPage + 1}</span>
           <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Next</button>

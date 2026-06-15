@@ -126,7 +126,7 @@ function OwnerHorseCreatePage() {
                       overflow: "hidden", flexShrink: 0,
                     }}
                   >
-                    {!imagePreview && <span style={{ color: "#7f899a", fontSize: 13 }}>Click to upload</span>}
+                    {!imagePreview && <span style={{ color: "#657086", fontSize: 13 }}>Click to upload</span>}
                   </div>
                   <div>
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />

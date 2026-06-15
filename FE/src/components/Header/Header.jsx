@@ -20,8 +20,8 @@ function Header({ isLoggedIn = false }) {
   };
 
   return (
-    <header className="site-header">
-      <Link className="site-header__brand" to="/">
+    <header className="site-header navbar navbar-expand-xl">
+      <Link className="site-header__brand navbar-brand" to="/">
         <div className="brand-mark">RM</div>
         <div>
           <p className="brand-title">RaceMaster</p>
@@ -29,7 +29,7 @@ function Header({ isLoggedIn = false }) {
         </div>
       </Link>
 
-      <nav className="site-header__nav" aria-label="Primary">
+      <nav className="site-header__nav navbar-nav" aria-label="Primary">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -46,15 +46,15 @@ function Header({ isLoggedIn = false }) {
 
       <div className="site-header__actions">
         {isLoggedIn ? (
-          <button className="ghost-button" onClick={handleLogout}>
+          <button className="ghost-button btn" onClick={handleLogout}>
             Logout
           </button>
         ) : (
           <>
-            <Link className="ghost-button" to="/login">
+            <Link className="ghost-button btn" to="/login">
               Login
             </Link>
-            <Link className="primary-button" to="/register">
+            <Link className="primary-button btn" to="/register">
               Register
             </Link>
           </>

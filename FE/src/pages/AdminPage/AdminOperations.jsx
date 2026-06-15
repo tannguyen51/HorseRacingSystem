@@ -40,7 +40,7 @@ export function PrizeManagement() {
   return (
     <div>
       <h2>Prize Money</h2>
-      <p style={{ color: "#98a1b3", marginBottom: 16 }}>Manage prize distribution for tournaments and races.</p>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Manage prize distribution for tournaments and races.</p>
       {msg && <p className="admin-notice">{msg}</p>}
       <form onSubmit={submit} className="admin-form" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
         <input placeholder="Prize name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -83,7 +83,7 @@ export function ProtestManagement() {
   return (
     <div>
       <h2>Protests</h2>
-      <p style={{ color: "#98a1b3", marginBottom: 16 }}>Review and rule on race protests filed by owners and jockeys.</p>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Review and rule on race protests filed by owners and jockeys.</p>
       {msg && <p className="admin-notice">{msg}</p>}
 
       {modal && (
@@ -138,7 +138,7 @@ export function TransferManagement() {
   return (
     <div>
       <h2>Horse Transfers</h2>
-      <p style={{ color: "#98a1b3", marginBottom: 16 }}>Review and approve horse ownership transfers.</p>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Review and approve horse ownership transfers.</p>
       {msg && <p className="admin-notice">{msg}</p>}
 
       {rejectModal && (
@@ -174,7 +174,7 @@ export function ContractManagement() {
   return (
     <div>
       <h2>Contracts</h2>
-      <p style={{ color: "#98a1b3", marginBottom: 16 }}>Owner-Jockey contracts and agreements.</p>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Owner-Jockey contracts and agreements.</p>
       {msg && <p className="admin-notice">{msg}</p>}
       {items.length === 0 ? <p className="muted">No contracts.</p> : (
         <div className="admin-table-wrap"><table className="admin-table">
@@ -196,7 +196,7 @@ export function InjuryManagement() {
   return (
     <div>
       <h2>Injury Records</h2>
-      <p style={{ color: "#98a1b3", marginBottom: 16 }}>Track horse injuries, treatment, and recovery status.</p>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Track horse injuries, treatment, and recovery status.</p>
       {msg && <p className="admin-notice">{msg}</p>}
       {items.length === 0 ? <p className="muted">No injury records.</p> : (
         <div className="admin-table-wrap"><table className="admin-table">

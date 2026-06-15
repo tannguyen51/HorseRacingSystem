@@ -10,7 +10,7 @@
 }
 
 .stat-detail {
-  color: #98a1b3;
+  color: #657086;
   font-size: 13px;
 }
 
@@ -34,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .schedule-day__header h3 {
@@ -47,7 +47,7 @@
 }
 
 .schedule-entry {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 20px;
   padding: 22px;
   border: 1px solid rgba(231, 198, 120, 0.1);
@@ -62,7 +62,7 @@
 }
 
 .schedule-time {
-  color: #f2d28b;
+  color: #8f6420;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-size: 12px;
@@ -71,7 +71,7 @@
 
 .schedule-entry h3 {
   margin: 0 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .schedule-entry__status {
@@ -84,7 +84,7 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: rgba(231, 198, 120, 0.15);
-  color: #f2d28b;
+  color: #8f6420;
   font-size: 12px;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -96,11 +96,11 @@
   gap: 12px;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(6, 10, 20, 0.7);
+  background: rgba(255, 250, 240, 0.92);
 }
 
 .schedule-entry__meta span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -108,7 +108,7 @@
 
 .schedule-entry__meta strong {
   display: block;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 6px;
 }
 
@@ -116,7 +116,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .schedule-entry__horses strong {
@@ -143,19 +143,19 @@
 .upcoming-card {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(10, 16, 28, 0.88);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.96);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
   display: grid;
   gap: 14px;
 }
 
 .upcoming-card h4 {
   margin: 10px 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .upcoming-card span {
-  color: #f2d28b;
+  color: #8f6420;
   font-size: 13px;
 }
 
@@ -164,11 +164,11 @@
   gap: 8px;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(6, 10, 20, 0.7);
+  background: rgba(255, 250, 240, 0.92);
 }
 
 .upcoming-card__countdown strong {
-  color: #f2d28b;
+  color: #8f6420;
   font-size: 18px;
 }
 
@@ -181,21 +181,21 @@
 .participant-card {
   padding: 16px;
   border-radius: 16px;
-  background: rgba(6, 10, 20, 0.7);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
   display: grid;
   gap: 8px;
 }
 
 .participant-card h5 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .participant-meta {
   display: flex;
   justify-content: space-between;
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
 }
 

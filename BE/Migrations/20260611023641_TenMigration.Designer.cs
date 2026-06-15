@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HorseRacing.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260609032212_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260611023641_TenMigration")]
+    partial class TenMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

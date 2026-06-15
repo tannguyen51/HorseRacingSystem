@@ -144,7 +144,7 @@ function OwnerHorseEditPage() {
               <h3>Horse image</h3>
               <div style={{ display: "flex", gap: 20, alignItems: "start" }}>
                 <div onClick={() => fileInputRef.current?.click()} style={{ width: 200, height: 160, border: "2px dashed rgba(231,198,120,.2)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: imagePreview ? `url(${imagePreview}) center/cover no-repeat` : "rgba(231,198,120,.04)", overflow: "hidden", flexShrink: 0 }}>
-                  {!imagePreview && <span style={{ color: "#7f899a", fontSize: 13 }}>Click to upload</span>}
+                  {!imagePreview && <span style={{ color: "#657086", fontSize: 13 }}>Click to upload</span>}
                 </div>
                 <div>
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
