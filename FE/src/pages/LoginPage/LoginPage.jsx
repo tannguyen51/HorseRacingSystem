@@ -1,58 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRoles, login } from "../../services/authApi";
+import { login } from "../../services/authApi";
 import {
-  buildLoginRoleOptions,
-  LABEL_BY_ROLE,
-  LOGIN_ROLE_OPTIONS,
   normalizeApiRole,
   unwrapResponseData,
 } from "../../services/authRoleUtils";
 import "./LoginPage.css";
 
 function LoginPage() {
-  const [roles, setRoles] = useState(LOGIN_ROLE_OPTIONS);
-
-  const [selectedRole, setSelectedRole] = useState("jockey");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [rolesReady, setRolesReady] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadRoles = async () => {
-      try {
-        const apiRolesResponse = await getRoles();
-        const apiRoles = unwrapResponseData(apiRolesResponse);
-        const roleOptions = buildLoginRoleOptions(apiRoles);
-        const availableRoleValues = roleOptions.map((role) => role.value);
-
-        if (!cancelled && roleOptions.length > 0) {
-          setRoles(roleOptions);
-          if (!availableRoleValues.includes(selectedRole)) {
-            setSelectedRole(availableRoleValues[0]);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setRoles(LOGIN_ROLE_OPTIONS);
-        }
-      } finally {
-        if (!cancelled) {
-          setRolesReady(true);
-        }
-      }
-    };
-
-    loadRoles();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -69,13 +29,7 @@ function LoginPage() {
         throw new Error(`Unsupported role returned by server: ${rawRole}`);
       }
 
-      if (apiRole !== selectedRole) {
-        const selectedLabel = LABEL_BY_ROLE[selectedRole] ?? "selected";
-        const apiLabel = LABEL_BY_ROLE[apiRole] ?? apiRole;
-        throw new Error(
-          `Role mismatch. Account is ${apiLabel}, not ${selectedLabel}.`,
-        );
-      }
+      const normalizedRole = apiRole;
 
       localStorage.setItem("authToken", payload?.token ?? "");
       localStorage.setItem(
@@ -83,7 +37,7 @@ function LoginPage() {
         JSON.stringify({
           userId: payload?.userId,
           email: payload?.email,
-          role: apiRole,
+          role: normalizedRole,
         }),
       );
 
@@ -96,7 +50,7 @@ function LoginPage() {
         trainer: "/",
       };
 
-      navigate(ROLE_ROUTES[apiRole] ?? "/");
+      navigate(ROLE_ROUTES[normalizedRole] ?? "/");
     } catch (error) {
       setErrorMessage(
         error.status === 401
@@ -153,30 +107,12 @@ function LoginPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role" className="label-required">
-              Login As
-            </label>
-            <select
-              id="role"
-              className="form-select"
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-            >
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
 
           <button
             type="submit"
             className="primary-button btn-block"
-            disabled={isSubmitting || !rolesReady}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Signing In..." : "Sign In"}
           </button>

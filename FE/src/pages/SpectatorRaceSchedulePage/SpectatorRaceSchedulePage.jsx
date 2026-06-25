@@ -174,6 +174,31 @@ function SpectatorRaceSchedulePage() {
     ];
   }, [races, upcomingRaces]);
 
+  const scheduleOverview = useMemo(() => {
+    const statusCounts = races.reduce(
+      (counts, race) => {
+        const status = String(race.status || "").toLowerCase();
+
+        if (status === "inprogress" || status === "started") {
+          counts.live += 1;
+        } else if (status === "finished" || status === "completed") {
+          counts.finished += 1;
+        } else {
+          counts.scheduled += 1;
+        }
+
+        return counts;
+      },
+      { scheduled: 0, live: 0, finished: 0 },
+    );
+
+    return [
+      { label: "Scheduled", value: statusCounts.scheduled, tone: "scheduled" },
+      { label: "Live now", value: statusCounts.live, tone: "live" },
+      { label: "Finished", value: statusCounts.finished, tone: "finished" },
+    ];
+  }, [races]);
+
   const handleOpenRace = async (race) => {
     setActiveRace({ ...race, isLoading: true, horses: [] });
 
@@ -227,8 +252,12 @@ function SpectatorRaceSchedulePage() {
           </div>
           <div className="spectator-sidebar__card">
             <p className="muted">Next start</p>
-            <h4>Bluegrass Sprint</h4>
-            <span>Countdown 08:12</span>
+            <h4>{upcomingRaces[0]?.title || "No upcoming race"}</h4>
+            <span>
+              {upcomingRaces[0]
+                ? `Countdown ${upcomingRaces[0].countdown}`
+                : "Schedule is up to date"}
+            </span>
           </div>
         </aside>
 
@@ -354,7 +383,7 @@ function SpectatorRaceSchedulePage() {
             <aside className="schedule-sidepanel">
               <div className="section-heading">
                 <h2>Upcoming races</h2>
-                <p>Watchlist the next starts.</p>
+                <p>Your race-day overview.</p>
               </div>
               <div className="upcoming-list">
                 {upcomingRaces.map((race) => (
@@ -377,6 +406,20 @@ function SpectatorRaceSchedulePage() {
                     </div>
                   </article>
                 ))}
+                {!isLoading && upcomingRaces.length === 0 ? (
+                  <div className="upcoming-empty">
+                    <span className="upcoming-empty__icon" aria-hidden="true">
+                      ✓
+                    </span>
+                    <div>
+                      <h4>You're all caught up</h4>
+                      <p>
+                        There are no future races on the calendar yet. New
+                        starts will appear here automatically.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
                 {isLoading ? (
                   <article className="upcoming-card skeleton-card">
                     <div className="skeleton-line" />
@@ -384,6 +427,47 @@ function SpectatorRaceSchedulePage() {
                     <div className="skeleton-line" />
                   </article>
                 ) : null}
+              </div>
+
+              <div className="schedule-overview-card">
+                <div className="sidepanel-card__heading">
+                  <div>
+                    <span className="sidepanel-eyebrow">Schedule overview</span>
+                    <h3>Race status</h3>
+                  </div>
+                  <span className="overview-total">{races.length} total</span>
+                </div>
+                <div className="schedule-overview-list">
+                  {scheduleOverview.map((item) => (
+                    <div key={item.label} className="schedule-overview-row">
+                      <span
+                        className={`status-indicator status-indicator--${item.tone}`}
+                        aria-hidden="true"
+                      />
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="race-day-guide">
+                <span className="sidepanel-eyebrow">Race day guide</span>
+                <h3>Never miss the start</h3>
+                <div className="race-day-guide__steps">
+                  <div>
+                    <span>01</span>
+                    <p>Open race details to review the track and runners.</p>
+                  </div>
+                  <div>
+                    <span>02</span>
+                    <p>Set a reminder before the countdown reaches zero.</p>
+                  </div>
+                  <div>
+                    <span>03</span>
+                    <p>Follow Live Ranking once the race is underway.</p>
+                  </div>
+                </div>
               </div>
             </aside>
           </section>
