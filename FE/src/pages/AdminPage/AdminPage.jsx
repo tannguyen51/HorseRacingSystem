@@ -27,6 +27,7 @@ import {
   updateTournament,
 } from "../../services/adminApi";
 import { getAvailableJockeys } from "../../services/jockeyApi";
+import { resolveApiUrl } from "../../services/apiClient";
 import {
   PrizeManagement,
   ProtestManagement,
@@ -36,6 +37,33 @@ import {
 } from "./AdminOperations";
 import { AuditLogViewer, NotificationManager } from "./AdminAudit";
 import "./AdminPage.css";
+
+function AdminHorseImage({ imageUrl, name, className = "" }) {
+  const [hasError, setHasError] = useState(false);
+  const resolvedUrl = resolveApiUrl(imageUrl);
+  const initial = String(name || "H").trim().slice(0, 1).toUpperCase();
+
+  useEffect(() => {
+    setHasError(false);
+  }, [resolvedUrl]);
+
+  return (
+    <div className={`admin-horse-image ${className}`.trim()}>
+      {resolvedUrl && !hasError ? (
+        <img
+          src={resolvedUrl}
+          alt={name ? `${name} horse` : "Horse"}
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <div className="admin-horse-image__fallback" aria-label="Horse image unavailable">
+          <span>{initial}</span>
+          <small>Image unavailable</small>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const navGroups = [
   { label: "Overview", items: [{ to: "/admin", label: "Dashboard", end: true }] },
@@ -331,20 +359,37 @@ function UserDetail() {
         <section className="admin-horse-grid">
           {horses.map((horse) => {
             const status = horse.approvalStatus ?? horse.ApprovalStatus;
+            const horseName = horse.name ?? horse.Name ?? "Unnamed horse";
             return <article key={horse.id ?? horse.Id} className="admin-horse-card">
-              <div>
+              <div className="admin-horse-card__media">
+                <AdminHorseImage
+                  imageUrl={horse.imageUrl ?? horse.ImageUrl}
+                  name={horseName}
+                />
                 <span className={`status status--${status?.toLowerCase()}`}>{status}</span>
-                <h3>{horse.name ?? horse.Name}</h3>
-                <p>{horse.breed ?? horse.Breed ?? "Unknown breed"} · {horse.gender ?? horse.Gender ?? "Unknown gender"} · Age {horse.age ?? horse.Age}</p>
               </div>
-              <div className="admin-horse-card__stats">
-                <span>{horse.totalRaces ?? horse.TotalRaces} races</span>
-                <span>{horse.totalWins ?? horse.TotalWins} wins</span>
+              <div className="admin-horse-card__body">
+                <div className="admin-horse-card__heading">
+                  <div>
+                    <h3>{horseName}</h3>
+                    <p>{horse.breed ?? horse.Breed ?? "Unknown breed"} · {horse.gender ?? horse.Gender ?? "Unknown gender"} · Age {horse.age ?? horse.Age}</p>
+                  </div>
+                  <button
+                    className="admin-horse-card__detail"
+                    onClick={() => navigate(`/admin/users/${id}/horses/${horse.id ?? horse.Id}`)}
+                  >
+                    View detail
+                  </button>
+                </div>
+                <div className="admin-horse-card__stats">
+                  <div><span>Races</span><strong>{horse.totalRaces ?? horse.TotalRaces ?? 0}</strong></div>
+                  <div><span>Wins</span><strong>{horse.totalWins ?? horse.TotalWins ?? 0}</strong></div>
+                  <div><span>Win rate</span><strong>{horse.totalRaces ?? horse.TotalRaces ? `${Math.round(((horse.totalWins ?? horse.TotalWins ?? 0) / (horse.totalRaces ?? horse.TotalRaces)) * 100)}%` : "0%"}</strong></div>
+                </div>
+                {(horse.approvalNote ?? horse.ApprovalNote) && <p className="admin-horse-card__note">{horse.approvalNote ?? horse.ApprovalNote}</p>}
               </div>
-              {(horse.approvalNote ?? horse.ApprovalNote) && <p className="admin-horse-card__note">{horse.approvalNote ?? horse.ApprovalNote}</p>}
-              <button className="admin-horse-card__detail" onClick={() => navigate(`/admin/users/${id}/horses/${horse.id ?? horse.Id}`)}>View detail</button>
               <div className="admin-actions admin-horse-card__actions">
-                {["Pending", "Approved", "Rejected"].map((nextStatus) => <button key={nextStatus} disabled={status === nextStatus} onClick={() => changeHorseStatus(horse, nextStatus)}>{nextStatus}</button>)}
+                {["Pending", "Approved", "Rejected"].map((nextStatus) => <button className={`admin-horse-status-button admin-horse-status-button--${nextStatus.toLowerCase()}`} key={nextStatus} disabled={status === nextStatus} onClick={() => changeHorseStatus(horse, nextStatus)}>{nextStatus}</button>)}
               </div>
             </article>;
           })}
@@ -389,9 +434,11 @@ function HorseDetail() {
       <Notice message={message} error />
       {horse && <section className="admin-horse-detail">
         <article className="admin-horse-detail__hero">
-          <div className="admin-horse-detail__image">
-            {value("imageUrl", "ImageUrl", "") ? <img src={value("imageUrl", "ImageUrl", "")} alt={value("name", "Name")} /> : <span>{value("name", "Name", "H").slice(0, 1)}</span>}
-          </div>
+          <AdminHorseImage
+            className="admin-horse-detail__image"
+            imageUrl={value("imageUrl", "ImageUrl", "")}
+            name={value("name", "Name")}
+          />
           <div>
             <span className={`status status--${status.toLowerCase()}`}>{status}</span>
             <h2>{value("name", "Name")}</h2>

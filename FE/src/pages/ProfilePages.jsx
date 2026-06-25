@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { request } from "../services/apiClient";
+import "./ProfilePages.css";
 
 const detailStyle = { padding: 16, border: "1px solid rgba(231,198,120,.1)", borderRadius: 12, background: "rgba(255, 255, 255, 0.88)" };
 const labelStyle = { display: "block", color: "#657086", fontSize: 11, textTransform: "uppercase", marginBottom: 6 };
@@ -24,8 +25,18 @@ export function OwnerProfilePage() {
     <div className="owner-page"><div className="owner-layout">
       <aside className="owner-sidebar">
         <div className="owner-sidebar__header"><p className="pill">Horse Owner</p><h3>My Profile</h3></div>
-        <div className="owner-sidebar__card"><p className="muted">Owner Code</p><h4>{profile.code ?? profile.Code ?? "-"}</h4></div>
-        <div className="owner-sidebar__card"><p className="muted">Horses</p><h4>{profile.horses ?? profile.Horses ?? 0}</h4></div>
+        <div className="owner-sidebar__card owner-profile-stat">
+          <p className="muted">Owner Code</p>
+          <h4 className="owner-profile-stat__code">
+            {profile.code ?? profile.Code ?? "-"}
+          </h4>
+        </div>
+        <div className="owner-sidebar__card owner-profile-stat">
+          <p className="muted">Horses</p>
+          <h4 className="owner-profile-stat__number">
+            {profile.horses ?? profile.Horses ?? 0}
+          </h4>
+        </div>
       </aside>
       <div className="owner-content">
         <section className="page-header"><h1>Profile</h1></section>

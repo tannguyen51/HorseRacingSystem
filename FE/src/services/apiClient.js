@@ -1,6 +1,12 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
 
+export const resolveApiUrl = (url) => {
+  if (!url) return "";
+  if (/^(https?:)?\/\//i.test(url) || /^data:/i.test(url)) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const getAuthToken = () => localStorage.getItem("authToken");
 
 export async function request(path, options = {}) {
