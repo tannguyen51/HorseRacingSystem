@@ -1,0 +1,28 @@
+{
+  "name": "mcp-canva-server",
+  "version": "1.0.0",
+  "description": "MCP server for Canva Connect API - create presentations and designs programmatically",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-canva-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "oauth": "node dist/oauth-server.js"
+  },
+  "keywords": ["mcp", "canva", "connect-api", "presentations"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios": "^1.17.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
+  }
+}

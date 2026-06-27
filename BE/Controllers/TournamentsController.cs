@@ -9,6 +9,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/tournaments")]
+[Authorize(Roles = "Admin")]
 public class TournamentsController : ControllerBase
 {
     private readonly ITournamentService _tournamentService;

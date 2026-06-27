@@ -33,6 +33,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<HorseTransfer> HorseTransfers => Set<HorseTransfer>();
     public DbSet<InjuryRecord> InjuryRecords => Set<InjuryRecord>();
     public DbSet<Contract> Contracts => Set<Contract>();
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<WalletTransaction> WalletTransactions => Set<WalletTransaction>();
+    public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
+    public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
+    public DbSet<DepositRequest> DepositRequests => Set<DepositRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -434,6 +439,79 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Contract>()
             .Property(c => c.Status)
+            .HasConversion<string>();
+
+        // Wallet
+        modelBuilder.Entity<Wallet>()
+            .HasIndex(w => w.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<Wallet>()
+            .HasOne(w => w.User)
+            .WithOne()
+            .HasForeignKey<Wallet>(w => w.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // WalletTransaction
+        modelBuilder.Entity<WalletTransaction>()
+            .HasOne(t => t.User)
+            .WithMany()
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WalletTransaction>()
+            .Property(t => t.Type)
+            .HasConversion<string>();
+
+        // BankAccount
+        modelBuilder.Entity<BankAccount>()
+            .HasIndex(b => b.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<BankAccount>()
+            .HasOne(b => b.User)
+            .WithOne()
+            .HasForeignKey<BankAccount>(b => b.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // WithdrawalRequest
+        modelBuilder.Entity<WithdrawalRequest>()
+            .HasOne(w => w.User)
+            .WithMany()
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WithdrawalRequest>()
+            .HasOne(w => w.BankAccount)
+            .WithMany()
+            .HasForeignKey(w => w.BankAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WithdrawalRequest>()
+            .HasOne(w => w.ProcessedByAdmin)
+            .WithMany()
+            .HasForeignKey(w => w.ProcessedByAdminId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WithdrawalRequest>()
+            .Property(w => w.Status)
+            .HasConversion<string>();
+
+        // DepositRequest
+        modelBuilder.Entity<DepositRequest>()
+            .HasOne(d => d.User)
+            .WithMany()
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DepositRequest>()
+            .HasOne(d => d.ProcessedByAdmin)
+            .WithMany()
+            .HasForeignKey(d => d.ProcessedByAdminId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DepositRequest>()
+            .Property(d => d.Status)
             .HasConversion<string>();
     }
 }

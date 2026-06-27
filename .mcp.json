@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "canva": {
+      "command": "node",
+      "args": ["e:/HorseRacing/HorseRacingSystem/mcp-canva-server/dist/index.js"],
+      "env": {
+        "CANVA_CLIENT_ID": "OC-AZ60xSRA9X69",
+        "CANVA_CLIENT_SECRET": "cnvcaBmoQ-AETEgbK2TWyGDUvV5sLG-f-53FOcstW1r_Zg1Ab70e3a3c",
+        "CANVA_REDIRECT_URI": "https://reflux-recreate-bonanza.ngrok-free.dev/callback"
+      }
+    }
+  }
+}

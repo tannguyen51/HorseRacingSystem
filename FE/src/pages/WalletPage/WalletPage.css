@@ -1,0 +1,166 @@
+.wallet-page .wallet-quick-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.wallet-action-btn {
+  display: block;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.wallet-action--deposit {
+  background: linear-gradient(135deg, #2d8a56, #3cb371);
+  color: #fff;
+}
+
+.wallet-action--deposit:hover {
+  background: linear-gradient(135deg, #3cb371, #2d8a56);
+  transform: translateY(-1px);
+}
+
+.wallet-action--withdraw {
+  background: rgba(231, 198, 120, 0.15);
+  color: #f2d28b;
+  border-color: rgba(231, 198, 120, 0.3);
+}
+
+.wallet-action--withdraw:hover {
+  background: rgba(231, 198, 120, 0.25);
+  transform: translateY(-1px);
+}
+
+.wallet-action--history {
+  background: rgba(6, 10, 20, 0.6);
+  color: #d3d9e5;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.wallet-action--history:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f8f4e6;
+}
+
+.wallet-balance-card {
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.12);
+}
+
+.wallet-balance-card h2 {
+  font-size: 36px;
+  margin: 8px 0 16px;
+  color: #f2d28b;
+}
+
+.wallet-bank-info {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wallet-bank-info .pill {
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.wallet-bank-info p {
+  margin: 2px 0;
+  color: #d3d9e5;
+}
+
+.wallet-tx-list {
+  display: grid;
+  gap: 8px;
+}
+
+.wallet-tx-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(10, 16, 28, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wallet-tx-item__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wallet-tx-item__right {
+  text-align: right;
+}
+
+.wallet-tx-type {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tx-deposit {
+  background: rgba(60, 179, 113, 0.15);
+  color: #3cb371;
+}
+
+.tx-withdraw {
+  background: rgba(231, 150, 120, 0.15);
+  color: #e79678;
+}
+
+.tx-bet {
+  background: rgba(200, 180, 100, 0.15);
+  color: #c8b464;
+}
+
+.tx-win {
+  background: rgba(100, 200, 150, 0.15);
+  color: #64c896;
+}
+
+.tx-refund {
+  background: rgba(130, 160, 220, 0.15);
+  color: #82a0dc;
+}
+
+.wallet-tx-desc {
+  margin: 0;
+  color: #f8f4e6;
+}
+
+.amount-plus {
+  color: #3cb371;
+}
+
+.amount-minus {
+  color: #e79678;
+}
+
+.wallet-view-all {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  margin-top: 12px;
+  color: #f2d28b;
+  text-decoration: none;
+  border-radius: 12px;
+  background: rgba(231, 198, 120, 0.08);
+  transition: background 0.2s;
+}
+
+.wallet-view-all:hover {
+  background: rgba(231, 198, 120, 0.15);
+}

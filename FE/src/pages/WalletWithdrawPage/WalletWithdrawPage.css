@@ -1,0 +1,17 @@
+.bank-form,
+.withdraw-form {
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(10, 16, 28, 0.88);
+  border: 1px solid rgba(231, 198, 120, 0.12);
+  max-width: 520px;
+}
+
+.form-success {
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: rgba(60, 179, 113, 0.12);
+  color: #3cb371;
+  border: 1px solid rgba(60, 179, 113, 0.2);
+  font-weight: 500;
+}

@@ -1,0 +1,23 @@
+{
+  "name": "horseracingsystem",
+  "version": "1.0.0",
+  "description": "Hệ thống quản lý giải đua ngựa — nền tảng full-stack giúp số hóa toàn bộ quy trình tổ chức giải đua ngựa từ đăng ký, sắp xếp lịch đua, theo dõi kết quả trực tiếp đến bảng xếp hạng và dự đoán.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tannguyen51/HorseRacingSystem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tannguyen51/HorseRacingSystem/issues"
+  },
+  "homepage": "https://github.com/tannguyen51/HorseRacingSystem#readme",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}

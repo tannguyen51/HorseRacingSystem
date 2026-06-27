@@ -84,6 +84,10 @@ builder.Services.AddScoped<IProtestRepository, ProtestRepository>();
 builder.Services.AddScoped<IHorseTransferRepository, HorseTransferRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IInjuryRecordRepository, InjuryRecordRepository>();
+builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+builder.Services.AddScoped<IWithdrawalRequestRepository, WithdrawalRequestRepository>();
+builder.Services.AddScoped<IDepositRequestRepository, DepositRequestRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
@@ -106,6 +110,8 @@ builder.Services.AddScoped<IProtestService, ProtestService>();
 builder.Services.AddScoped<IHorseTransferService, HorseTransferService>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IInjuryRecordService, InjuryRecordService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddHttpClient<SepayService>();
 
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

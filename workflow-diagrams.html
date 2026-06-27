@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horse Racing System - 5 Workflow Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --accent:#38bdf8; --green:#4ade80; --amber:#fbbf24; --red:#f87171; --purple:#c084fc; --pink:#f472b6; --text:#e2e8f0; --muted:#94a3b8; --border:#334155; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.6; }
+  .hero { text-align:center; padding:60px 20px 40px; background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%); border-bottom:3px solid var(--accent); }
+  .hero h1 { font-size:2.4em; font-weight:800; background:linear-gradient(135deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { color:var(--muted); margin-top:8px; font-size:1.1em; }
+  .container { max-width:1400px; margin:0 auto; padding:30px 20px; }
+  .wf-card { background:var(--card); border-radius:16px; margin-bottom:40px; overflow:hidden; border:1px solid var(--border); }
+  .wf-header { padding:20px 28px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--border); }
+  .wf-num { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.4em; color:#0f172a; flex-shrink:0; }
+  .c1 { background:var(--accent); } .c2 { background:var(--green); } .c3 { background:var(--amber); } .c4 { background:var(--purple); } .c5 { background:var(--pink); }
+  .wf-title { font-size:1.3em; font-weight:700; }
+  .wf-sub { color:var(--muted); font-size:0.9em; }
+  .wf-roles { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .wf-roles span { font-size:0.75em; padding:2px 10px; border-radius:20px; background:var(--border); color:var(--muted); }
+  .wf-body { padding:20px; }
+  .mermaid { display:flex; justify-content:center; overflow-x:auto; }
+  .legend { display:flex; gap:20px; flex-wrap:wrap; padding:16px 28px; border-top:1px solid var(--border); }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:0.85em; color:var(--muted); }
+  .legend-dot { width:12px; height:12px; border-radius:3px; }
+  .footer { text-align:center; padding:40px 20px; color:var(--muted); font-size:0.85em; }
+  @media (max-width:768px) { .hero h1 { font-size:1.6em; } .wf-header { flex-direction:column; text-align:center; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Horse Racing Management System</h1>
+  <p>5 Nhóm Workflow Chính — Kiến Trúc Vận Hành Hệ Thống Đua Ngựa (9 Sơ Đồ)</p>
+</div>
+
+<div class="container">
+
+<!-- WORKFLOW 1 -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c1">1</div>
+    <div>
+      <div class="wf-title">Đăng Ký & Kích Hoạt Tài Khoản</div>
+      <div class="wf-sub">User Registration & Account Activation Flow</div>
+      <div class="wf-roles"><span>Guest</span><span>Admin</span><span>User</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  G1["👤 Người dùng mới\nGửi form đăng ký"] -->|"POST /api/auth/register"| R1["📋 UserRegistration\nStatus = PENDING"]
+
+  R1 --> A1["🛡️ Admin\nXem danh sách chờ duyệt"]
+  A1 -->|"GET /api/admin/registrations/pending"| A2{"Duyệt?"}
+
+  A2 -->|"✅ Approve"| A3["👤 Tạo User\n+ Set password"]
+  A3 -->|"POST /api/admin/registrations/{id}/approve"| OK["🟢 UserRegistration\nStatus = APPROVED"]
+  OK --> U1["🔐 User đăng nhập"]
+  U1 -->|"POST /api/auth/login"| JWT["🎫 Nhận JWT Token\n→ Truy cập hệ thống"]
+
+  A2 -->|"❌ Reject"| A4["📝 Ghi lý do từ chối"]
+  A4 -->|"POST /api/admin/registrations/{id}/reject"| RJ["🔴 UserRegistration\nStatus = REJECTED"]
+
+  style G1 fill:#1e3a5f,stroke:#38bdf8,color:#e2e8f0
+  style R1 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style A1 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style A2 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style A3 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style A4 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style OK fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style U1 fill:#1e3a5f,stroke:#38bdf8,color:#e2e8f0
+  style JWT fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style RJ fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Actor: Guest/User</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Actor: Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Success State</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Rejected State</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 2 -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c2">2</div>
+    <div>
+      <div class="wf-title">Đăng Ký & Phê Duyệt Ngựa Đua</div>
+      <div class="wf-sub">Horse Registration & Approval Flow</div>
+      <div class="wf-roles"><span>HorseOwner</span><span>Admin</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  HO1["🐴 HorseOwner\nTạo hồ sơ ngựa"] -->|"POST /api/horses"| HP["📋 Horse\nApprovalStatus = PENDING"]
+
+  HO1 -->|"POST /api/horses/upload-image"| IMG["🖼️ Upload ảnh ngựa\n→ wwwroot/uploads/horses/"]
+
+  HP --> AD1["🛡️ Admin\nXem danh sách ngựa chờ duyệt"]
+  AD1 -->|"GET /api/admin/users/{id}/horses"| AD2{"Phê duyệt?"}
+
+  AD2 -->|"✅ Approve"| AD3["🐎 Horse được duyệt"]
+  AD3 -->|"PUT .../status Approved"| HOK["🟢 ApprovalStatus = APPROVED\n→ Có thể đăng ký thi đấu"]
+
+  AD2 -->|"❌ Reject"| AD4["📝 Ghi lý do + ApprovalNote"]
+  AD4 -->|"PUT .../status Rejected"| HRJ["🔴 ApprovalStatus = REJECTED\n→ Không thể đăng ký đua"]
+
+  HOK --> NEXT["➡️ Sẵn sàng cho\nWorkflow 3 (Đăng ký cuộc đua)"]
+
+  style HO1 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style HP fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style IMG fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style AD1 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style AD2 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style AD3 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style AD4 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style HOK fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style HRJ fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+  style NEXT fill:#1e3a5f,stroke:#818cf8,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Actor: HorseOwner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Actor: Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Approved</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Rejected</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 3 -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c3">3</div>
+    <div>
+      <div class="wf-title">Đăng Ký Cuộc Đua & Mời Nài</div>
+      <div class="wf-sub">Race Entry, Jockey Invitation & Confirmation Flow</div>
+      <div class="wf-roles"><span>HorseOwner</span><span>Jockey</span><span>Admin</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  subgraph OWNER["🐴 HORSE OWNER"]
+    O1["Đăng ký ngựa vào cuộc đua"] -->|"POST /api/horses/{horseId}/races/{raceId}/registrations"| RE["📋 RaceEntry\nStatus=PENDING\nOwnerConfirmed=true\nJockeyConfirmed=false"]
+    O1 -->|"Kiểm tra: Horse.ApprovalStatus=APPROVED"| O1
+  end
+
+  RE --> O2["📨 Gửi lời mời đến Jockey"]
+  O2 -->|"POST /api/horses/{horseId}/jockey-invitations"| JI["📋 JockeyInvitation\nStatus = PENDING"]
+
+  subgraph JOCKEY["🏇 JOCKEY"]
+    J1["Xem danh sách lời mời"] -->|"GET /api/jockeys/invitations"| J2{"Phản hồi?"}
+    J2 -->|"✅ Accept"| JA["JockeyInvitation\nStatus = ACCEPTED"]
+    J2 -->|"❌ Decline"| JD["JockeyInvitation\nStatus = DECLINED"]
+  end
+
+  JI --> J1
+  JA -->|"POST /api/jockeys/invitations/{id}/respond"| UP["Cập nhật RaceEntry:\nJockeyId = selected\nJockeyConfirmed = TRUE"]
+
+  UP --> READY["🟢 ENTRY SẴN SÀNG\nCả Owner & Jockey đã xác nhận\n→ Chờ ngày đua"]
+
+  RE -.->|"Admin cũng có thể\ntrực tiếp assign"| ADM["🛡️ Admin\nPOST .../assign-horse\nPOST .../bulk-assign"]
+
+  style O1 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style RE fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style O2 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style JI fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style J1 fill:#7c2d12,stroke:#fbbf24,color:#e2e8f0
+  style J2 fill:#7c2d12,stroke:#fbbf24,color:#e2e8f0
+  style JA fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style JD fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+  style UP fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style READY fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style ADM fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Actor: HorseOwner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Actor: Jockey</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Actor: Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Confirmed / Ready</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Declined</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 4 -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c4">4</div>
+    <div>
+      <div class="wf-title">Vận Hành Ngày Đua</div>
+      <div class="wf-sub">Race Day Operations — Từ khởi tạo giải đến công bố kết quả</div>
+      <div class="wf-roles"><span>Admin</span><span>Referee</span><span>Public</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  subgraph SETUP["⚙️ GIAI ĐOẠN CHUẨN BỊ (Admin)"]
+    T1["🏆 Tạo Giải Đấu\nPOST /api/tournaments"] --> T2["📅 Tạo Vòng Đấu\nPOST /api/tournaments/{id}/rounds"]
+    T2 --> T3["🏁 Tạo Cuộc Đua\nPOST /api/races/management"]
+    T3 --> T4["🎯 Assign Trọng Tài\nPOST /api/referees/assign"]
+  end
+
+  T4 -->|"RefereeAssignment.Status=ASSIGNED"| R1
+
+  subgraph REF_PRE["🔍 KIỂM TRA TRƯỚC ĐUA (Referee)"]
+    R1["Xác nhận phân công"] -->|"POST .../assignments/{id}/respond"| R2{"Chấp nhận?"}
+    R2 -->|"✅ Confirm"| R3["Kiểm tra sức khỏe ngựa\nPOST /api/referees/health-checks"]
+    R2 -->|"❌ Cancel"| RC["Assignment = CANCELLED"]
+    R3 -->|"POST .../health-checks/{id}/complete"| R4{"Đạt?"}
+    R4 -->|"✅ Passed"| R5["ApprovedToRace = TRUE"]
+    R4 -->|"❌ Failed"| RF["ApprovedToRace = FALSE\n→ Ngựa bị loại"]
+  end
+
+  R5 --> START
+
+  subgraph RACE["🏇 CUỘC ĐUA DIỄN RA"]
+    START["🟢 BẮT ĐẦU ĐUA\nPOST .../management/{raceId}/start"] --> LIVE["🔴 Race.Status = IN_PROGRESS\nActualStartTime = now"]
+    LIVE --> VI["⚠️ Referee ghi nhận vi phạm\nPOST /api/referees/violations"]
+    LIVE --> POS["👁️ Public xem vị trí trực tiếp\nGET /api/live-results/race/{id}/positions"]
+    LIVE --> END["🏁 KẾT THÚC ĐUA\nPOST .../management/{raceId}/end"]
+  end
+
+  END --> FIN["Race.Status = FINISHED\nActualEndTime = now"]
+
+  FIN --> RESULT
+
+  subgraph POST_RACE["📊 SAU CUỘC ĐUA"]
+    RESULT["📢 CÔNG BỐ KẾT QUẢ\nPOST /api/admin/races/{id}/publish-result"] --> RR["📋 RaceResult\n+ Rankings + WinnerPurse"]
+    VI --> VIO["📋 ViolationRecord\n+ Penalty"]
+    VIO --> REP["📝 Referee viết báo cáo\nPOST /api/referees/reports"]
+    REP --> PUB["🛡️ Admin duyệt báo cáo\nPOST .../reports/{id}/publish"]
+    PUB --> OFF["RaceReport\nIsOfficialReport = TRUE"]
+  end
+
+  RR --> DONE["✅ HOÀN TẤT\nKết quả chính thức"]
+
+  style T1 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style T2 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style T3 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style T4 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style R1 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style R2 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style R3 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style R4 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style R5 fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style RC fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+  style RF fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+  style START fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style LIVE fill:#7c2d12,stroke:#fbbf24,color:#e2e8f0
+  style VI fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style POS fill:#1e3a5f,stroke:#38bdf8,color:#e2e8f0
+  style END fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style FIN fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style RESULT fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style RR fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style VIO fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style REP fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style PUB fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style OFF fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style DONE fill:#14532d,stroke:#4ade80,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Actor: Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Actor: Referee</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Actor: Public/Spectator</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> In Progress State</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 5A: PROTEST -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c5">5A</div>
+    <div>
+      <div class="wf-title">Hậu Đua — Khiếu Nại & Giải Quyết Tranh Chấp</div>
+      <div class="wf-sub">Protest & Dispute Resolution Flow</div>
+      <div class="wf-roles"><span>HorseOwner</span><span>Jockey</span><span>Admin</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  P1["😠 Owner / Jockey / Admin\nGửi đơn khiếu nại"] -->|"POST\n/api/management/protests"| P2["📋 Protest\nStatus = PENDING"]
+
+  P2 --> P3["🛡️ Admin xem xét\nđơn khiếu nại"]
+
+  P3 -->|"POST\n.../protests/{id}/rule"| P4{"Phán quyết\ncủa Admin"}
+
+  P4 -->|"✅ Upheld\nChấp nhận khiếu nại"| PU["🟢 Protest Status\n= UPHELD"]
+  P4 -->|"❌ Rejected\nBác bỏ khiếu nại"| PR["🔴 Protest Status\n= REJECTED"]
+
+  PU --> ACT["Kết quả cuộc đua\ncó thể bị điều chỉnh"]
+
+  style P1 fill:#7c2d12,stroke:#fbbf24,color:#e2e8f0
+  style P2 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style P3 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style P4 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style PU fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style PR fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+  style ACT fill:#1e3a5f,stroke:#818cf8,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Người khiếu nại</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Admin xử lý</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Upheld</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Rejected</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 5B: TRANSFER -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c5">5B</div>
+    <div>
+      <div class="wf-title">Quản Lý Vòng Đời — Chuyển Nhượng Ngựa</div>
+      <div class="wf-sub">Horse Transfer & Ownership Change Flow</div>
+      <div class="wf-roles"><span>HorseOwner</span><span>Admin</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  T1["🐴 HorseOwner\nTạo yêu cầu chuyển nhượng\n(Sale / Gift / Lease)"] -->|"POST\n/api/management/transfers"| T2["📋 HorseTransfer\nStatus = PENDING"]
+
+  T2 --> T3["🛡️ Admin\nXem & xét duyệt"]
+
+  T3 -->|"POST\n.../transfers/{id}/approve"| TA["🟢 Transfer = APPROVED\nCompletedAt = now\n→ Ngựa chuyển sang chủ mới"]
+
+  T3 -->|"POST\n.../transfers/{id}/reject"| TRJ["🔴 Transfer = REJECTED\n→ Ngựa vẫn thuộc chủ cũ"]
+
+  style T1 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style T2 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style T3 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style TA fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style TRJ fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> HorseOwner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Approved</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Rejected</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 5C: CONTRACT -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c5">5C</div>
+    <div>
+      <div class="wf-title">Quản Lý Vòng Đời — Hợp Đồng Owner ↔ Jockey</div>
+      <div class="wf-sub">Contract Management Flow</div>
+      <div class="wf-roles"><span>HorseOwner</span><span>Jockey</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  C1["📄 Tạo hợp đồng\nOwner (hoặc Admin)\ntạo hợp đồng cưỡi ngựa"] -->|"POST\n/api/management/contracts"| C2["📋 Contract\nStatus = DRAFT\nBaseFee + WinBonus + Terms"]
+
+  C2 --> C3["✍️ HorseOwner\nKý hợp đồng"]
+  C3 -->|"POST\n.../contracts/{id}/sign-owner"| C4["SignedByOwnerAt = now"]
+
+  C2 --> C5["✍️ Jockey\nKý hợp đồng"]
+  C5 -->|"POST\n.../contracts/{id}/sign-jockey"| C6["SignedByJockeyAt = now"]
+
+  C4 --> C7{"Cả 2\nđã ký?"}
+  C6 --> C7
+
+  C7 -->|"✅ YES"| C8["🟢 Contract = ACTIVE\nJockey chính thức\ncưỡi ngựa cho Owner"]
+
+  style C1 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style C2 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style C3 fill:#0c4a6e,stroke:#38bdf8,color:#e2e8f0
+  style C4 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style C5 fill:#7c2d12,stroke:#fbbf24,color:#e2e8f0
+  style C6 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style C7 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style C8 fill:#14532d,stroke:#4ade80,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> HorseOwner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Jockey</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Active</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 5D: INJURY -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c5">5D</div>
+    <div>
+      <div class="wf-title">Quản Lý Vòng Đời — Chấn Thương & Hồi Phục</div>
+      <div class="wf-sub">Injury Record & Recovery Tracking Flow</div>
+      <div class="wf-roles"><span>Referee</span><span>Admin</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  I1["🩺 Referee / Admin\nGhi nhận chấn thương\ncho ngựa sau cuộc đua"] -->|"POST\n/api/management/injuries"| I2["📋 InjuryRecord\nStatus = ACTIVE\nSeverity + Notes"]
+
+  I2 --> I3["🏥 Đánh dấu\nđang hồi phục"]
+  I3 -->|"POST\n.../injuries/{id}/recover"| I4["Status = RECOVERED\nRecoveredAt = now"]
+
+  I4 --> I5["🛡️ Admin kiểm tra\n& xác nhận đủ điều kiện"]
+  I5 -->|"POST\n.../injuries/{id}/clear"| I6["🟢 ClearedToRace = TRUE\n→ Ngựa được phép\nthi đấu trở lại"]
+
+  I2 -.->|"Trường hợp nặng"| CHRONIC["🔴 Chronic / CareerEnding\n→ Ngựa giải nghệ"]
+
+  style I1 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style I2 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style I3 fill:#0f5132,stroke:#4ade80,color:#e2e8f0
+  style I4 fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style I5 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style I6 fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style CHRONIC fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Referee</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Admin</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Career-ending</div>
+  </div>
+</div>
+
+<!-- WORKFLOW 5E: PREDICTION -->
+<div class="wf-card">
+  <div class="wf-header">
+    <div class="wf-num c5">5E</div>
+    <div>
+      <div class="wf-title">Hậu Đua — Dự Đoán & Cá Cược (Spectator)</div>
+      <div class="wf-sub">Prediction & Betting Flow</div>
+      <div class="wf-roles"><span>Spectator</span></div>
+    </div>
+  </div>
+  <div class="wf-body">
+    <pre class="mermaid">
+graph TD
+  S1["👁️ Spectator\nXem danh sách cuộc đua\n+ Odds từng ngựa"] -->|"Chọn ngựa\n+ Số tiền cược"| S2["📋 Prediction\nStatus = PENDING\nBetAmount + Odds\n+ PotentialPayout"]
+
+  S2 -->|"POST\n/api/predictions"| S3["⏳ Chờ cuộc đua\nkết thúc"]
+
+  S3 --> S4["🏁 Cuộc đua\nkết thúc\n→ Có kết quả chính thức"]
+
+  S4 --> S5{"Ngựa dự đoán\ncó thắng?"}
+
+  S5 -->|"🏆 CÓ"| S6["🟢 Prediction = WON\n→ Spectator nhận thưởng\n= BetAmount × Odds"]
+  S5 -->|"💔 KHÔNG"| S7["🔴 Prediction = LOST\n→ Mất tiền cược"]
+
+  style S1 fill:#1e3a5f,stroke:#38bdf8,color:#e2e8f0
+  style S2 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style S3 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style S4 fill:#5b21b6,stroke:#c084fc,color:#e2e8f0
+  style S5 fill:#334155,stroke:#94a3b8,color:#e2e8f0
+  style S6 fill:#14532d,stroke:#4ade80,color:#e2e8f0
+  style S7 fill:#7f1d1d,stroke:#f87171,color:#e2e8f0
+    </pre>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Spectator</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Won</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Lost</div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <p>Horse Racing Management System — 5 Core Workflows — June 2026</p>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      fontSize: '16px',
+      fontFamily: '"Segoe UI",system-ui,sans-serif'
+    },
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', rankSpacing: 50, nodeSpacing: 30 }
+  });
+</script>
+
+</body>
+</html>

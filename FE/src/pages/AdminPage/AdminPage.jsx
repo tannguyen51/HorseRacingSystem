@@ -35,6 +35,14 @@ import {
   InjuryManagement,
 } from "./AdminOperations";
 import { AuditLogViewer, NotificationManager } from "./AdminAudit";
+import {
+  adminGetPendingDeposits,
+  adminProcessDeposit,
+  adminGetPendingWithdrawals,
+  adminGetAllWithdrawals,
+  adminProcessWithdrawal,
+  adminSyncSepay,
+} from "../../services/walletApi";
 import "./AdminPage.css";
 
 const navGroups = [
@@ -63,6 +71,8 @@ const navGroups = [
       { to: "/admin/transfers", label: "Horse Transfers" },
       { to: "/admin/contracts", label: "Contracts" },
       { to: "/admin/injuries", label: "Injury Records" },
+      { to: "/admin/wallet-deposits", label: "Deposit Requests" },
+      { to: "/admin/wallet-withdrawals", label: "Withdrawal Requests" },
     ],
   },
   {
@@ -891,6 +901,168 @@ function RegistrationManagement() {
   );
 }
 
+function AdminWalletDeposits() {
+  const [deposits, setDeposits] = useState([]);
+  const [message, setMessage] = useState("");
+
+  const load = () =>
+    adminGetPendingDeposits()
+      .then((items) => setDeposits(Array.isArray(items) ? items : []))
+      .catch((err) => setMessage(err.message));
+
+  useEffect(() => { load(); }, []);
+
+  const handleProcess = async (id, approved) => {
+    try {
+      await adminProcessDeposit(id, approved);
+      setMessage(approved ? "Deposit approved." : "Deposit cancelled.");
+      load();
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
+  const handleSync = async () => {
+    setMessage("Syncing...");
+    try {
+      const res = await adminSyncSepay();
+      setMessage(`Sync complete. ${res?.matched ?? 0} deposits matched.`);
+      load();
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
+  const formatCurrency = (v) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
+
+  return (
+    <>
+      <PageTitle eyebrow="Wallet Management" title="Deposit Requests" description="Approve deposit requests manually or sync with Sepay." />
+      <Notice message={message} error />
+      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+        <button className="primary-button" onClick={handleSync}>
+          Sync Sepay
+        </button>
+      </div>
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>User</th><th>Email</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deposits.map((d) => (
+              <tr key={d.id}>
+                <td>{d.userName || "--"}</td>
+                <td>{d.userEmail}</td>
+                <td>{formatCurrency(d.amount)}</td>
+                <td><span className="admin-badge">{d.status}</span></td>
+                <td>{formatDate(d.createdAt)}</td>
+                <td>
+                  {d.status === "Pending" && (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button className="btn-approve" onClick={() => handleProcess(d.id, true)}>Approve</button>
+                      <button className="btn-reject" onClick={() => handleProcess(d.id, false)}>Reject</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {deposits.length === 0 && (
+              <tr><td colSpan={6}>No pending deposit requests.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function AdminWalletWithdrawals() {
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [message, setMessage] = useState("");
+  const [noteMap, setNoteMap] = useState({});
+
+  const load = () =>
+    adminGetAllWithdrawals()
+      .then((items) => setWithdrawals(Array.isArray(items) ? items : []))
+      .catch((err) => setMessage(err.message));
+
+  useEffect(() => { load(); }, []);
+
+  const handleProcess = async (id, approved) => {
+    const adminNote = noteMap[id] || "";
+    try {
+      await adminProcessWithdrawal(id, approved, adminNote);
+      setMessage(approved ? "Withdrawal completed." : "Withdrawal rejected.");
+      load();
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
+  const formatCurrency = (v) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v || 0);
+
+  const statusClass = (status) => {
+    const map = { Pending: "admin-badge", Completed: "admin-badge badge-green", Rejected: "admin-badge badge-red", Approved: "admin-badge badge-blue" };
+    return map[status] || "admin-badge";
+  };
+
+  return (
+    <>
+      <PageTitle eyebrow="Wallet Management" title="Withdrawal Requests" description="Process withdrawal requests. Money should be transferred manually." />
+      <Notice message={message} />
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>User</th><th>Email</th><th>Amount</th><th>Bank</th><th>Account</th><th>Holder</th><th>Status</th><th>Admin Note</th><th>Date</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {withdrawals.map((w) => (
+              <tr key={w.id}>
+                <td>{w.userName || "--"}</td>
+                <td>{w.userEmail}</td>
+                <td>{formatCurrency(w.amount)}</td>
+                <td>{w.bankAccount?.bankName || "--"}</td>
+                <td>{w.bankAccount?.accountNumber || "--"}</td>
+                <td>{w.bankAccount?.accountHolder || "--"}</td>
+                <td><span className={statusClass(w.status)}>{w.status}</span></td>
+                <td>{w.adminNote || "--"}</td>
+                <td>{formatDate(w.createdAt)}</td>
+                <td>
+                  {w.status === "Pending" && (
+                    <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
+                      <input
+                        placeholder="Admin note"
+                        className="form-input"
+                        style={{ fontSize: 12, padding: "4px 8px" }}
+                        value={noteMap[w.id] || ""}
+                        onChange={(e) => setNoteMap({ ...noteMap, [w.id]: e.target.value })}
+                      />
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button className="btn-approve" onClick={() => handleProcess(w.id, true)}>Complete</button>
+                        <button className="btn-reject" onClick={() => handleProcess(w.id, false)}>Reject</button>
+                      </div>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {withdrawals.length === 0 && (
+              <tr><td colSpan={10}>No withdrawal requests.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 function AdminPage() {
   const location = useLocation();
   let content = <Dashboard />;
@@ -909,6 +1081,8 @@ function AdminPage() {
   else if (location.pathname === "/admin/injuries") content = <InjuryManagement />;
   else if (location.pathname === "/admin/audit") content = <AuditLogViewer />;
   else if (location.pathname === "/admin/notifications") content = <NotificationManager />;
+  else if (location.pathname === "/admin/wallet-deposits") content = <AdminWalletDeposits />;
+  else if (location.pathname === "/admin/wallet-withdrawals") content = <AdminWalletWithdrawals />;
 
   return <AdminShell>{content}</AdminShell>;
 }

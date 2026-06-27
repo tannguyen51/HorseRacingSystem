@@ -175,3 +175,27 @@ public enum ContractStatus
     Terminated = 4,
     Renewed = 5
 }
+
+public enum TransactionType
+{
+    Deposit = 1,
+    Withdraw = 2,
+    Bet = 3,
+    Win = 4,
+    Refund = 5
+}
+
+public enum WithdrawalStatus
+{
+    Pending = 1,
+    Approved = 2,
+    Rejected = 3,
+    Completed = 4
+}
+
+public enum DepositStatus
+{
+    Pending = 1,
+    Completed = 2,
+    Cancelled = 3
+}

@@ -5,5 +5,6 @@ export const spectatorNavItems = [
   { to: "/spectator/live-ranking", label: "Live Ranking" },
   { to: "/spectator/predictions", label: "Predictions" },
   { to: "/spectator/predictions/results", label: "Prediction Results" },
+  { to: "/spectator/wallet", label: "Wallet" },
   { to: "/spectator/rewards", label: "Rewards" },
 ];

@@ -25,6 +25,10 @@ import SpectatorLiveRankingPage from "./pages/SpectatorLiveRankingPage/Spectator
 import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage";
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
 import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
+import WalletPage from "./pages/WalletPage/WalletPage";
+import WalletDepositPage from "./pages/WalletDepositPage/WalletDepositPage";
+import WalletWithdrawPage from "./pages/WalletWithdrawPage/WalletWithdrawPage";
+import WalletTransactionsPage from "./pages/WalletTransactionsPage/WalletTransactionsPage";
 import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
 import JockeyInvitationDetailPage from "./pages/JockeyInvitationPage/JockeyInvitationDetailPage";
 import JockeyDashboardPage from "./pages/JockeyDashboardPage/JockeyDashboardPage";
@@ -139,6 +143,19 @@ function AppLayout() {
             path="/spectator/rewards"
             element={<SpectatorRewardNotificationsPage />}
           />
+          <Route path="/spectator/wallet" element={<WalletPage />} />
+          <Route
+            path="/spectator/wallet/deposit"
+            element={<WalletDepositPage />}
+          />
+          <Route
+            path="/spectator/wallet/withdraw"
+            element={<WalletWithdrawPage />}
+          />
+          <Route
+            path="/spectator/wallet/transactions"
+            element={<WalletTransactionsPage />}
+          />
           <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
           <Route path="/jockey" element={<JockeyDashboardPage />} />
           <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
@@ -203,6 +220,8 @@ function AppLayout() {
           <Route path="/admin/injuries" element={adminPage} />
           <Route path="/admin/audit" element={adminPage} />
           <Route path="/admin/notifications" element={adminPage} />
+          <Route path="/admin/wallet-deposits" element={adminPage} />
+          <Route path="/admin/wallet-withdrawals" element={adminPage} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

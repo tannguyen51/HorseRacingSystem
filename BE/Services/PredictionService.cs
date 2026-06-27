@@ -14,12 +14,14 @@ public class PredictionService : IPredictionService
     private readonly IRaceRepository _races;
     private readonly IPredictionRepository _predictions;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IWalletService _walletService;
 
-    public PredictionService(IRaceRepository races, IPredictionRepository predictions, IUnitOfWork unitOfWork)
+    public PredictionService(IRaceRepository races, IPredictionRepository predictions, IUnitOfWork unitOfWork, IWalletService walletService)
     {
         _races = races;
         _predictions = predictions;
         _unitOfWork = unitOfWork;
+        _walletService = walletService;
     }
 
     public async Task<ServiceResult<object>> CreatePredictionAsync(Guid userId, PredictionCreateRequest request)
@@ -55,6 +57,16 @@ public class PredictionService : IPredictionService
 
         await _predictions.AddAsync(prediction);
         await _unitOfWork.SaveChangesAsync();
+
+        // Deduct from wallet if bet amount > 0
+        if (request.BetAmount > 0)
+        {
+            var deducted = await _walletService.DeductBetAsync(userId, request.BetAmount, prediction.Id);
+            if (!deducted)
+            {
+                return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Insufficient wallet balance. Please deposit funds first.");
+            }
+        }
 
         return ServiceResult<object>.Ok(prediction);
     }

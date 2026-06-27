@@ -1,0 +1,18 @@
+/* Transactions page specific styles */
+.tx-page .empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  border-radius: 20px;
+  background: rgba(10, 16, 28, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tx-page .empty-state h4 {
+  color: #f8f4e6;
+  margin: 0 0 8px;
+}
+
+.tx-page .empty-state p {
+  color: #98a1b3;
+  margin: 0;
+}
