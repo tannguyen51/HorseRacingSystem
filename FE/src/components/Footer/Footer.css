@@ -1,8 +1,8 @@
 .site-footer {
   padding: 64px 72px 32px;
-  color: #d3d9e5;
-  background: linear-gradient(180deg, rgba(6, 10, 20, 0.4), rgba(6, 10, 20, 0.9));
-  border-top: 1px solid rgba(231, 198, 120, 0.12);
+  color: #4f5b70;
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.35), #ffffff);
+  border-top: 1px solid rgba(23, 32, 51, 0.08);
 }
 
 .site-footer__grid {
@@ -13,18 +13,18 @@
 
 .site-footer__grid h3 {
   font-size: 20px;
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 12px;
 }
 
 .site-footer__grid h4 {
   font-size: 16px;
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 12px;
 }
 
 .site-footer__grid p {
-  color: #aeb6c4;
+  color: #657086;
   max-width: 240px;
 }
 
@@ -34,7 +34,7 @@
   margin: 0;
   display: grid;
   gap: 8px;
-  color: #aeb6c4;
+  color: #657086;
 }
 
 .footer-badges {
@@ -46,8 +46,8 @@
 .footer-badges span {
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(231, 198, 120, 0.1);
-  color: #f5e4b1;
+  background: rgba(201, 150, 54, 0.12);
+  color: #8f6420;
   font-size: 12px;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -58,9 +58,9 @@
   justify-content: space-between;
   margin-top: 36px;
   padding-top: 24px;
-  border-top: 1px solid rgba(231, 198, 120, 0.12);
+  border-top: 1px solid rgba(23, 32, 51, 0.08);
   font-size: 13px;
-  color: #98a1b3;
+  color: #657086;
   flex-wrap: wrap;
   gap: 12px;
 }

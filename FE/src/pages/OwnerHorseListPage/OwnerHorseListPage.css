@@ -32,8 +32,8 @@
   display: grid;
   grid-template-rows: auto 1fr;
   border-radius: 24px;
-  border: 1px solid rgba(231, 198, 120, 0.12);
-  background: linear-gradient(160deg, rgba(16, 23, 38, 0.92), rgba(7, 11, 20, 0.92));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
   box-shadow: 0 24px 50px rgba(3, 7, 16, 0.55);
   overflow: hidden;
   backdrop-filter: blur(14px);
@@ -49,7 +49,7 @@
   position: relative;
   height: 200px;
   overflow: hidden;
-  background: rgba(6, 10, 20, 0.92);
+  background: rgba(255, 250, 240, 0.92);
 }
 
 .horse-image {
@@ -57,7 +57,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(231, 198, 120, 0.22), rgba(7, 11, 20, 0.75)),
+  background: linear-gradient(135deg, rgba(231, 198, 120, 0.22), rgba(255, 255, 255, 0.78)),
     radial-gradient(circle at top, rgba(231, 198, 120, 0.35), transparent 60%);
 }
 
@@ -96,7 +96,7 @@
 
 .badge-pending {
   background: rgba(231, 198, 120, 0.2);
-  color: #f2d28b;
+  color: #8f6420;
   border: 1px solid rgba(231, 198, 120, 0.4);
 }
 
@@ -126,7 +126,7 @@
 
 .horse-card__header h3 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 20px;
 }
 
@@ -150,12 +150,12 @@
   gap: 14px 16px;
   padding: 16px;
   border-radius: 18px;
-  background: rgba(6, 10, 20, 0.6);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .horse-card__details span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -163,7 +163,7 @@
 
 .horse-card__details strong {
   display: block;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 6px;
   font-size: 15px;
 }
@@ -174,7 +174,7 @@
   align-self: end;
   padding: 12px;
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(6, 10, 20, 0.64), rgba(12, 18, 31, 0.78));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.78));
   border: 1px solid rgba(231, 198, 120, 0.1);
   box-shadow: inset 0 1px 0 rgba(248, 244, 230, 0.04);
 }
@@ -197,7 +197,7 @@
   border: 1px solid transparent;
   padding: 11px 14px;
   cursor: pointer;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.1;
@@ -276,9 +276,9 @@
 }
 
 .button-outline {
-  border-color: rgba(231, 198, 120, 0.25);
-  color: #dbe2ef;
-  background: rgba(6, 10, 20, 0.35);
+  border-color: rgba(143, 100, 32, 0.3);
+  color: #34415b;
+  background: rgba(255, 250, 240, 0.92);
 }
 
 .button-outline:hover {
@@ -290,7 +290,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .assign-modal-overlay {
@@ -310,9 +310,9 @@
   gap: 22px;
   padding: 26px;
   border-radius: 24px;
-  background: linear-gradient(155deg, rgba(16, 23, 38, 0.98), rgba(7, 11, 20, 0.98));
-  border: 1px solid rgba(231, 198, 120, 0.18);
-  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
+  box-shadow: 0 34px 90px rgba(23, 32, 51, 0.12);
 }
 
 .assign-modal__header {
@@ -324,7 +324,7 @@
 
 .assign-modal__header h3 {
   margin: 10px 0 6px;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 28px;
 }
 
@@ -338,8 +338,8 @@
   display: grid;
   place-items: center;
   border-radius: 12px;
-  border: 1px solid rgba(231, 198, 120, 0.18);
-  color: #f8f4e6;
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
+  color: #172033;
   background: rgba(248, 244, 230, 0.06);
   cursor: pointer;
   font-size: 24px;
@@ -358,7 +358,7 @@
   align-items: center;
   padding: 16px;
   border-radius: 18px;
-  background: rgba(6, 10, 20, 0.66);
+  background: rgba(255, 250, 240, 0.92);
   border: 1px solid rgba(231, 198, 120, 0.1);
 }
 
@@ -377,7 +377,7 @@
 .jockey-preview h4,
 .assign-empty h4 {
   margin: 0 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .jockey-preview p,
@@ -395,7 +395,7 @@
   display: inline-flex;
   padding: 6px 10px;
   border-radius: 999px;
-  color: #f2d28b;
+  color: #8f6420;
   background: rgba(231, 198, 120, 0.12);
   font-size: 12px;
   font-weight: 700;
@@ -405,7 +405,7 @@
 .assign-empty {
   padding: 20px;
   border-radius: 18px;
-  background: rgba(6, 10, 20, 0.62);
+  background: rgba(255, 250, 240, 0.92);
   border: 1px dashed rgba(231, 198, 120, 0.22);
 }
 

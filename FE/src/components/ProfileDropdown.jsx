@@ -31,7 +31,7 @@ export default function ProfileDropdown({ profileUrl }) {
         style={{
           display: "flex", alignItems: "center", gap: 10,
           background: "none", border: "1px solid rgba(231,198,120,.2)", borderRadius: 12,
-          padding: "6px 14px 6px 6px", cursor: "pointer", color: "#e7edf6",
+          padding: "6px 14px 6px 6px", cursor: "pointer", color: "#34415b",
         }}
       >
         <span style={{
@@ -43,8 +43,8 @@ export default function ProfileDropdown({ profileUrl }) {
           {getInitials(fullName)}
         </span>
         <span style={{ fontSize: 13, textAlign: "left" }}>
-          <span style={{ display: "block", color: "#f8f4e6", lineHeight: 1.2 }}>{fullName}</span>
-          <span style={{ display: "block", color: "#7f899a", fontSize: 11, lineHeight: 1.2 }}>{role}</span>
+          <span style={{ display: "block", color: "#172033", lineHeight: 1.2 }}>{fullName}</span>
+          <span style={{ display: "block", color: "#657086", fontSize: 11, lineHeight: 1.2 }}>{role}</span>
         </span>
       </button>
 
@@ -53,16 +53,16 @@ export default function ProfileDropdown({ profileUrl }) {
           <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />
           <div style={{
             position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 100,
-            minWidth: 200, background: "rgba(10,16,28,.98)", border: "1px solid rgba(231,198,120,.15)",
-            borderRadius: 14, padding: 16, boxShadow: "0 12px 32px rgba(0,0,0,.4)",
+            minWidth: 200, background: "rgba(255, 255, 255, 0.88)", border: "1px solid rgba(231,198,120,.15)",
+            borderRadius: 14, padding: 16, boxShadow: "0 12px 32px rgba(23, 32, 51, 0.12)",
           }}>
             <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(231,198,120,.1)" }}>
-              <p style={{ color: "#f8f4e6", fontWeight: 600, margin: 0, fontSize: 14 }}>{fullName}</p>
-              <p style={{ color: "#7f899a", margin: "4px 0 0", fontSize: 12, wordBreak: "break-all" }}>{email}</p>
+              <p style={{ color: "#172033", fontWeight: 600, margin: 0, fontSize: 14 }}>{fullName}</p>
+              <p style={{ color: "#657086", margin: "4px 0 0", fontSize: 12, wordBreak: "break-all" }}>{email}</p>
             </div>
             {profileUrl && (
               <Link to={profileUrl} onClick={() => setOpen(false)} style={{
-                display: "block", padding: "8px 10px", borderRadius: 8, color: "#e7edf6",
+                display: "block", padding: "8px 10px", borderRadius: 8, color: "#34415b",
                 textDecoration: "none", fontSize: 13, marginBottom: 4,
               }} onMouseOver={(e) => e.target.style.background = "rgba(231,198,120,.08)"} onMouseOut={(e) => e.target.style.background = "none"}>
                 Profile

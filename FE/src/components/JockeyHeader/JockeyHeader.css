@@ -4,9 +4,9 @@
   justify-content: space-between;
   gap: 2rem;
   padding: 1rem 2rem;
-  background-color: rgba(10, 16, 28, 0.95);
-  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 251, 242, 0.98);
+  border-bottom: 1px solid rgba(23, 32, 51, 0.12);
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.1);
 }
 
 .jockey-header__brand {
@@ -14,7 +14,7 @@
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  color: #f8f4e6;
+  color: #172033;
   min-width: fit-content;
   flex-shrink: 0;
 }
@@ -23,14 +23,14 @@
   opacity: 0.8;
 }
 
-.brand-mark {
+.jockey-header .brand-mark {
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(145deg, #f2c565, #d29a2d);
+  color: #14100a;
   border-radius: 0.5rem;
   font-weight: bold;
   font-size: 1.125rem;
@@ -44,12 +44,12 @@
 .brand-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .brand-subtitle {
   font-size: 0.75rem;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .jockey-header__nav {
@@ -61,7 +61,7 @@
 }
 
 .nav-link {
-  color: #d3d9e5;
+  color: #34415b;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -72,13 +72,13 @@
 }
 
 .nav-link:hover {
-  color: #f5e4b1;
+  color: #172033;
   border-bottom-color: rgba(231, 198, 120, 0.5);
 }
 
 .nav-link.nav-link--active {
-  color: #f2d28b;
-  border-bottom-color: #f2d28b;
+  color: #8f6420;
+  border-bottom-color: #8f6420;
 }
 
 .jockey-header__actions {
@@ -92,7 +92,7 @@
 .ghost-button {
   background: transparent;
   border: 1px solid rgba(231, 198, 120, 0.3);
-  color: #d3d9e5;
+  color: #34415b;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   cursor: pointer;
@@ -105,7 +105,7 @@
 
 .ghost-button:hover {
   border-color: rgba(231, 198, 120, 0.6);
-  color: #f5e4b1;
+  color: #172033;
   background-color: rgba(231, 198, 120, 0.05);
 }
 

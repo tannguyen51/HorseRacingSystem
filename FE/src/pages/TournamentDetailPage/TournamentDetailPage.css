@@ -11,13 +11,13 @@
 }
 
 .detail-hero h1 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 46px;
   margin: 12px 0;
 }
 
 .detail-hero p {
-  color: #aeb6c4;
+  color: #657086;
 }
 
 .detail-actions {
@@ -27,17 +27,17 @@
 }
 
 .detail-panel {
-  background: rgba(10, 16, 28, 0.85);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 20px;
   padding: 24px;
-  border: 1px solid rgba(231, 198, 120, 0.15);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
   text-align: center;
 }
 
 .detail-panel strong {
   display: block;
   font-size: 32px;
-  color: #f2d28b;
+  color: #8f6420;
   margin: 12px 0 8px;
 }
 
@@ -48,19 +48,19 @@
 }
 
 .detail-grid h3 {
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .detail-grid ul {
   padding: 0;
   list-style: none;
-  color: #98a1b3;
+  color: #657086;
   display: grid;
   gap: 6px;
 }
 
 .timeline h2 {
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 16px;
 }
 
@@ -71,15 +71,15 @@
 }
 
 .timeline-grid div {
-  background: rgba(10, 16, 28, 0.85);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 16px;
   padding: 18px;
-  border: 1px solid rgba(231, 198, 120, 0.12);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
 }
 
 .timeline-grid h4 {
   margin: 0 0 8px;
-  color: #f2d28b;
+  color: #8f6420;
 }
 
 @media (max-width: 960px) {

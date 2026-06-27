@@ -244,8 +244,9 @@ function SpectatorPredictionFormPage() {
         <div className="spectator-content">
           {errorMessage && <div className="form-error">{errorMessage}</div>}
           <section className="page-header">
+            <span className="prediction-eyebrow">Race prediction</span>
             <h1>Prediction Form</h1>
-            <p>Choose a race, pick a winner, and submit your odds.</p>
+            <p>Choose an upcoming race, select your winner, and review your prediction before submitting.</p>
           </section>
 
           <section className="prediction-layout">
@@ -321,6 +322,7 @@ function SpectatorPredictionFormPage() {
                         }`}
                         onClick={() => setSelectedHorseId(horse.id)}
                       >
+                        <span className="horse-card__selector" aria-hidden="true" />
                         <div>
                           <h3>{horse.name}</h3>
                           <p className="muted">{horse.jockey}</p>
@@ -347,9 +349,9 @@ function SpectatorPredictionFormPage() {
               </div>
 
               <div className="prediction-actions">
-                <div className="form-group" style={{ marginBottom: 16 }}>
+                <div className="form-group prediction-amount">
                   <label htmlFor="bet-amount" className="label-required">Bet Amount ($)</label>
-                  <input id="bet-amount" className="form-input" type="number" min="0" step="1" placeholder="50" value={betAmount} onChange={(e) => setBetAmount(e.target.value)} style={{ maxWidth: 200 }} />
+                  <input id="bet-amount" className="form-input" type="number" min="0" step="1" placeholder="50" value={betAmount} onChange={(e) => setBetAmount(e.target.value)} />
                 </div>
                 <button
                   type="submit"
@@ -361,8 +363,8 @@ function SpectatorPredictionFormPage() {
               </div>
             </form>
 
-            <aside className="prediction-summary">
-              <div>
+            <aside className="prediction-summary prediction-form-summary">
+              <div className="prediction-summary__header">
                 <span className="pill">Race countdown</span>
                 <h3>{selectedRaceDetails?.countdown || "--:--"}</h3>
                 <p className="muted">
@@ -376,7 +378,9 @@ function SpectatorPredictionFormPage() {
                 </div>
                 <div>
                   <span>Selected horse</span>
-                  <strong>{selectedHorse?.name || "None"}</strong>
+                  <strong className={selectedHorse ? "has-selection" : ""}>
+                    {selectedHorse?.name || "None selected"}
+                  </strong>
                 </div>
                 <div>
                   <span>Odds</span>
@@ -384,11 +388,14 @@ function SpectatorPredictionFormPage() {
                 </div>
               </div>
               <div className="summary-note">
-                <h4>Prediction rules</h4>
-                <p>
-                  Predictions lock 5 minutes before the race starts. Rewards are
-                  calculated from live odds.
-                </p>
+                <span className="summary-note__icon" aria-hidden="true">i</span>
+                <div>
+                  <h4>Prediction rules</h4>
+                  <p>
+                    Predictions lock 5 minutes before the race starts. Rewards
+                    are calculated from live odds.
+                  </p>
+                </div>
               </div>
             </aside>
           </section>

@@ -6,16 +6,17 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(6, 10, 20, 0.9);
+  background: rgba(255, 251, 242, 0.98);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(231, 198, 120, 0.12);
+  border-bottom: 1px solid rgba(23, 32, 51, 0.12);
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.1);
 }
 
 .referee-header__brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #f8f4e6;
+  color: #172033;
   text-decoration: none;
 }
 
@@ -46,7 +47,7 @@
   gap: 12px;
 }
 
-.brand-mark {
+.referee-header .brand-mark {
   width: 44px;
   height: 44px;
   border-radius: 14px;
@@ -73,7 +74,7 @@
 .brand-subtitle {
   margin: 0;
   font-size: 12px;
-  color: #e7c678;
+  color: #8f6420;
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
@@ -83,7 +84,7 @@
   align-items: center;
   background: transparent;
   border: none;
-  color: #d3d9e5;
+  color: #34415b;
   font-size: 14px;
   padding: 8px 12px;
   border-radius: 999px;
@@ -92,23 +93,23 @@
   text-decoration: none;
 }
 
-.nav-link:hover,
-.nav-link:focus-visible {
-  color: #f5e4b1;
+.referee-header .nav-link:hover,
+.referee-header .nav-link:focus-visible {
+  color: #172033;
   background: rgba(231, 198, 120, 0.1);
   outline: none;
 }
 
-.nav-link--active {
+.referee-header .nav-link--active {
   color: #14100a;
   background: linear-gradient(145deg, #f2d28b, #d7aa4d);
   box-shadow: 0 10px 20px rgba(16, 12, 5, 0.35);
 }
 
-.ghost-button {
+.referee-header .ghost-button {
   background: transparent;
   border: 1px solid rgba(231, 198, 120, 0.35);
-  color: #f5e4b1;
+  color: #8f6420;
   padding: 8px 16px;
   border-radius: 999px;
   cursor: pointer;

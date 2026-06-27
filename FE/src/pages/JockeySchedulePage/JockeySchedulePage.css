@@ -4,29 +4,29 @@
 .jockey-calendar-panel,
 .jockey-schedule-loading,
 .jockey-schedule-empty {
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.1);
   border-radius: 8px;
 }
 
 .jockey-schedule-header {
   padding: 30px;
-  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.86));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
 }
 
 .jockey-schedule-header h1 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 40px;
   margin: 12px 0 8px;
 }
 
 .jockey-schedule-header p {
-  color: #aeb6c4;
+  color: #657086;
   max-width: 700px;
 }
 
 .jockey-schedule-message {
-  color: #f2d28b !important;
+  color: #8f6420 !important;
   margin-top: 12px;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .jockey-schedule .primary-button:hover:not(:disabled) {
-  background: #f2d28b;
+  background: #d8a84b;
 }
 
 .jockey-schedule .skeleton-line {
@@ -79,8 +79,8 @@
   align-items: center;
   padding: 18px;
   border-radius: 8px;
-  background: rgba(6, 10, 20, 0.58);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .jockey-race-card--active {
@@ -88,7 +88,7 @@
 }
 
 .jockey-race-card h3 {
-  color: #f8f4e6;
+  color: #172033;
   margin: 10px 0 4px;
 }
 
@@ -109,7 +109,7 @@
 
 .jockey-race-card__horse span,
 .jockey-schedule-info-row span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -117,7 +117,7 @@
 
 .jockey-race-card__horse strong,
 .jockey-schedule-info-row strong {
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .jockey-race-card__actions {
@@ -140,15 +140,15 @@
   gap: 8px;
   padding: 4px;
   border-radius: 8px;
-  background: rgba(6, 10, 20, 0.72);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .jockey-detail-tabs button {
   border: 0;
   border-radius: 6px;
   padding: 10px;
-  color: #d3d9e5;
+  color: #34415b;
   background: transparent;
   cursor: pointer;
   font-weight: 700;
@@ -185,12 +185,12 @@
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: rgba(6, 10, 20, 0.58);
-  border: 1px solid rgba(231, 198, 120, 0.08);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .jockey-calendar-day h3 {
-  color: #f2d28b;
+  color: #8f6420;
 }
 
 .jockey-calendar-day > div {
@@ -205,9 +205,9 @@
   width: 100%;
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid rgba(231, 198, 120, 0.08);
-  background: rgba(10, 16, 28, 0.8);
-  color: #dbe2ef;
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
+  background: rgba(255, 250, 240, 0.96);
+  color: #34415b;
   cursor: pointer;
   text-align: left;
 }
@@ -217,7 +217,7 @@
 }
 
 .jockey-calendar-day button span {
-  color: #98a1b3;
+  color: #657086;
 }
 
 .jockey-schedule-loading,
@@ -231,7 +231,7 @@
 }
 
 .jockey-schedule-empty h3 {
-  color: #f8f4e6;
+  color: #172033;
   margin-bottom: 8px;
 }
 

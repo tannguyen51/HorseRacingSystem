@@ -11,19 +11,19 @@
   gap: 28px;
   padding: 32px;
   border-radius: 26px;
-  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.85));
-  border: 1px solid rgba(231, 198, 120, 0.12);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
+  box-shadow: 0 20px 50px rgba(23, 32, 51, 0.12);
 }
 
 .referee-hero h1 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 42px;
   margin: 12px 0 10px;
 }
 
 .referee-hero p {
-  color: #aeb6c4;
+  color: #657086;
   max-width: 520px;
   line-height: 1.6;
 }
@@ -40,14 +40,14 @@
   gap: 16px;
   padding: 20px;
   border-radius: 20px;
-  background: rgba(6, 10, 20, 0.8);
-  border: 1px solid rgba(231, 198, 120, 0.15);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
   align-content: center;
   text-align: center;
 }
 
 .referee-hero__panel span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -56,7 +56,7 @@
 .referee-hero__panel strong {
   display: block;
   font-size: 22px;
-  color: #f2d28b;
+  color: #8f6420;
   margin-top: 4px;
 }
 
@@ -71,14 +71,14 @@
 }
 
 .section-heading h2 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 24px;
   margin: 0;
   font-weight: 600;
 }
 
 .section-heading p {
-  color: #98a1b3;
+  color: #657086;
   font-size: 14px;
   margin: 0;
 }
@@ -109,12 +109,12 @@
   margin-top: 32px;
   padding: 32px;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(15, 22, 38, 0.95), rgba(7, 11, 20, 0.85));
-  border: 1px solid rgba(231, 198, 120, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
 }
 
 .guidelines-section h2 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 28px;
   margin: 0 0 28px 0;
 }
@@ -128,12 +128,12 @@
 .guideline-card {
   padding: 24px;
   border-radius: 16px;
-  background: rgba(10, 16, 28, 0.8);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.1);
 }
 
 .guideline-card h4 {
-  color: #f8f4e6;
+  color: #172033;
   font-size: 16px;
   margin: 0 0 16px 0;
   font-weight: 600;
@@ -148,7 +148,7 @@
 }
 
 .guideline-card li {
-  color: #d3d9e5;
+  color: #34415b;
   font-size: 14px;
   padding-left: 20px;
   position: relative;
@@ -186,17 +186,13 @@
     padding: 16px;
   }
 }
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
 
 .detail-card {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.12);
 }
 
 .detail-card h4 {
@@ -241,7 +237,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.12);
 }
 
 .faq-item h4 {

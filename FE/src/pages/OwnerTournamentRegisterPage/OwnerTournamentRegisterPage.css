@@ -11,10 +11,10 @@
 }
 
 .register-form {
-  background: linear-gradient(160deg, rgba(16, 23, 38, 0.95), rgba(7, 11, 20, 0.92));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
   border-radius: 24px;
   padding: 26px;
-  border: 1px solid rgba(231, 198, 120, 0.14);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
   display: grid;
   gap: 20px;
   box-shadow: 0 24px 52px rgba(2, 6, 18, 0.42);
@@ -28,13 +28,13 @@
 
 .register-form__heading h2 {
   margin: 0;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 28px;
 }
 
 .register-form__heading p {
   margin: 0;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .form-field {
@@ -48,8 +48,8 @@
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  background: rgba(6, 10, 20, 0.68);
-  border: 1px solid rgba(231, 198, 120, 0.09);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
 }
 
 .selection-summary div {
@@ -62,7 +62,7 @@
 
 .selection-summary span,
 .registration-row span {
-  color: #98a1b3;
+  color: #657086;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -71,13 +71,13 @@
 .selection-summary strong {
   display: block;
   margin-top: 8px;
-  color: #f8f4e6;
+  color: #172033;
   font-size: 17px;
 }
 
 .selection-summary p {
   margin: 8px 0 0;
-  color: #98a1b3;
+  color: #657086;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -89,10 +89,10 @@
 }
 
 .eligibility-card {
-  background: rgba(10, 16, 28, 0.9);
+  background: rgba(255, 250, 240, 0.96);
   border-radius: 24px;
   padding: 26px;
-  border: 1px solid rgba(231, 198, 120, 0.12);
+  border: 1.5px solid rgba(143, 100, 32, 0.22);
   display: grid;
   gap: 20px;
   box-shadow: 0 20px 44px rgba(2, 6, 18, 0.36);
@@ -109,17 +109,17 @@
   gap: 16px;
   padding: 14px;
   border-radius: 14px;
-  background: rgba(6, 10, 20, 0.7);
-  border: 1px solid rgba(231, 198, 120, 0.08);
-  color: #f8f4e6;
+  background: rgba(255, 250, 240, 0.92);
+  border: 1.5px solid rgba(143, 100, 32, 0.16);
+  color: #172033;
 }
 
 .eligibility-item span {
-  color: #98a1b3;
+  color: #657086;
 }
 
 .eligibility-item strong {
-  color: #f2d28b;
+  color: #8f6420;
 }
 
 .eligibility-item--success strong {
@@ -127,19 +127,19 @@
 }
 
 .eligibility-item--warning strong {
-  color: #f2d28b;
+  color: #8f6420;
 }
 
 .eligibility-note {
   padding: 16px;
   border-radius: 16px;
-  background: rgba(6, 10, 20, 0.6);
+  background: rgba(255, 250, 240, 0.92);
   border: 1px dashed rgba(231, 198, 120, 0.2);
 }
 
 .eligibility-note h4 {
   margin: 0 0 8px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .registration-status {
@@ -159,14 +159,14 @@
   align-items: center;
   padding: 18px;
   border-radius: 18px;
-  background: rgba(10, 16, 28, 0.88);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.1);
 }
 
 .registration-row strong {
   display: block;
   margin-top: 8px;
-  color: #f8f4e6;
+  color: #172033;
   overflow-wrap: anywhere;
 }
 
@@ -187,15 +187,15 @@
 }
 
 .registration-status-pill--pending-review {
-  color: #f2d28b;
+  color: #8f6420;
   background: rgba(231, 198, 120, 0.14);
-  border: 1px solid rgba(231, 198, 120, 0.28);
+  border: 1.5px solid rgba(143, 100, 32, 0.28);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 7, 15, 0.75);
+  background: rgba(255, 250, 240, 0.95);
   display: grid;
   place-items: center;
   z-index: 20;
@@ -206,11 +206,11 @@
   width: min(560px, 100%);
   border-radius: 24px;
   padding: 28px;
-  background: rgba(10, 16, 28, 0.95);
+  background: rgba(255, 250, 240, 0.96);
   border: 1px solid rgba(231, 198, 120, 0.2);
   display: grid;
   gap: 20px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 80px rgba(23, 32, 51, 0.12);
 }
 
 .modal-header {
@@ -222,7 +222,7 @@
 
 .modal-header h3 {
   margin: 10px 0 6px;
-  color: #f8f4e6;
+  color: #172033;
 }
 
 .modal-body {
@@ -233,12 +233,12 @@
 
 .modal-body h4 {
   margin: 0 0 6px;
-  color: #f2d28b;
+  color: #8f6420;
 }
 
 .modal-body p {
   margin: 0;
-  color: #98a1b3;
+  color: #657086;
 }
 
 .modal-actions {

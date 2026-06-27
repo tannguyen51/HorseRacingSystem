@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { request } from "../services/apiClient";
+import "./ProfilePages.css";
 
-const detailStyle = { padding: 16, border: "1px solid rgba(231,198,120,.1)", borderRadius: 12, background: "rgba(10,16,28,.7)" };
-const labelStyle = { display: "block", color: "#7f899a", fontSize: 11, textTransform: "uppercase", marginBottom: 6 };
-const valueStyle = { display: "block", color: "#e7edf6", fontSize: 14, fontWeight: 600, wordBreak: "break-word" };
+const detailStyle = { padding: 16, border: "1px solid rgba(231,198,120,.1)", borderRadius: 12, background: "rgba(255, 255, 255, 0.88)" };
+const labelStyle = { display: "block", color: "#657086", fontSize: 11, textTransform: "uppercase", marginBottom: 6 };
+const valueStyle = { display: "block", color: "#34415b", fontSize: 14, fontWeight: 600, wordBreak: "break-word" };
 
 const Detail = ({ label, value }) => (
   <div style={detailStyle}>
@@ -24,8 +25,18 @@ export function OwnerProfilePage() {
     <div className="owner-page"><div className="owner-layout">
       <aside className="owner-sidebar">
         <div className="owner-sidebar__header"><p className="pill">Horse Owner</p><h3>My Profile</h3></div>
-        <div className="owner-sidebar__card"><p className="muted">Owner Code</p><h4>{profile.code ?? profile.Code ?? "-"}</h4></div>
-        <div className="owner-sidebar__card"><p className="muted">Horses</p><h4>{profile.horses ?? profile.Horses ?? 0}</h4></div>
+        <div className="owner-sidebar__card owner-profile-stat">
+          <p className="muted">Owner Code</p>
+          <h4 className="owner-profile-stat__code">
+            {profile.code ?? profile.Code ?? "-"}
+          </h4>
+        </div>
+        <div className="owner-sidebar__card owner-profile-stat">
+          <p className="muted">Horses</p>
+          <h4 className="owner-profile-stat__number">
+            {profile.horses ?? profile.Horses ?? 0}
+          </h4>
+        </div>
       </aside>
       <div className="owner-content">
         <section className="page-header"><h1>Profile</h1></section>
@@ -51,8 +62,8 @@ export function JockeyProfilePage() {
   if (!profile) return <div className="jockey-page"><p>Profile not found.</p></div>;
   return (
     <div className="jockey-page"><div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: 24 }}>
-      <aside style={{ padding: 20, border: "1px solid rgba(231,198,120,.1)", borderRadius: 16, background: "rgba(10,16,28,.7)" }}>
-        <p className="pill">Jockey</p><h3 style={{ color: "#f8f4e6" }}>My Profile</h3>
+      <aside style={{ padding: 20, border: "1px solid rgba(231,198,120,.1)", borderRadius: 16, background: "rgba(255, 255, 255, 0.88)" }}>
+        <p className="pill">Jockey</p><h3 style={{ color: "#172033" }}>My Profile</h3>
         <div style={{ marginTop: 16 }}><p className="muted">Rank</p><h4 style={{ color: "#f2d28b" }}>#{profile.rank ?? profile.Rank ?? "-"}</h4></div>
         <div style={{ marginTop: 12 }}><p className="muted">Win Rate</p><h4 style={{ color: "#f2d28b" }}>{profile.winRate ?? profile.WinRate ?? 0}%</h4></div>
       </aside>

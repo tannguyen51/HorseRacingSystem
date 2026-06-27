@@ -39,15 +39,15 @@ export function RefereeDashboard() {
     <div className="dashboard">
       <h1>Welcome, Referee!</h1>
       
-      {/* Add the notification panel at the top */}
-      <RefereeNotificationsPanel />
+//       {/* Add the notification panel at the top */
+//       <RefereeNotificationsPanel />
       
-      {/* Your other dashboard content */}
-      <section>Other content...</section>
-    </div>
-  );
-}
-*/
+//       {/* Your other dashboard content */}
+//       <section>Other content...</section>
+//     </div>
+//   );
+// }
+// */
 
 // ============================================================================
 // 3. USE THE HOOK DIRECTLY
