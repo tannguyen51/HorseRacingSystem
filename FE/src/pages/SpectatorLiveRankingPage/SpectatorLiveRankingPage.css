@@ -1,197 +1,301 @@
-.spectator-ranking-page {
+/* SpectatorLiveRankingPage — Season Rankings */
+
+.srp-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
   display: grid;
-  gap: 32px;
+  gap: 36px;
 }
 
-.ranking-filters {
+.srp-header {
+  text-align: center;
+}
+
+.srp-eyebrow {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(143, 100, 32, 0.1);
+  color: #8f6420;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.srp-title {
+  margin: 8px 0;
+  font-size: 36px;
+  font-weight: 700;
+  color: #172033;
+  letter-spacing: -0.02em;
+}
+
+.srp-subtitle {
+  margin: 8px 0 0;
+  color: #657086;
+  font-size: 15px;
+}
+
+/* ── Two-column grid ── */
+
+.srp-season-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.srp-season-panel {
+  background: #fff;
+  border: 1px solid rgba(143, 100, 32, 0.1);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.srp-season-title {
+  margin: 0;
+  padding: 22px 24px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #172033;
+  border-bottom: 1px solid rgba(143, 100, 32, 0.08);
+}
+
+/* ── Table ── */
+
+.srp-season-table {
+  padding: 8px 0;
+}
+
+.srp-season-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 70px 60px 62px;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 24px;
+  transition: background 0.15s ease;
+}
+
+.srp-season-row:hover {
+  background: rgba(231, 198, 120, 0.04);
+}
+
+.srp-season-row--header {
+  padding: 10px 24px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8791a3;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(143, 100, 32, 0.06);
+}
+
+.srp-season-row--top {
+  background: rgba(231, 198, 120, 0.04);
+}
+
+.sst-col--rank {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #172033;
+}
+
+.sst-col--name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sst-col--name strong {
+  font-size: 14px;
+  color: #172033;
+}
+
+.sst-col--name small {
+  font-size: 11px;
+  color: #8791a3;
+}
+
+.sst-col--stat {
+  text-align: center;
+  font-size: 13px;
+  color: #657086;
+  font-weight: 500;
+}
+
+.sst-col--highlight {
+  color: #8f6420;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.sst-col--rate {
+  color: #3f7853;
+  font-weight: 600;
+}
+
+/* ── Race ranking section ── */
+
+.srp-race-section {
+  background: #fff;
+  border: 1px solid rgba(143, 100, 32, 0.1);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.srp-race-section .srp-season-title {
+  border-bottom: 1px solid rgba(143, 100, 32, 0.08);
+}
+
+.srp-race-controls {
+  display: flex;
+  align-items: flex-end;
   gap: 16px;
-  align-items: end;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(143, 100, 32, 0.06);
+  flex-wrap: wrap;
 }
 
-.ranking-stats {
+.srp-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.srp-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #657086;
+  white-space: nowrap;
+}
+
+.srp-select {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(143, 100, 32, 0.15);
+  background: #fff;
+  color: #172033;
+  font-size: 14px;
+  font-family: inherit;
+  min-width: 240px;
+  cursor: pointer;
+}
+
+.srp-select:focus {
+  border-color: #d7aa4d;
+  outline: none;
+}
+
+.srp-race-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8f6420;
+}
+
+.srp-table-wrapper {
+  overflow-x: auto;
+}
+
+.srp-table {
+  min-width: 500px;
+}
+
+.srp-table__row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: 70px 1.5fr 1.2fr 0.8fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(231, 198, 120, 0.06);
+  font-size: 14px;
+  color: #172033;
 }
 
-.stat-detail {
+.srp-table__row:last-child {
+  border-bottom: none;
+}
+
+.srp-table__header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8791a3;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(255, 250, 240, 0.5);
+  border-bottom: 1.5px solid rgba(231, 198, 120, 0.12);
+  padding: 12px 24px;
+}
+
+.srp-table__row--podium {
+  background: rgba(231, 198, 120, 0.04);
+}
+
+.srp-col--pos {
+  text-align: center;
+}
+
+.srp-col--horse {
+  font-weight: 600;
+}
+
+.srp-col--jockey {
   color: #657086;
   font-size: 13px;
 }
 
-.top-rank-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-}
-
-.top-rank-card {
-  background: rgba(255, 250, 240, 0.96);
-  border-radius: 22px;
-  padding: 22px;
-  border: 1.5px solid rgba(143, 100, 32, 0.22);
-  display: grid;
-  gap: 14px;
-}
-
-.top-rank-card--1 {
-  background: linear-gradient(140deg, rgba(231, 198, 120, 0.2), rgba(255, 255, 255, 0.88));
-}
-
-.top-rank-card--2 {
-  background: linear-gradient(140deg, rgba(164, 179, 199, 0.2), rgba(255, 255, 255, 0.88));
-}
-
-.top-rank-card--3 {
-  background: linear-gradient(140deg, rgba(180, 122, 86, 0.2), rgba(255, 255, 255, 0.88));
-}
-
-.top-rank-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.top-rank-card h3 {
-  margin: 0;
-  color: #172033;
-}
-
-.top-rank-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(255, 250, 240, 0.92);
-}
-
-.top-rank-meta span {
-  color: #657086;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.top-rank-meta strong {
-  display: block;
+.srp-col--time {
   color: #8f6420;
-  margin-top: 6px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.ranking-columns {
-  display: grid;
-  gap: 24px;
+.srp-rank-medal {
+  font-size: 22px;
 }
 
-.ranking-table {
-  display: grid;
-  gap: 12px;
+.srp-rank-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: #657086;
 }
 
-.ranking-table .table-row {
-  display: grid;
-  grid-template-columns: 60px 1.4fr 1.2fr 0.8fr 0.8fr;
-  gap: 12px;
-  align-items: center;
-  padding: 16px 20px;
-  border-radius: 16px;
-  background: rgba(255, 250, 240, 0.96);
-  border: 1.5px solid rgba(143, 100, 32, 0.16);
+.srp-empty {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.srp-empty h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
   color: #172033;
 }
 
-.ranking-table .table-header {
-  background: transparent;
-  border: none;
-  color: #657086;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
-.ranking-change {
-  font-weight: 600;
-  font-size: 12px;
-  letter-spacing: 0.8px;
-}
-
-.ranking-change--up {
-  color: #6ee7b7;
-  animation: rankingPulse 1.8s ease-in-out infinite;
-}
-
-.ranking-change--down {
-  color: #f87171;
-  animation: rankingPulse 1.8s ease-in-out infinite;
-}
-
-.ranking-change--steady {
+.srp-empty p {
+  margin: 0;
+  font-size: 13px;
   color: #657086;
 }
 
-@keyframes rankingPulse {
-  0% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.8;
-  }
-}
+/* ── Responsive ── */
 
-.skeleton-card {
-  position: relative;
-  overflow: hidden;
-  min-height: 160px;
-}
-
-.skeleton-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  height: 100%;
-  width: 60%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  animation: shimmer 1.6s infinite;
-}
-
-.skeleton-line {
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(231, 198, 120, 0.12);
-  margin-bottom: 10px;
-}
-
-.skeleton-line.wide {
-  width: 80%;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(220%);
-  }
-}
-
-@media (max-width: 960px) {
-  .ranking-table .table-row {
-    grid-template-columns: 40px 1fr 1fr;
-    row-gap: 8px;
+@media (max-width: 768px) {
+  .srp-season-grid {
+    grid-template-columns: 1fr;
   }
 
-  .ranking-table .table-row span:nth-child(n + 4) {
-    display: none;
+  .srp-title {
+    font-size: 28px;
   }
 
-  .ranking-table .table-header {
-    display: none;
+  .srp-season-row {
+    grid-template-columns: 36px 1fr 56px 50px 52px;
+    padding: 10px 16px;
+    gap: 4px;
+    font-size: 12px;
   }
 }

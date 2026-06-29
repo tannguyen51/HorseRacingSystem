@@ -6,9 +6,9 @@ import "./SpectatorHeader.css";
 function SpectatorHeader() {
   return (
     <header className="spectator-header">
-      <Link className="spectator-header__brand" to="/spectator">
+      <Link className="spectator-header__brand" to="/spectator/tournaments">
         <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Spectator Hub</p></div>
+        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Khu vực Khán Giả</p></div>
       </Link>
       <nav className="spectator-header__nav" aria-label="Spectator">
         {spectatorNavItems.map((item) => (

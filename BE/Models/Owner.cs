@@ -30,6 +30,12 @@ public class Owner
     [MaxLength(50)]
     public string OwnerType { get; set; } = "Individual";
 
+    [MaxLength(20)]
+    public string? Phone { get; set; }
+
+    [MaxLength(500)]
+    public string? Address { get; set; }
+
     public DateTime JoinDate { get; set; } = DateTime.UtcNow;
 
     [MaxLength(50)]

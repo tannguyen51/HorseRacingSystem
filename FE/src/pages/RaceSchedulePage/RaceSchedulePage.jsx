@@ -8,7 +8,7 @@ const fDate = (v) =>
         dateStyle: "medium",
         timeStyle: "short",
       })
-    : "TBD";
+    : "Chưa xác định";
 
 function RaceSchedulePage() {
   const [races, setRaces] = useState([]);
@@ -24,25 +24,25 @@ function RaceSchedulePage() {
   return (
     <div className="race-schedule-page">
       <section className="page-header schedule-hero">
-        <span className="pill">Race Schedule</span>
-        <h1>Race Schedule</h1>
-        <p>Upcoming and past races with status, venue, distance, and start time.</p>
+        <span className="pill">Lịch Đua</span>
+        <h1>Lịch Đua</h1>
+        <p>Các cuộc đua sắp tới và đã qua với trạng thái, địa điểm, cự ly và thời gian bắt đầu.</p>
       </section>
 
       {loading ? (
-        <p className="empty-state">Loading races...</p>
+        <p className="empty-state">Đang tải danh sách đua...</p>
       ) : races.length === 0 ? (
-        <p className="empty-state">No races scheduled.</p>
+        <p className="empty-state">Không có cuộc đua nào được lên lịch.</p>
       ) : (
         <div className="race-grid">
           {races.map((r) => (
             <div key={r.id ?? r.Id} className="race-card">
               <div>
-                <span className="badge">{r.status ?? r.Status ?? "Scheduled"}</span>
+                <span className="badge">{r.status ?? r.Status ?? "Đã lên lịch"}</span>
                 <h3>{r.name ?? r.Name}</h3>
               </div>
               <div className="race-meta">
-                <span>{r.location ?? r.Location ?? "TBD"}</span>
+                <span>{r.location ?? r.Location ?? "Chưa xác định"}</span>
                 <span>{r.distance ?? r.Distance ?? "-"}m</span>
                 <strong>{fDate(r.scheduledAt ?? r.ScheduledAt)}</strong>
               </div>

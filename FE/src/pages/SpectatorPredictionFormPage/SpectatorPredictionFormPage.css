@@ -1,647 +1,782 @@
-.spectator-prediction-form-page {
-  display: grid;
-  gap: 32px;
-}
+/* ============================================================
+   SpectatorPredictionFormPage — Full-width, gold/amber accents
+   ============================================================ */
 
-.prediction-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 24px;
-}
+/* ---------- CSS custom properties ---------- */
+.pf-page {
+  --pf-navy: #172033;
+  --pf-slate: #657086;
+  --pf-gold: #d7aa4d;
+  --pf-gold-dark: #8f6420;
+  --pf-gold-light: #e7c678;
+  --pf-surface: #faf8f5;
+  --pf-card-bg: #ffffff;
+  --pf-border: rgba(23, 32, 51, 0.08);
+  --pf-radius: 14px;
+  --pf-radius-lg: 18px;
+  --pf-shadow-sm: 0 2px 8px rgba(23, 32, 51, 0.04);
+  --pf-shadow: 0 4px 20px rgba(23, 32, 51, 0.06);
+  --pf-shadow-lg: 0 12px 40px rgba(23, 32, 51, 0.08);
+  --pf-transition: 0.2s ease;
 
-.prediction-form {
-  display: grid;
-  gap: 24px;
-}
-
-.prediction-form__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.prediction-section {
-  display: grid;
-  gap: 16px;
-}
-
-.horse-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.horse-card {
-  text-align: left;
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(255, 250, 240, 0.96);
-  border: 1px solid rgba(231, 198, 120, 0.1);
-  display: grid;
-  gap: 12px;
-  color: inherit;
-  cursor: pointer;
-}
-
-.horse-card h3 {
-  margin: 0 0 4px;
-  color: #172033;
-}
-
-.horse-card--active {
-  border-color: #d7aa4d !important;
-  border-width: 2px;
-  box-shadow: 0 0 28px rgba(215, 170, 77, .35), inset 0 0 28px rgba(215, 170, 77, .06);
-  background: linear-gradient(145deg, rgba(215, 170, 77, .12), rgba(255, 255, 255, 0.88));
-  transform: translateY(-3px);
-  outline: none;
-}
-
-.horse-card__meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #657086;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.horse-card__meta strong {
-  color: #8f6420;
-  font-size: 16px;
-}
-
-.horse-card__form span {
-  color: #657086;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.horse-card__form p {
-  margin: 6px 0 0;
-  color: #172033;
-}
-
-.prediction-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.prediction-summary {
-  display: grid;
-  gap: 18px;
-  padding: 22px;
-  border-radius: 22px;
-  background: rgba(255, 250, 240, 0.96);
-  border: 1.5px solid rgba(143, 100, 32, 0.22);
-  height: fit-content;
-}
-
-.prediction-summary h3 {
-  margin: 12px 0 6px;
-  color: #172033;
-  font-size: 28px;
-}
-
-.summary-card {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 250, 240, 0.92);
-}
-
-.summary-card span {
-  color: #657086;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.summary-card strong {
-  display: block;
-  color: #8f6420;
-  margin-top: 6px;
-}
-
-.summary-note {
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(255, 250, 240, 0.92);
-  border: 1px dashed rgba(231, 198, 120, 0.2);
-}
-
-.summary-note h4 {
-  margin: 0 0 8px;
-  color: #172033;
-}
-
-.skeleton-card {
-  position: relative;
-  overflow: hidden;
-  min-height: 160px;
-}
-
-.skeleton-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  height: 100%;
-  width: 60%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  animation: shimmer 1.6s infinite;
-}
-
-.skeleton-line {
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(231, 198, 120, 0.12);
-  margin-bottom: 10px;
-}
-
-.skeleton-line.wide {
-  width: 80%;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(220%);
-  }
-}
-
-@media (max-width: 1100px) {
-  .prediction-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Refined prediction experience */
-.spectator-prediction-form-page {
-  --prediction-navy: #172033;
-  --prediction-slate: #657086;
-  --prediction-gold: #c99636;
-  --prediction-border: rgba(23, 32, 51, 0.11);
-  --prediction-surface: rgba(255, 253, 248, 0.92);
-}
-
-.spectator-prediction-form-page .spectator-layout {
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: clamp(28px, 3vw, 52px);
-}
-
-.spectator-prediction-form-page .spectator-sidebar {
-  gap: 28px;
-  padding: 26px;
-  border: 1px solid var(--prediction-border);
-  border-radius: 24px;
-  background: rgba(255, 253, 248, 0.78);
-  box-shadow: 0 18px 50px rgba(23, 32, 51, 0.07);
-  backdrop-filter: blur(14px);
-}
-
-.spectator-prediction-form-page .spectator-sidebar__header h3 {
-  margin-top: 16px;
-  font-size: 26px;
-  line-height: 1.15;
-}
-
-.spectator-prediction-form-page .spectator-sidebar__header .muted {
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.spectator-prediction-form-page .spectator-sidebar__card {
-  position: relative;
-  overflow: hidden;
-  padding: 20px;
-  border: 1px solid rgba(201, 150, 54, 0.2);
-  border-radius: 18px;
-  background: linear-gradient(145deg, #fffaf0, rgba(247, 236, 211, 0.72));
-}
-
-.spectator-prediction-form-page .spectator-sidebar__card::before {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--prediction-gold);
-  content: "";
-}
-
-.spectator-prediction-form-page .spectator-sidebar__card h4 {
-  font-size: 21px;
-  line-height: 1.25;
-}
-
-.spectator-prediction-form-page .spectator-content {
-  gap: 26px;
-  min-width: 0;
-}
-
-.spectator-prediction-form-page .page-header {
-  max-width: 720px;
-  gap: 10px;
-}
-
-.prediction-eyebrow {
-  color: #95691d;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.spectator-prediction-form-page .page-header h1 {
-  font-size: clamp(38px, 4vw, 54px);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-}
-
-.spectator-prediction-form-page .page-header p {
-  max-width: 640px;
-  font-size: 15px;
-}
-
-.spectator-prediction-form-page .prediction-layout {
-  grid-template-columns: minmax(0, 1fr) 330px;
-  gap: 28px;
-  align-items: start;
-}
-
-.spectator-prediction-form-page .prediction-form {
-  gap: 28px;
-  min-width: 0;
-}
-
-.spectator-prediction-form-page .prediction-form__grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding: 20px;
-  border: 1px solid var(--prediction-border);
-  border-radius: 20px;
-  background: var(--prediction-surface);
-  box-shadow: 0 12px 34px rgba(23, 32, 51, 0.05);
-}
-
-.spectator-prediction-form-page .form-group {
-  display: grid;
-  gap: 8px;
-}
-
-.spectator-prediction-form-page .form-group label {
-  color: #4d5b73;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.spectator-prediction-form-page .form-select,
-.spectator-prediction-form-page .form-input {
   width: 100%;
-  min-height: 48px;
-  padding: 0 14px;
-  border: 1px solid rgba(23, 32, 51, 0.14);
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.86);
-  color: var(--prediction-navy);
-  font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.spectator-prediction-form-page .form-select:focus,
-.spectator-prediction-form-page .form-input:focus {
-  outline: none;
-  border-color: rgba(201, 150, 54, 0.65);
-  box-shadow: 0 0 0 4px rgba(201, 150, 54, 0.12);
-}
-
-.spectator-prediction-form-page .prediction-section {
-  gap: 18px;
-}
-
-.spectator-prediction-form-page .section-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.spectator-prediction-form-page .section-heading h2 {
-  margin: 0;
-  font-size: 25px;
-}
-
-.spectator-prediction-form-page .section-heading p {
-  margin: 0 0 2px;
-  font-size: 13px;
-}
-
-.spectator-prediction-form-page .horse-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.spectator-prediction-form-page .horse-card {
-  position: relative;
-  gap: 18px;
-  min-height: 210px;
-  padding: 22px;
-  overflow: hidden;
-  border: 1px solid var(--prediction-border);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 10px 28px rgba(23, 32, 51, 0.06);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.spectator-prediction-form-page .horse-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(201, 150, 54, 0.45);
-  box-shadow: 0 16px 36px rgba(23, 32, 51, 0.1);
-}
-
-.spectator-prediction-form-page .horse-card:focus-visible {
-  outline: 3px solid rgba(201, 150, 54, 0.25);
-  outline-offset: 3px;
-}
-
-.spectator-prediction-form-page .horse-card h3 {
-  padding-right: 28px;
-  font-size: 25px;
-  line-height: 1.15;
-}
-
-.horse-card__selector {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(101, 112, 134, 0.38);
-  border-radius: 50%;
-  background: #fff;
-}
-
-.spectator-prediction-form-page .horse-card--active {
-  transform: translateY(-3px);
-  border-width: 1px;
-  border-color: var(--prediction-gold) !important;
-  background: linear-gradient(145deg, #fffdf8, #fbf2df);
-  box-shadow: 0 16px 38px rgba(143, 100, 32, 0.16);
-}
-
-.horse-card--active .horse-card__selector {
-  border: 5px solid var(--prediction-gold);
-}
-
-.spectator-prediction-form-page .horse-card__meta {
-  padding-top: 14px;
-  border-top: 1px solid rgba(23, 32, 51, 0.08);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
-.spectator-prediction-form-page .horse-card__meta strong {
-  color: #95691d;
-  font-size: 15px;
-}
-
-.spectator-prediction-form-page .horse-card__form {
-  margin-top: auto;
-}
-
-.spectator-prediction-form-page .horse-card__form span {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
-.spectator-prediction-form-page .horse-card__form p {
-  margin-top: 5px;
-  font-size: 14px;
-}
-
-.spectator-prediction-form-page .prediction-actions {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(190px, auto);
-  align-items: end;
-  justify-content: start;
-  gap: 14px;
-  padding: 20px;
-  border: 1px solid var(--prediction-border);
-  border-radius: 20px;
-  background: var(--prediction-surface);
-  box-shadow: 0 12px 34px rgba(23, 32, 51, 0.05);
+  gap: 28px;
+  color: var(--pf-navy);
+  font-family: "Sora", system-ui, -apple-system, sans-serif;
 }
 
-.prediction-actions .primary-button {
-  min-height: 48px;
-  padding-inline: 24px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.prediction-actions .primary-button:disabled {
-  opacity: 0.48;
-  box-shadow: none;
-}
-
-.spectator-prediction-form-page .prediction-summary {
-  position: sticky;
-  top: 116px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid rgba(23, 32, 51, 0.12);
-  border-radius: 22px;
-  background: rgba(255, 253, 248, 0.94);
-  box-shadow: 0 18px 48px rgba(23, 32, 51, 0.08);
-}
-
-.prediction-summary__header {
-  position: relative;
-  padding: 24px;
-  background: linear-gradient(145deg, rgba(248, 235, 207, 0.8), rgba(255, 253, 248, 0.94));
-}
-
-.prediction-summary__header::after {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-  width: 10px;
-  height: 10px;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  background: #c99636;
-  box-shadow: 0 0 0 1px rgba(143, 100, 32, 0.2);
-  content: "";
-}
-
-.prediction-summary__header .pill {
-  gap: 8px;
-  padding: 7px 11px;
-  background: rgba(201, 150, 54, 0.16);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-.spectator-prediction-form-page .prediction-summary h3 {
-  margin: 18px 0 2px;
-  font-family: "Sora", system-ui, sans-serif;
-  font-size: 31px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
-.prediction-summary__header .muted {
-  font-size: 13px;
-}
-
-.spectator-prediction-form-page .summary-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  padding: 0 24px;
-  background: transparent;
-}
-
-.summary-card > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 18px 0;
-  border-bottom: 1px solid rgba(23, 32, 51, 0.08);
-}
-
-.spectator-prediction-form-page .summary-card span {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-.spectator-prediction-form-page .summary-card strong {
-  max-width: 170px;
-  margin-top: 0;
-  color: var(--prediction-navy);
-  font-size: 18px;
-  line-height: 1.3;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-.spectator-prediction-form-page .summary-card strong.has-selection {
-  color: #95691d;
-}
-
-.spectator-prediction-form-page .summary-note {
+/* ---------- Hero ---------- */
+.pf-hero {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin: 20px;
-  padding: 17px;
-  border: 0;
-  border-radius: 15px;
-  background: #f5f0e6;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 40px;
+  border-radius: var(--pf-radius-lg);
+  background: linear-gradient(135deg, #fef9ed 0%, #fffdf8 40%, #ffffff 100%);
+  border: 1px solid rgba(231, 198, 120, 0.25);
+  box-shadow: var(--pf-shadow-lg);
+  position: relative;
+  overflow: hidden;
 }
 
-.summary-note__icon {
-  display: inline-grid;
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(201, 150, 54, 0.16);
-  color: #8f6420;
-  font-family: "Spectral", serif;
+.pf-hero::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--pf-gold-light), var(--pf-gold), var(--pf-gold-dark));
+  border-radius: 0 3px 3px 0;
+}
+
+.pf-hero__text {
+  flex: 1 1 380px;
+  min-width: 0;
+}
+
+.pf-eyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(215, 170, 77, 0.13);
+  color: var(--pf-gold-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.pf-hero__text h1 {
+  margin: 0 0 12px;
+  font-size: clamp(36px, 4.5vw, 52px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--pf-navy);
+}
+
+.pf-hero__text p {
+  margin: 0;
+  max-width: 560px;
+  color: var(--pf-slate);
   font-size: 15px;
-  font-weight: 700;
+  line-height: 1.7;
 }
 
-.spectator-prediction-form-page .summary-note h4 {
-  margin-bottom: 6px;
-  font-family: "Sora", system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.spectator-prediction-form-page .summary-note p {
-  color: #5f697d;
-  font-size: 12px;
-  line-height: 1.65;
-}
-
-.spectator-prediction-form-page .empty-state {
-  padding: 48px 24px;
-  border: 1px dashed rgba(23, 32, 51, 0.16);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.48);
+.pf-hero__countdown {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 36px;
+  border-radius: var(--pf-radius-lg);
+  background: linear-gradient(145deg, #fffaf0, rgba(247, 236, 211, 0.8));
+  border: 1px solid rgba(215, 170, 77, 0.25);
+  min-width: 200px;
   text-align: center;
 }
 
-@media (max-width: 1320px) {
-  .spectator-prediction-form-page .spectator-layout {
-    grid-template-columns: 200px minmax(0, 1fr);
-    gap: 28px;
-  }
-
-  .spectator-prediction-form-page .prediction-layout {
-    grid-template-columns: minmax(0, 1fr) 290px;
-  }
-
-  .spectator-prediction-form-page .horse-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.pf-hero__countdown-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pf-gold-dark);
 }
 
-@media (max-width: 1100px) {
-  .spectator-prediction-form-page .spectator-layout,
-  .spectator-prediction-form-page .prediction-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .spectator-prediction-form-page .spectator-sidebar {
-    position: static;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.65fr);
-    align-items: center;
-  }
-
-  .spectator-prediction-form-page .prediction-summary {
-    position: static;
-    grid-template-columns: minmax(0, 1fr);
-  }
+.pf-hero__countdown-value {
+  font-family: "Sora", system-ui, sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--pf-navy);
+  line-height: 1;
 }
 
-@media (max-width: 720px) {
-  .spectator-prediction-form-page .spectator-sidebar,
-  .spectator-prediction-form-page .prediction-summary,
-  .spectator-prediction-form-page .prediction-form__grid,
-  .spectator-prediction-form-page .prediction-actions {
-    grid-template-columns: 1fr;
+.pf-hero__countdown-meta {
+  font-size: 13px;
+  color: var(--pf-slate);
+}
+
+/* ---------- Error banner ---------- */
+.pf-error-banner {
+  padding: 14px 20px;
+  border-radius: var(--pf-radius);
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---------- Selects row ---------- */
+.pf-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.pf-field {
+  display: grid;
+  gap: 8px;
+}
+
+.pf-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4d5b73;
+}
+
+.pf-select {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  background: var(--pf-card-bg);
+  color: var(--pf-navy);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: var(--pf-shadow-sm);
+  transition: border-color var(--pf-transition), box-shadow var(--pf-transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23657086' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.pf-select:focus {
+  outline: none;
+  border-color: rgba(215, 170, 77, 0.7);
+  box-shadow: 0 0 0 4px rgba(215, 170, 77, 0.1);
+}
+
+/* ---------- Horses section ---------- */
+.pf-horses-section {
+  display: grid;
+  gap: 20px;
+}
+
+.pf-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pf-section-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--pf-navy);
+}
+
+.pf-section-header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-slate);
+}
+
+/* ---------- Horse grid ---------- */
+.pf-horse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.pf-horse-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--pf-radius);
+  background: var(--pf-card-bg);
+  border: 1.5px solid var(--pf-border);
+  box-shadow: var(--pf-shadow);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  transition: transform var(--pf-transition), border-color var(--pf-transition), box-shadow var(--pf-transition);
+}
+
+.pf-horse-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(215, 170, 77, 0.4);
+  box-shadow: var(--pf-shadow-lg);
+}
+
+.pf-horse-card:focus-visible {
+  outline: 3px solid rgba(215, 170, 77, 0.3);
+  outline-offset: 2px;
+}
+
+.pf-horse-card--active {
+  border-color: var(--pf-gold) !important;
+  background: linear-gradient(145deg, #fffdf6, #fbf3e0);
+  box-shadow: 0 0 0 1px var(--pf-gold), 0 8px 32px rgba(143, 100, 32, 0.14);
+  transform: translateY(-2px);
+}
+
+.pf-horse-card__radio {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(101, 112, 134, 0.35);
+  background: #fff;
+  transition: border-color var(--pf-transition), border-width var(--pf-transition);
+  flex-shrink: 0;
+}
+
+.pf-horse-card--active .pf-horse-card__radio {
+  border-color: var(--pf-gold);
+  border-width: 6px;
+}
+
+.pf-horse-card__body h3 {
+  margin: 0 0 6px;
+  padding-right: 32px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--pf-navy);
+}
+
+.pf-horse-card__jockey {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-slate);
+}
+
+.pf-horse-card__jockey svg {
+  flex-shrink: 0;
+  color: var(--pf-gold-dark);
+}
+
+.pf-horse-card__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--pf-border);
+}
+
+.pf-horse-stat {
+  display: grid;
+  gap: 4px;
+}
+
+.pf-horse-stat span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pf-slate);
+}
+
+.pf-horse-stat strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pf-gold-dark);
+}
+
+.pf-horse-card__form {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--pf-border);
+}
+
+.pf-horse-card__form span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pf-slate);
+}
+
+.pf-horse-card__form p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--pf-navy);
+}
+
+/* ---------- Empty state ---------- */
+.pf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 56px 24px;
+  border-radius: var(--pf-radius);
+  border: 1.5px dashed rgba(23, 32, 51, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.pf-empty__icon {
+  color: var(--pf-gold);
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+
+.pf-empty h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pf-navy);
+}
+
+.pf-empty p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-slate);
+}
+
+/* ---------- Action bar (bet + submit) ---------- */
+.pf-action-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 24px;
+  border-radius: var(--pf-radius);
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-border);
+  box-shadow: var(--pf-shadow);
+  flex-wrap: wrap;
+}
+
+.pf-field--amount {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.pf-amount-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  background: #faf8f5;
+  overflow: hidden;
+  transition: border-color var(--pf-transition), box-shadow var(--pf-transition);
+}
+
+.pf-amount-input-wrap:focus-within {
+  border-color: rgba(215, 170, 77, 0.7);
+  box-shadow: 0 0 0 4px rgba(215, 170, 77, 0.1);
+}
+
+.pf-amount-currency {
+  padding: 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--pf-gold-dark);
+  background: rgba(231, 198, 120, 0.12);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.pf-input {
+  flex: 1;
+  min-height: 50px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  color: var(--pf-navy);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+
+.pf-input::placeholder {
+  color: #b0b8c4;
+}
+
+/* ---------- Primary button ---------- */
+.pf-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 28px;
+  border: none;
+  border-radius: var(--pf-radius);
+  background: linear-gradient(135deg, var(--pf-gold), #c48e38);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(143, 100, 32, 0.25);
+  transition: transform var(--pf-transition), box-shadow var(--pf-transition), opacity var(--pf-transition);
+  white-space: nowrap;
+}
+
+.pf-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(143, 100, 32, 0.35);
+}
+
+.pf-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pf-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.pf-btn-primary--full {
+  width: 100%;
+}
+
+/* ---------- Ghost button ---------- */
+.pf-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(23, 32, 51, 0.12);
+  border-radius: var(--pf-radius);
+  background: transparent;
+  color: var(--pf-slate);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--pf-transition), color var(--pf-transition);
+  width: 100%;
+}
+
+.pf-btn-ghost:hover {
+  border-color: rgba(143, 100, 32, 0.3);
+  color: var(--pf-gold-dark);
+}
+
+/* ---------- Race info card ---------- */
+.pf-info-card {
+  border-radius: var(--pf-radius);
+  background: var(--pf-card-bg);
+  border: 1px solid var(--pf-border);
+  box-shadow: var(--pf-shadow);
+  overflow: hidden;
+}
+
+.pf-info-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #fef9ed, #fffdf6);
+  border-bottom: 1px solid rgba(231, 198, 120, 0.2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pf-gold-dark);
+}
+
+.pf-info-card__header svg {
+  flex-shrink: 0;
+}
+
+.pf-info-card__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--pf-border);
+}
+
+.pf-info-item {
+  display: grid;
+  gap: 6px;
+  padding: 20px 24px;
+  background: var(--pf-card-bg);
+}
+
+.pf-info-item span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pf-slate);
+}
+
+.pf-info-item strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pf-navy);
+}
+
+.pf-info-item--active {
+  color: var(--pf-gold-dark) !important;
+}
+
+.pf-info-item p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-slate);
+  line-height: 1.6;
+}
+
+.pf-info-item--rules {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--pf-border);
+  background: #fefbf5;
+}
+
+.pf-info-item--rules span {
+  color: var(--pf-gold-dark);
+}
+
+/* ---------- Modal ---------- */
+.pf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(23, 32, 51, 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: pfFadeIn 0.2s ease;
+}
+
+@keyframes pfFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pf-modal {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--pf-radius-lg);
+  background: #fff;
+  box-shadow: 0 24px 64px rgba(23, 32, 51, 0.2);
+  overflow: hidden;
+  animation: pfSlideUp 0.25s ease;
+}
+
+@keyframes pfSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pf-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--pf-border);
+}
+
+.pf-modal__badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(215, 170, 77, 0.13);
+  color: var(--pf-gold-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.pf-modal__header h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--pf-navy);
+}
+
+.pf-modal__header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-slate);
+}
+
+.pf-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pf-slate);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--pf-transition), color var(--pf-transition);
+}
+
+.pf-modal__close:hover {
+  background: rgba(23, 32, 51, 0.06);
+  color: var(--pf-navy);
+}
+
+.pf-modal__body {
+  display: grid;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.pf-modal__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  border-bottom: 1px solid rgba(23, 32, 51, 0.05);
+}
+
+.pf-modal__row:last-child {
+  border-bottom: none;
+}
+
+.pf-modal__row span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pf-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pf-modal__row strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pf-navy);
+  text-align: right;
+}
+
+.pf-modal__amount {
+  color: var(--pf-gold-dark) !important;
+  font-size: 20px !important;
+}
+
+.pf-modal__error {
+  margin: 8px 28px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.06);
+  color: #991b1b;
+  font-size: 13px;
+}
+
+.pf-modal__actions {
+  display: grid;
+  gap: 10px;
+  padding: 20px 28px 28px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .pf-page {
+    padding: 28px 16px 48px;
+    gap: 22px;
   }
 
-  .spectator-prediction-form-page .horse-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .spectator-prediction-form-page .section-heading {
-    align-items: start;
+  .pf-hero {
+    padding: 28px;
     flex-direction: column;
+  }
+
+  .pf-hero__countdown {
+    width: 100%;
+  }
+
+  .pf-selects {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-horse-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pf-info-card__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pf-info-item--rules {
+    grid-column: 1 / -1;
+  }
+
+  .pf-section-header {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 4px;
   }
+}
 
-  .prediction-actions .primary-button {
-    width: 100%;
+@media (max-width: 600px) {
+  .pf-hero__text h1 {
+    font-size: 28px;
+  }
+
+  .pf-horse-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-info-card__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-field--amount {
+    flex: none;
   }
 }

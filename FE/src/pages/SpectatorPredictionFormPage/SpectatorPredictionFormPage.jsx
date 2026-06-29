@@ -2,26 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { unwrapResponseData } from "../../services/authRoleUtils";
 import {
   createPrediction,
+  getActiveTournaments,
   getRace,
   getRaces,
   getTournaments,
 } from "../../services/spectatorApi";
 import { getRaceEntries } from "../../services/refereeApi";
-import "../SpectatorSharedLayout.css";
 import "./SpectatorPredictionFormPage.css";
 
 const formatCountdown = (value) => {
-  if (!value) {
-    return "--:--";
-  }
+  if (!value) return "--:--";
   const target = new Date(value);
-  if (Number.isNaN(target.getTime())) {
-    return "--:--";
-  }
+  if (Number.isNaN(target.getTime())) return "--:--";
   const diff = target.getTime() - Date.now();
-  if (diff <= 0) {
-    return "Started";
-  }
+  if (diff <= 0) return "Đã bắt đầu";
 
   const totalSeconds = Math.floor(diff / 1000);
   const days = Math.floor(totalSeconds / 86400);
@@ -29,25 +23,15 @@ const formatCountdown = (value) => {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  if (days > 0) {
-    return `${days}d ${hours}h`;
-  }
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-    2,
-    "0",
-  )}:${String(seconds).padStart(2, "0")}`;
+  if (days > 0) return `${days}d ${hours}h`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 };
 
 const formatDateTime = (value) => {
-  if (!value) {
-    return "TBD";
-  }
+  if (!value) return "Chưa xác định";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "TBD";
-  }
-  return new Intl.DateTimeFormat("en-US", {
+  if (Number.isNaN(date.getTime())) return "Chưa xác định";
+  return new Intl.DateTimeFormat("vi-VN", {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -78,46 +62,38 @@ function SpectatorPredictionFormPage() {
 
       try {
         const [tournamentsResponse, racesResponse] = await Promise.all([
-          getTournaments(),
+          getActiveTournaments().catch(() => getTournaments()),
           getRaces(),
         ]);
         const tournamentPayload = unwrapResponseData(tournamentsResponse);
         const racesPayload = unwrapResponseData(racesResponse);
 
-        const tournamentItems = Array.isArray(tournamentPayload)
-          ? tournamentPayload
-          : [];
+        const tournamentItems = Array.isArray(tournamentPayload) ? tournamentPayload : [];
         const raceItems = Array.isArray(racesPayload) ? racesPayload : [];
 
         if (!cancelled) {
           setTournaments(tournamentItems);
           setRaces(raceItems);
           if (tournamentItems.length > 0) {
-            const firstTournamentId =
-              tournamentItems[0]?.id ?? tournamentItems[0]?.Id;
-            setSelectedTournament(firstTournamentId ?? "");
+            const firstId = tournamentItems[0]?.id ?? tournamentItems[0]?.Id;
+            setSelectedTournament(firstId ?? "");
           }
           if (raceItems.length > 0) {
-            const firstRaceId = raceItems[0]?.id ?? raceItems[0]?.Id;
-            setSelectedRace(firstRaceId ?? "");
+            const firstId = raceItems[0]?.id ?? raceItems[0]?.Id;
+            setSelectedRace(firstId ?? "");
           }
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load predictions data.");
+          setErrorMessage(error.message || "Không thể tải dữ liệu dự đoán.");
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     loadData();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -138,7 +114,9 @@ function SpectatorPredictionFormPage() {
           getRaceEntries(selectedRace),
         ]);
         const payload = unwrapResponseData(raceResponse);
-        const entriesList = Array.isArray(entriesResponse) ? entriesResponse : (entriesResponse?.data ?? []);
+        const entriesList = Array.isArray(entriesResponse)
+          ? entriesResponse
+          : entriesResponse?.data ?? [];
         if (!cancelled) {
           setRaceDetail({ ...(payload ?? {}), entries: entriesList });
           setSelectedHorseId(null);
@@ -146,26 +124,21 @@ function SpectatorPredictionFormPage() {
       } catch (error) {
         if (!cancelled) {
           setRaceDetail(null);
-          setSubmitError(error.message || "Unable to load race details.");
+          setSubmitError(error.message || "Không thể tải chi tiết cuộc đua.");
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     loadRaceDetail();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selectedRace]);
 
   const raceOptions = useMemo(() => {
     return races.map((race) => {
       const id = race?.id ?? race?.Id;
-      const name = race?.name ?? race?.Name ?? "Race";
+      const name = race?.name ?? race?.Name ?? "Cuộc đua";
       const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
       return {
         id,
@@ -176,37 +149,30 @@ function SpectatorPredictionFormPage() {
     });
   }, [races]);
 
-  const selectedRaceDetails = raceOptions.find(
-    (race) => race.id === selectedRace,
-  );
+  const selectedRaceDetails = raceOptions.find((r) => r.id === selectedRace);
 
   const horseOptions = useMemo(() => {
     const entries = raceDetail?.entries ?? [];
     return entries.map((entry) => ({
       id: entry.horseId ?? entry.HorseId,
-      name: entry.horseName ?? entry.HorseName ?? "Unknown",
-      jockey: entry.jockeyName ?? entry.JockeyName ?? "TBD",
-      odds: "TBD",
-      form: "Form pending",
+      name: entry.horseName ?? entry.HorseName ?? "Không xác định",
+      jockey: entry.jockeyName ?? entry.JockeyName ?? "Chưa xác định",
+      winRate: entry.winRate ?? entry.WinRate ?? "Chưa xác định",
+      form: entry.form ?? entry.Form ?? entry.recentForm ?? entry.RecentForm ?? "Đang chờ phong độ",
+      odds: entry.odds ?? entry.Odds ?? "Chưa xác định",
     }));
   }, [raceDetail]);
 
-  const selectedHorse = horseOptions.find(
-    (horse) => horse.id === selectedHorseId,
-  );
+  const selectedHorse = horseOptions.find((h) => h.id === selectedHorseId);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setSubmitError("");
-    if (selectedHorseId) {
-      setShowConfirmation(true);
-    }
+    if (selectedHorseId) setShowConfirmation(true);
   };
 
   const handleConfirm = async () => {
-    if (!selectedRace || !selectedHorseId) {
-      return;
-    }
+    if (!selectedRace || !selectedHorseId) return;
 
     setIsSubmitting(true);
     setSubmitError("");
@@ -218,264 +184,279 @@ function SpectatorPredictionFormPage() {
         betAmount: parseFloat(betAmount) || 0,
       });
       setShowConfirmation(false);
+      setBetAmount("");
+      setSelectedHorseId(null);
     } catch (error) {
-      setSubmitError(error.message || "Unable to submit prediction.");
+      setSubmitError(error.message || "Không thể gửi dự đoán.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const tournamentName =
+    tournaments.find((t) => (t.id ?? t.Id) === selectedTournament)?.name ??
+    tournaments.find((t) => (t.id ?? t.Id) === selectedTournament)?.Name;
+
   return (
-    <div className="spectator-page spectator-prediction-form-page">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Spectator</p>
-            <h3>Prediction Desk</h3>
-            <p className="muted">Lock in your winner picks.</p>
+    <div className="pf-page">
+      {/* ---- Hero ---- */}
+      <section className="pf-hero">
+        <div className="pf-hero__text">
+          <span className="pf-eyebrow">Dự đoán cuộc đua</span>
+          <h1>Phiếu dự đoán</h1>
+          <p>Chọn cuộc đua sắp tới, chọn người thắng và xem lại dự đoán trước khi gửi.</p>
+        </div>
+        {selectedRaceDetails && (
+          <div className="pf-hero__countdown">
+            <span className="pf-hero__countdown-label">Đếm ngược cuộc đua</span>
+            <strong className="pf-hero__countdown-value">
+              {selectedRaceDetails.countdown}
+            </strong>
+            <span className="pf-hero__countdown-meta">
+              {selectedRaceDetails.name} &middot; {selectedRaceDetails.time}
+            </span>
           </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Countdown</p>
-            <h4>{selectedRaceDetails?.name || "Select a race"}</h4>
-            <span>{selectedRaceDetails?.countdown || "--:--"}</span>
-          </div>
-        </aside>
+        )}
+      </section>
 
-        <div className="spectator-content">
-          {errorMessage && <div className="form-error">{errorMessage}</div>}
-          <section className="page-header">
-            <span className="prediction-eyebrow">Race prediction</span>
-            <h1>Prediction Form</h1>
-            <p>Choose an upcoming race, select your winner, and review your prediction before submitting.</p>
-          </section>
+      {errorMessage && (
+        <div className="pf-error-banner">{errorMessage}</div>
+      )}
 
-          <section className="prediction-layout">
-            <form className="prediction-form" onSubmit={handleSubmit}>
-              <div className="prediction-form__grid">
-                <div className="form-group">
-                  <label htmlFor="tournament" className="label-required">
-                    Tournament
-                  </label>
-                  <select
-                    id="tournament"
-                    className="form-select"
-                    value={selectedTournament}
-                    onChange={(event) =>
-                      setSelectedTournament(event.target.value)
-                    }
-                  >
-                    {tournaments.map((option) => (
-                      <option
-                        key={option.id ?? option.Id}
-                        value={option.id ?? option.Id}
-                      >
-                        {option.name ?? option.Name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="race" className="label-required">
-                    Race
-                  </label>
-                  <select
-                    id="race"
-                    className="form-select"
-                    value={selectedRace}
-                    onChange={(event) => setSelectedRace(event.target.value)}
-                  >
-                    {raceOptions.map((race) => (
-                      <option key={race.id} value={race.id}>
-                        {race.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="prediction-section">
-                <div className="section-heading">
-                  <h2>Select a horse</h2>
-                  <p>Tap a horse card to lock your prediction.</p>
-                </div>
-
-                {isLoading ? (
-                  <div className="empty-state">
-                    <h4>Loading entries</h4>
-                    <p>Fetching horses for the selected race.</p>
-                  </div>
-                ) : horseOptions.length === 0 ? (
-                  <div className="empty-state">
-                    <h4>No horses available</h4>
-                    <p>Pick a different race to see entries.</p>
-                  </div>
-                ) : (
-                  <div className="horse-grid">
-                    {horseOptions.map((horse) => (
-                      <button
-                        key={horse.id}
-                        type="button"
-                        className={`horse-card hover-lift ${
-                          selectedHorseId === horse.id
-                            ? "horse-card--active"
-                            : ""
-                        }`}
-                        onClick={() => setSelectedHorseId(horse.id)}
-                      >
-                        <span className="horse-card__selector" aria-hidden="true" />
-                        <div>
-                          <h3>{horse.name}</h3>
-                          <p className="muted">{horse.jockey}</p>
-                        </div>
-                        <div className="horse-card__meta">
-                          <span>Odds</span>
-                          <strong>{horse.odds}</strong>
-                        </div>
-                        <div className="horse-card__form">
-                          <span>Recent form</span>
-                          <p>{horse.form}</p>
-                        </div>
-                      </button>
-                    ))}
-                    {isLoading ? (
-                      <div className="horse-card skeleton-card">
-                        <div className="skeleton-line" />
-                        <div className="skeleton-line wide" />
-                        <div className="skeleton-line" />
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-
-              <div className="prediction-actions">
-                <div className="form-group prediction-amount">
-                  <label htmlFor="bet-amount" className="label-required">Bet Amount ($)</label>
-                  <input id="bet-amount" className="form-input" type="number" min="0" step="1" placeholder="50" value={betAmount} onChange={(e) => setBetAmount(e.target.value)} />
-                </div>
-                <button
-                  type="submit"
-                  className="primary-button"
-                  disabled={!selectedHorseId || isSubmitting}
-                >
-                  {isSubmitting ? "Submitting..." : "Submit prediction"}
-                </button>
-              </div>
-            </form>
-
-            <aside className="prediction-summary prediction-form-summary">
-              <div className="prediction-summary__header">
-                <span className="pill">Race countdown</span>
-                <h3>{selectedRaceDetails?.countdown || "--:--"}</h3>
-                <p className="muted">
-                  {selectedRaceDetails?.time || "Select a race"}
-                </p>
-              </div>
-              <div className="summary-card">
-                <div>
-                  <span>Track</span>
-                  <strong>{raceDetail?.location || "--"}</strong>
-                </div>
-                <div>
-                  <span>Selected horse</span>
-                  <strong className={selectedHorse ? "has-selection" : ""}>
-                    {selectedHorse?.name || "None selected"}
-                  </strong>
-                </div>
-                <div>
-                  <span>Odds</span>
-                  <strong>{selectedHorse?.odds || "--"}</strong>
-                </div>
-              </div>
-              <div className="summary-note">
-                <span className="summary-note__icon" aria-hidden="true">i</span>
-                <div>
-                  <h4>Prediction rules</h4>
-                  <p>
-                    Predictions lock 5 minutes before the race starts. Rewards
-                    are calculated from live odds.
-                  </p>
-                </div>
-              </div>
-            </aside>
-          </section>
+      {/* ---- Selects ---- */}
+      <div className="pf-selects">
+        <div className="pf-field">
+          <label htmlFor="pf-tournament" className="pf-label">Giải đấu</label>
+          <select
+            id="pf-tournament"
+            className="pf-select"
+            value={selectedTournament}
+            onChange={(e) => setSelectedTournament(e.target.value)}
+          >
+            {tournaments.map((t) => (
+              <option key={t.id ?? t.Id} value={t.id ?? t.Id}>
+                {t.name ?? t.Name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="pf-field">
+          <label htmlFor="pf-race" className="pf-label">Cuộc đua</label>
+          <select
+            id="pf-race"
+            className="pf-select"
+            value={selectedRace}
+            onChange={(e) => setSelectedRace(e.target.value)}
+          >
+            {raceOptions.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {showConfirmation ? (
-        <div
-          className="modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="prediction-confirmation-title"
+      {/* ---- Horse grid ---- */}
+      <section className="pf-horses-section">
+        <div className="pf-section-header">
+          <h2>Chọn ngựa</h2>
+          <p>Nhấn vào thẻ ngựa để chốt dự đoán của bạn.</p>
+        </div>
+
+        {isLoading ? (
+          <div className="pf-empty">
+            <div className="pf-empty__icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </div>
+            <h4>Đang tải danh sách ngựa</h4>
+            <p>Vui lòng đợi trong giây lát.</p>
+          </div>
+        ) : horseOptions.length === 0 ? (
+          <div className="pf-empty">
+            <div className="pf-empty__icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <h4>Không có ngựa</h4>
+            <p>Chọn cuộc đua khác để xem danh sách ngựa tham gia.</p>
+          </div>
+        ) : (
+          <div className="pf-horse-grid">
+            {horseOptions.map((horse) => {
+              const active = selectedHorseId === horse.id;
+              return (
+                <button
+                  key={horse.id}
+                  type="button"
+                  className={`pf-horse-card${active ? " pf-horse-card--active" : ""}`}
+                  onClick={() => setSelectedHorseId(horse.id)}
+                >
+                  <span className="pf-horse-card__radio" aria-hidden="true" />
+                  <div className="pf-horse-card__body">
+                    <h3>{horse.name}</h3>
+                    <p className="pf-horse-card__jockey">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      {horse.jockey}
+                    </p>
+                  </div>
+                  <div className="pf-horse-card__stats">
+                    <div className="pf-horse-stat">
+                      <span>Tỷ lệ thắng</span>
+                      <strong>{horse.winRate}</strong>
+                    </div>
+                    <div className="pf-horse-stat">
+                      <span>Tỷ lệ cược</span>
+                      <strong>{horse.odds}</strong>
+                    </div>
+                  </div>
+                  <div className="pf-horse-card__form">
+                    <span>Phong độ gần đây</span>
+                    <p>{horse.form}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ---- Bet + Submit ---- */}
+      <form className="pf-action-bar" onSubmit={handleSubmit}>
+        <div className="pf-field pf-field--amount">
+          <label htmlFor="pf-bet" className="pf-label">Số tiền cược ($)</label>
+          <div className="pf-amount-input-wrap">
+            <span className="pf-amount-currency">$</span>
+            <input
+              id="pf-bet"
+              className="pf-input"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="50"
+              value={betAmount}
+              onChange={(e) => setBetAmount(e.target.value)}
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          className="pf-btn-primary"
+          disabled={!selectedHorseId || isSubmitting}
         >
-          <div className="spectator-modal">
-            <div className="modal-header">
+          {isSubmitting ? "Đang gửi..." : "Gửi dự đoán"}
+        </button>
+      </form>
+
+      {submitError && <div className="pf-error-banner">{submitError}</div>}
+
+      {/* ---- Race info card ---- */}
+      <div className="pf-info-card">
+        <div className="pf-info-card__header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>Thông tin cuộc đua</span>
+        </div>
+        <div className="pf-info-card__grid">
+          <div className="pf-info-item">
+            <span>Đường đua</span>
+            <strong>{raceDetail?.location ?? raceDetail?.Location ?? "--"}</strong>
+          </div>
+          <div className="pf-info-item">
+            <span>Ngựa đã chọn</span>
+            <strong className={selectedHorse ? "pf-info-item--active" : ""}>
+              {selectedHorse?.name || "Chưa chọn"}
+            </strong>
+          </div>
+          <div className="pf-info-item">
+            <span>Tỷ lệ cược</span>
+            <strong>{selectedHorse?.odds || "--"}</strong>
+          </div>
+          <div className="pf-info-item pf-info-item--rules">
+            <span>Quy tắc</span>
+            <p>Dự đoán bị khóa 5 phút trước khi cuộc đua bắt đầu. Phần thưởng được tính từ tỷ lệ trực tiếp.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- Confirmation Modal ---- */}
+      {showConfirmation && (
+        <div className="pf-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pf-modal-title">
+          <div className="pf-modal">
+            <div className="pf-modal__header">
               <div>
-                <span className="badge">Prediction ready</span>
-                <h3 id="prediction-confirmation-title">Confirm prediction</h3>
-                <p className="muted">
-                  Review your selection before submitting.
-                </p>
+                <span className="pf-modal__badge">Dự đoán đã sẵn sàng</span>
+                <h3 id="pf-modal-title">Xác nhận dự đoán</h3>
+                <p>Xem lại lựa chọn trước khi gửi.</p>
               </div>
               <button
-                className="ghost-button"
+                type="button"
+                className="pf-modal__close"
                 onClick={() => setShowConfirmation(false)}
+                aria-label="Đóng"
               >
-                Close
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
-            <div className="modal-body">
-              <div>
-                <h4>Tournament</h4>
-                <p>
-                  {tournaments.find(
-                    (option) => (option.id ?? option.Id) === selectedTournament,
-                  )?.name ??
-                    tournaments.find(
-                      (option) =>
-                        (option.id ?? option.Id) === selectedTournament,
-                    )?.Name}
-                </p>
+            <div className="pf-modal__body">
+              <div className="pf-modal__row">
+                <span>Giải đấu</span>
+                <strong>{tournamentName}</strong>
               </div>
-              <div>
-                <h4>Race</h4>
-                <p>{selectedRaceDetails?.name}</p>
+              <div className="pf-modal__row">
+                <span>Cuộc đua</span>
+                <strong>{selectedRaceDetails?.name}</strong>
               </div>
-              <div>
-                <h4>Horse</h4>
-                <p>{selectedHorse?.name}</p>
+              <div className="pf-modal__row">
+                <span>Ngựa</span>
+                <strong>{selectedHorse?.name}</strong>
               </div>
-              <div>
-                <h4>Odds</h4>
-                <p>{selectedHorse?.odds}</p>
+              <div className="pf-modal__row">
+                <span>Tỷ lệ cược</span>
+                <strong>{selectedHorse?.odds}</strong>
               </div>
-              <div>
-                <h4>Bet Amount</h4>
-                <p>${parseFloat(betAmount) || 0}</p>
+              <div className="pf-modal__row">
+                <span>Số tiền cược</span>
+                <strong className="pf-modal__amount">${parseFloat(betAmount) || 0}</strong>
               </div>
-              {submitError ? (
-                <div className="form-error">{submitError}</div>
-              ) : null}
+              {submitError && <div className="pf-modal__error">{submitError}</div>}
             </div>
-            <div className="modal-actions">
+            <div className="pf-modal__actions">
               <button
-                className="primary-button"
+                type="button"
+                className="pf-btn-primary pf-btn-primary--full"
                 onClick={handleConfirm}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Confirming..." : "Confirm prediction"}
+                {isSubmitting ? "Đang xác nhận..." : "Xác nhận dự đoán"}
               </button>
               <button
-                className="ghost-button"
+                type="button"
+                className="pf-btn-ghost"
                 onClick={() => setShowConfirmation(false)}
               >
-                Edit selection
+                Chỉnh sửa lựa chọn
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

@@ -14,6 +14,11 @@ export function register(payload) {
   });
 }
 
-export function getRoles() {
-  return request("/api/auth/roles");
+export function uploadDocument(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request("/api/auth/upload-document", {
+    method: "POST",
+    body: formData,
+  });
 }

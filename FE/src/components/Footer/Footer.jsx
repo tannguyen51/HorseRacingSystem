@@ -7,48 +7,48 @@ function Footer() {
         <div>
           <h3>RaceMaster</h3>
           <p>
-            Premier platform for elite horse racing tournaments, connecting
-            owners, jockeys, and spectators worldwide.
+            Nền tảng hàng đầu cho các giải đua ngựa chuyên nghiệp, kết nối chủ
+            ngựa, kỵ sĩ và khán giả trên toàn thế giới.
           </p>
           <div className="footer-badges">
-            <span>Since 2026</span>
-            <span>Global Series</span>
+            <span>Từ 2026</span>
+            <span>Giải toàn cầu</span>
           </div>
         </div>
         <div>
-          <h4>Quick Links</h4>
+          <h4>Liên kết nhanh</h4>
           <ul>
-            <li>Home</li>
-            <li>Tournaments</li>
-            <li>Leaderboard</li>
-            <li>Live Results</li>
+            <li>Trang chủ</li>
+            <li>Giải đấu</li>
+            <li>Bảng xếp hạng</li>
+            <li>Kết quả trực tiếp</li>
           </ul>
         </div>
         <div>
-          <h4>For Users</h4>
+          <h4>Dành cho người dùng</h4>
           <ul>
-            <li>Horse Owners</li>
-            <li>Jockeys</li>
-            <li>Officials</li>
-            <li>Rules &amp; Guidelines</li>
+            <li>Chủ Ngựa</li>
+            <li>Kỵ Sĩ</li>
+            <li>Trọng tài</li>
+            <li>Quy định &amp; Hướng dẫn</li>
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
+          <h4>Liên hệ</h4>
           <ul>
             <li>contact@racemaster.com</li>
-            <li>+1 (555) 123-4567</li>
-            <li>123 Racing Boulevard</li>
-            <li>Louisville, KY 40208</li>
+            <li>+84 123 456 789</li>
+            <li>123 Đại lộ Đua Ngựa</li>
+            <li>TP. Hồ Chí Minh, Việt Nam</li>
           </ul>
         </div>
       </div>
       <div className="site-footer__bottom">
-        <span>© 2026 RaceMaster Tournament Platform</span>
+        <span>© 2026 RaceMaster - Nền tảng giải đấu</span>
         <div className="footer-links">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Cookie Policy</span>
+          <span>Chính sách bảo mật</span>
+          <span>Điều khoản dịch vụ</span>
+          <span>Chính sách Cookie</span>
         </div>
       </div>
     </footer>

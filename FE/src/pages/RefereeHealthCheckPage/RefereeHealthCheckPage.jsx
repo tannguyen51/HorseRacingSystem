@@ -11,9 +11,9 @@ import "../RefereeSharedLayout.css";
 import "./RefereeHealthCheckPage.css";
 
 const STATUS_MAP = {
-  Passed: "Passed",
-  Failed: "Failed",
-  RequiresRecheck: "Requires Recheck",
+  Passed: "Đạt",
+  Failed: "Không đạt",
+  RequiresRecheck: "Cần kiểm tra lại",
 };
 
 const STATUS_OPTIONS = ["Passed", "Failed", "RequiresRecheck"];
@@ -43,7 +43,7 @@ function RefereeHealthCheckPage() {
         const data = await getMyAssignments();
         if (!ignore) setAssignments(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
       } catch (e) {
-        if (!ignore) setError("Failed to load assignments: " + e.message);
+        if (!ignore) setError("Không thể tải phân công: " + e.message);
       }
     };
     fetchAssignments();
@@ -70,7 +70,7 @@ function RefereeHealthCheckPage() {
       const data = await getRaceHealthChecks(raceId);
       setHealthChecks(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
     } catch (e) {
-      setError("Failed to load health checks: " + e.message);
+      setError("Không thể tải kiểm tra sức khỏe: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ function RefereeHealthCheckPage() {
     setError("");
     setSuccessMsg("");
     if (!form.horseId || !form.raceId || !form.refereeId) {
-      setError("All fields are required.");
+      setError("Tất cả các trường là bắt buộc.");
       return;
     }
     try {
@@ -107,7 +107,7 @@ function RefereeHealthCheckPage() {
         healthCheckStatus: form.healthCheckStatus,
         observations: form.observations || undefined,
       });
-      setSuccessMsg("Health check created successfully.");
+      setSuccessMsg("Đã tạo kiểm tra sức khỏe thành công.");
       setShowForm(false);
       setForm((f) => ({ ...f, horseId: "", healthCheckStatus: "Passed", observations: "" }));
       if (selectedRaceId) loadHealthChecks(selectedRaceId);
@@ -126,7 +126,7 @@ function RefereeHealthCheckPage() {
   };
 
   const handleReject = async (checkId) => {
-    const reason = prompt("Enter rejection reason:");
+    const reason = prompt("Nhập lý do từ chối:");
     if (!reason) return;
     try {
       await rejectHorseForRace(checkId, reason);
@@ -143,22 +143,22 @@ function RefereeHealthCheckPage() {
       <div className="referee-layout">
         <aside className="referee-sidebar">
           <div className="referee-sidebar__header">
-            <p className="pill">Referee</p>
-            <h3>Health Checks</h3>
-            <p className="muted">Pre-race horse inspections.</p>
+            <p className="pill">Trọng tài</p>
+            <h3>Kiểm tra sức khỏe</h3>
+            <p className="muted">Kiểm tra ngựa trước cuộc đua.</p>
           </div>
           <div className="referee-sidebar__card">
-            <p className="muted">Assigned Races</p>
-            <h4>{assignments.length} races</h4>
+            <p className="muted">Cuộc đua được phân công</p>
+            <h4>{assignments.length} cuộc đua</h4>
           </div>
         </aside>
 
         <div className="referee-content">
           <section className="referee-hero">
             <div>
-              <span className="pill">Race Day</span>
-              <h1>Horse Health Checks</h1>
-              <p>Inspect horses before each race to ensure they are fit to compete.</p>
+              <span className="pill">Ngày đua</span>
+              <h1>Kiểm tra sức khỏe ngựa</h1>
+              <p>Kiểm tra ngựa trước mỗi cuộc đua để đảm bảo chúng đủ điều kiện thi đấu.</p>
             </div>
           </section>
 
@@ -167,14 +167,14 @@ function RefereeHealthCheckPage() {
 
           <section className="referee-section">
             <div className="section-heading">
-              <h2>Select Race</h2>
+              <h2>Chọn cuộc đua</h2>
             </div>
             <select
               className="form-select"
               value={selectedRaceId}
               onChange={(e) => handleRaceSelect(e.target.value)}
             >
-              <option value="">-- Choose a race --</option>
+              <option value="">-- Chọn một cuộc đua --</option>
               {assignedRaces.map((a) => (
                 <option key={a.raceId} value={a.raceId}>
                   {a.raceName || a.raceId}
@@ -186,35 +186,35 @@ function RefereeHealthCheckPage() {
           {selectedRaceId && (
             <section className="referee-section">
               <div className="section-heading">
-                <h2>Health Checks</h2>
+                <h2>Kiểm tra sức khỏe</h2>
                 <button className="primary-button" onClick={() => setShowForm(!showForm)}>
-                  {showForm ? "Cancel" : "+ New Check"}
+                  {showForm ? "Hủy" : "+ Kiểm tra mới"}
                 </button>
               </div>
 
               {showForm && (
                 <form className="health-check-form" onSubmit={handleSubmit}>
                   <div className="form-group">
-                    <label className="label-required">Horse</label>
+                    <label className="label-required">Ngựa</label>
                     <select
                       className="form-select"
                       value={form.horseId}
                       onChange={(e) => setForm({ ...form, horseId: e.target.value })}
                       required
                     >
-                      <option value="">-- Select a horse --</option>
+                      <option value="">-- Chọn ngựa --</option>
                       {entries.map((entry) => (
                         <option key={entry.horseId} value={entry.horseId}>
-                          {entry.horseName} {entry.jockeyName ? `(Jockey: ${entry.jockeyName})` : ""}
+                          {entry.horseName} {entry.jockeyName ? `(Nài: ${entry.jockeyName})` : ""}
                         </option>
                       ))}
                     </select>
                     {entries.length === 0 && (
-                      <p className="muted">No horses assigned to this race. Assign horses first in Admin.</p>
+                      <p className="muted">Không có ngựa nào được phân công cho cuộc đua này. Hãy phân công ngựa trong Admin trước.</p>
                     )}
                   </div>
                   <div className="form-group">
-                    <label className="label-required">Status</label>
+                    <label className="label-required">Trạng thái</label>
                     <select
                       className="form-select"
                       value={form.healthCheckStatus}
@@ -226,23 +226,23 @@ function RefereeHealthCheckPage() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Observations</label>
+                    <label>Quan sát</label>
                     <textarea
                       className="form-textarea"
                       rows={3}
-                      placeholder="Any observations about the horse's condition..."
+                      placeholder="Bất kỳ quan sát nào về tình trạng của ngựa..."
                       value={form.observations}
                       onChange={(e) => setForm({ ...form, observations: e.target.value })}
                     />
                   </div>
-                  <button type="submit" className="primary-button">Submit Health Check</button>
+                  <button type="submit" className="primary-button">Gửi kiểm tra sức khỏe</button>
                 </form>
               )}
 
               {loading ? (
-                <p>Loading health checks...</p>
+                <p>Đang tải kiểm tra sức khỏe...</p>
               ) : healthChecks.length === 0 ? (
-                <p className="muted">No health checks recorded for this race yet.</p>
+                <p className="muted">Chưa có kiểm tra sức khỏe nào cho cuộc đua này.</p>
               ) : (
                 <div className="check-list">
                   {healthChecks.map((check) => (
@@ -250,26 +250,26 @@ function RefereeHealthCheckPage() {
                       <div className="check-header">
                         <strong>{check.horseName || check.horseId}</strong>
                         <span className={`badge badge--${check.status?.toLowerCase()}`}>
-                          {check.status}
+                          {STATUS_MAP[check.status] || check.status}
                         </span>
                       </div>
-                      <p><strong>Referee:</strong> {check.refereeName || check.refereeId}</p>
-                      {check.observations && <p><strong>Notes:</strong> {check.observations}</p>}
-                      {check.verdict && <p><strong>Verdict:</strong> {check.verdict}</p>}
+                      <p><strong>Trọng tài:</strong> {check.refereeName || check.refereeId}</p>
+                      {check.observations && <p><strong>Ghi chú:</strong> {check.observations}</p>}
+                      {check.verdict && <p><strong>Phán quyết:</strong> {check.verdict}</p>}
                       <p className="time">{new Date(check.checkedAt).toLocaleString()}</p>
 
                       {!check.approvedToRace && check.status === "Passed" && (
                         <div className="check-actions">
                           <button className="btn btn-accept" onClick={() => handleApprove(check.id)}>
-                            Approve to Race
+                            Phê duyệt thi đấu
                           </button>
                           <button className="btn btn-reject" onClick={() => handleReject(check.id)}>
-                            Reject
+                            Từ chối
                           </button>
                         </div>
                       )}
                       {check.approvedToRace && (
-                        <span className="badge badge--approved">Approved to Race</span>
+                        <span className="badge badge--approved">Đã phê duyệt thi đấu</span>
                       )}
                     </div>
                   ))}

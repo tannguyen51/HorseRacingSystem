@@ -6,87 +6,87 @@ import "./OwnerDashboardPage.css";
 
 const upcomingRaces = [
   {
-    title: "Coastal Derby",
-    time: "May 22 · 4:20 PM",
-    track: "Gulfstream Park",
-    horse: "Silver Comet",
+    title: "Trận Derby Bờ Biển",
+    time: "22/5 · 4:20 CH",
+    track: "Công viên Gulfstream",
+    horse: "Sao Chổi Bạc",
   },
   {
-    title: "Emerald Invitational",
-    time: "May 24 · 2:40 PM",
+    title: "Giải Mời Lục Bảo",
+    time: "24/5 · 2:40 CH",
     track: "Emerald Downs",
-    horse: "Thunder Strike",
+    horse: "Tia Sét",
   },
   {
-    title: "Golden Mile",
-    time: "May 28 · 5:10 PM",
+    title: "Dặm Vàng",
+    time: "28/5 · 5:10 CH",
     track: "Santa Anita",
-    horse: "Midnight Runner",
+    horse: "Ngựa Nửa Đêm",
   },
 ];
 
 const notifications = [
   {
-    title: "Health check scheduled",
-    detail: "Thunder Strike vet visit on May 20.",
-    time: "2 hours ago",
+    title: "Đã lên lịch kiểm tra sức khỏe",
+    detail: "Tia Sét khám thú y vào 20/5.",
+    time: "2 giờ trước",
   },
   {
-    title: "Registration approved",
-    detail: "Silver Comet entered into Coastal Derby.",
-    time: "Yesterday",
+    title: "Đăng ký đã được duyệt",
+    detail: "Sao Chổi Bạc đã vào Trận Derby Bờ Biển.",
+    time: "Hôm qua",
   },
   {
-    title: "Jockey confirmed",
-    detail: "Ariana Blake assigned to Midnight Runner.",
-    time: "May 16",
+    title: "Kỵ sĩ đã xác nhận",
+    detail: "Ariana Blake được chỉ định cho Ngựa Nửa Đêm.",
+    time: "16/5",
   },
 ];
 
 const activityFeed = [
   {
-    title: "Race result posted",
-    detail: "Thunder Strike placed 2nd in Spring Showcase.",
-    time: "May 14",
+    title: "Đã đăng kết quả đua",
+    detail: "Tia Sét về nhì trong Trình Diễn Mùa Xuân.",
+    time: "14/5",
   },
   {
-    title: "Performance update",
-    detail: "Silver Comet speed rating improved to 91.",
-    time: "May 12",
+    title: "Cập nhật hiệu suất",
+    detail: "Chỉ số tốc độ của Sao Chổi Bạc tăng lên 91.",
+    time: "12/5",
   },
   {
-    title: "Training log",
-    detail: "Midnight Runner completed endurance session.",
-    time: "May 11",
+    title: "Nhật ký huấn luyện",
+    detail: "Ngựa Nửa Đêm hoàn thành buổi tập sức bền.",
+    time: "11/5",
   },
 ];
 
 const performanceSummary = [
-  { label: "Win rate", value: "38%" },
-  { label: "Top 3 finishes", value: "64%" },
-  { label: "Avg speed", value: "92" },
+  { label: "Tỷ lệ thắng", value: "38%" },
+  { label: "Về đích top 3", value: "64%" },
+  { label: "Tốc độ TB", value: "92" },
 ];
 
 const quickActions = [
   {
-    title: "Add a new horse",
-    description: "Upload records and track performance stats.",
+    title: "Thêm ngựa mới",
+    description: "Tải lên hồ sơ và theo dõi chỉ số hiệu suất.",
   },
   {
-    title: "Register for tournament",
-    description: "Check eligibility and reserve slots.",
+    title: "Đăng ký giải đấu",
+    description: "Kiểm tra điều kiện và đặt chỗ.",
   },
   {
-    title: "Confirm race entry",
-    description: "Approve upcoming race participation.",
+    title: "Xác nhận tham gia đua",
+    description: "Phê duyệt tham gia cuộc đua sắp tới.",
   },
 ];
 
 const chartData = [
-  { label: "Speed", value: 92 },
-  { label: "Stamina", value: 86 },
-  { label: "Consistency", value: 78 },
-  { label: "Sprint", value: 88 },
+  { label: "Tốc độ", value: 92 },
+  { label: "Sức bền", value: 86 },
+  { label: "Ổn định", value: 78 },
+  { label: "Nước rút", value: 88 },
 ];
 
 function OwnerDashboardPage() {
@@ -106,7 +106,7 @@ function OwnerDashboardPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setProfileError(error.message || "Unable to load owner profile.");
+          setProfileError(error.message || "Không thể tải hồ sơ chủ ngựa.");
         }
       }
 
@@ -131,23 +131,23 @@ function OwnerDashboardPage() {
   const stats = useMemo(
     () => [
       {
-        label: "Total horses",
+        label: "Tổng số ngựa",
         value: String(owner?.horseCount ?? 0),
-        trend: owner?.ownerCode ?? "Owner profile",
+        trend: owner?.ownerCode ?? "Hồ sơ chủ ngựa",
       },
-      { label: "Active races", value: "3", trend: "2 upcoming" },
-      { label: "Total prize money", value: "$185,400", trend: "+12%" },
-      { label: "Pending confirmations", value: "2", trend: "Due this week" },
+      { label: "Cuộc đua đang diễn ra", value: "3", trend: "2 sắp diễn ra" },
+      { label: "Tổng tiền thưởng", value: "$185,400", trend: "+12%" },
+      { label: "Chờ xác nhận", value: "2", trend: "Đến hạn tuần này" },
     ],
     [owner],
   );
 
   const tournamentParticipation = tournaments.map((tournament) => ({
     id: tournament?.id ?? tournament?.Id,
-    name: tournament?.name ?? tournament?.Name ?? "Tournament",
-    races: `${tournament?.raceCount ?? tournament?.RaceCount ?? 0} races`,
-    status: (tournament?.isActive ?? tournament?.IsActive) ? "Open" : "Closed",
-    rounds: `${tournament?.roundCount ?? tournament?.RoundCount ?? 0} rounds`,
+    name: tournament?.name ?? tournament?.Name ?? "Giải đấu",
+    races: `${tournament?.raceCount ?? tournament?.RaceCount ?? 0} cuộc đua`,
+    status: (tournament?.isActive ?? tournament?.IsActive) ? "Mở" : "Đã đóng",
+    rounds: `${tournament?.roundCount ?? tournament?.RoundCount ?? 0} vòng`,
   }));
 
   return (
@@ -155,53 +155,53 @@ function OwnerDashboardPage() {
       <div className="owner-layout">
         <aside className="owner-sidebar">
           <div className="owner-sidebar__header">
-            <p className="pill">Horse Owner</p>
-            <h3>Stable overview</h3>
-            <p className="muted">Track horses, entries, and rewards.</p>
+            <p className="pill">Chủ Ngựa</p>
+            <h3>Tổng quan chuồng ngựa</h3>
+            <p className="muted">Theo dõi ngựa, đăng ký và phần thưởng.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Owner account</p>
-            <h4>{owner?.ownerCode ?? "Loading..."}</h4>
-            <span>{owner?.email ?? "Fetching profile"}</span>
+            <p className="muted">Tài khoản chủ ngựa</p>
+            <h4>{owner?.ownerCode ?? "Đang tải..."}</h4>
+            <span>{owner?.email ?? "Đang tải hồ sơ"}</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Profile status</p>
+            <p className="muted">Trạng thái hồ sơ</p>
             <h4>{owner?.status ?? "-"}</h4>
-            <span>{owner?.ownerType ?? "Horse owner"}</span>
+            <span>{owner?.ownerType ?? "Chủ ngựa"}</span>
           </div>
         </aside>
 
         <div className="owner-content">
           <section className="owner-hero">
             <div>
-              <span className="pill">Owner dashboard</span>
-              <h1>Welcome back, {owner?.fullName || owner?.email || "Owner"}</h1>
+              <span className="pill">Bảng điều khiển</span>
+              <h1>Chào mừng trở lại, {owner?.fullName || owner?.email || "Chủ ngựa"}</h1>
               <p>
-                Manage your stable, monitor race entries, and keep every horse
-                race-ready.
+                Quản lý chuồng ngựa, theo dõi đăng ký đua và giữ mọi ngựa
+                sẵn sàng thi đấu.
               </p>
               {profileError ? <p className="form-error">{profileError}</p> : null}
               <div className="owner-hero__actions">
-                <button className="primary-button" onClick={() => navigate("/owner/horses/new")}>Add horse</button>
+                <button className="primary-button" onClick={() => navigate("/owner/horses/new")}>Thêm ngựa</button>
                 <button
                   className="ghost-button"
                   onClick={() => navigate("/owner/register-tournament")}
                 >
-                  Register tournament
+                  Đăng ký giải đấu
                 </button>
               </div>
             </div>
             <div className="owner-hero__panel">
               <div>
-                <span>Horses ready</span>
+                <span>Ngựa sẵn sàng</span>
                 <strong>{owner?.horseCount ?? 0}</strong>
               </div>
               <div>
-                <span>Upcoming races</span>
+                <span>Cuộc đua sắp tới</span>
                 <strong>3</strong>
               </div>
               <div>
-                <span>Pending approvals</span>
+                <span>Chờ phê duyệt</span>
                 <strong>2</strong>
               </div>
             </div>
@@ -220,8 +220,8 @@ function OwnerDashboardPage() {
           <section className="owner-columns">
             <div className="owner-stack">
               <div className="section-heading">
-                <h2>Upcoming races</h2>
-                <p>Confirm entries and align your jockey lineup.</p>
+                <h2>Cuộc đua sắp tới</h2>
+                <p>Xác nhận đăng ký và sắp xếp đội hình kỵ sĩ.</p>
               </div>
               <div className="owner-card-grid">
                 {upcomingRaces.map((race) => (
@@ -230,13 +230,13 @@ function OwnerDashboardPage() {
                     className="owner-upcoming-card hover-lift"
                   >
                     <div className="owner-upcoming-card__header">
-                      <span className="badge">Upcoming</span>
+                      <span className="badge">Sắp diễn ra</span>
                       <span className="muted">{race.time}</span>
                     </div>
                     <h3>{race.title}</h3>
                     <p>{race.track}</p>
                     <div className="owner-upcoming-card__meta">
-                      <span>Horse</span>
+                      <span>Ngựa</span>
                       <strong>{race.horse}</strong>
                     </div>
                   </article>
@@ -244,8 +244,8 @@ function OwnerDashboardPage() {
               </div>
 
               <div className="section-heading">
-                <h2>Recent tournaments</h2>
-                <p>Track where your horses are participating.</p>
+                <h2>Giải đấu gần đây</h2>
+                <p>Theo dõi nơi ngựa của bạn đang tham gia.</p>
               </div>
               <div className="tournament-stack">
                 {tournamentParticipation.map((item) => (
@@ -257,21 +257,21 @@ function OwnerDashboardPage() {
                     <h3>{item.name}</h3>
                     <p className="muted">{item.races}</p>
                     <div className="owner-tournament-meta">
-                      <span>Tournament status</span>
+                      <span>Trạng thái giải đấu</span>
                       <strong>{item.status}</strong>
                     </div>
                   </article>
                 ))}
                 {tournamentParticipation.length === 0 ? (
-                  <p className="muted">No tournaments available.</p>
+                  <p className="muted">Không có giải đấu nào.</p>
                 ) : null}
               </div>
             </div>
 
             <div className="owner-stack">
               <div className="section-heading">
-                <h2>Notifications</h2>
-                <p>Priority updates from your owner operations.</p>
+                <h2>Thông báo</h2>
+                <p>Cập nhật ưu tiên từ hoạt động chủ ngựa.</p>
               </div>
               <div className="notification-panel">
                 {notifications.map((note) => (
@@ -286,8 +286,8 @@ function OwnerDashboardPage() {
               </div>
 
               <div className="section-heading">
-                <h2>Horse performance</h2>
-                <p>Last 30 days performance summary.</p>
+                <h2>Hiệu suất ngựa</h2>
+                <p>Tóm tắt hiệu suất 30 ngày qua.</p>
               </div>
               <div className="performance-card">
                 <div className="performance-summary">
@@ -318,8 +318,8 @@ function OwnerDashboardPage() {
 
           <section className="owner-section">
             <div className="section-heading">
-              <h2>Recent race activity</h2>
-              <p>Latest updates from your stable activity feed.</p>
+              <h2>Hoạt động đua gần đây</h2>
+              <p>Cập nhật mới nhất từ bảng tin hoạt động.</p>
             </div>
             <div className="activity-panel">
               {activityFeed.map((activity) => (
@@ -336,8 +336,8 @@ function OwnerDashboardPage() {
 
           <section className="owner-section">
             <div className="section-heading">
-              <h2>Quick actions</h2>
-              <p>Jump straight into your most common tasks.</p>
+              <h2>Thao tác nhanh</h2>
+              <p>Truy cập nhanh các tác vụ thường dùng.</p>
             </div>
             <div className="quick-action-grid">
               {quickActions.map((action) => (
@@ -347,12 +347,12 @@ function OwnerDashboardPage() {
                   <button
                     className="ghost-button"
                     onClick={() => {
-                      if (action.title === "Add a new horse") navigate("/owner/horses/new");
-                      if (action.title === "Register for tournament") navigate("/owner/register-tournament");
-                      if (action.title === "Confirm race entry") navigate("/owner/race-confirmations");
+                      if (action.title === "Thêm ngựa mới") navigate("/owner/horses/new");
+                      if (action.title === "Đăng ký giải đấu") navigate("/owner/register-tournament");
+                      if (action.title === "Xác nhận tham gia đua") navigate("/owner/race-confirmations");
                     }}
                   >
-                    Open
+                    Mở
                   </button>
                 </article>
               ))}

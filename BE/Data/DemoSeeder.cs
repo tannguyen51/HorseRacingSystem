@@ -30,6 +30,9 @@ public static class DemoSeeder
         var hasher = new PasswordHasher<User>();
         var now = DateTime.UtcNow;
 
+        // Helper to create UTC DateTimes
+        DateTime Utc(int year, int month, int day) => new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
+
         // ── USERS ──
         var admin = AddUser(db, hasher, "admin@horseracing.com", "Admin@123", "System Admin", UserRole.Admin, now);
 
@@ -56,19 +59,19 @@ public static class DemoSeeder
         // ── HORSES ──
         var horses = new List<Horse>
         {
-            new() { Id = Guid.NewGuid(), Name = "Silver Comet", OwnerId = ownerProfile1.Id, Breed = "Thoroughbred", Gender = "Stallion", DateOfBirth = new DateTime(2020, 3, 15), Age = 5, Weight = 520m, Height = 1.65m, Color = "Gray", TotalRaces = 12, TotalWins = 5, ApprovalStatus = ApprovalStatus.Approved, ImageUrl = "/assets/horse1.png" },
-            new() { Id = Guid.NewGuid(), Name = "Thunder Strike", OwnerId = ownerProfile1.Id, Breed = "Arabian", Gender = "Mare", DateOfBirth = new DateTime(2019, 7, 8), Age = 6, Weight = 480m, Height = 1.58m, Color = "Bay", TotalRaces = 18, TotalWins = 7, ApprovalStatus = ApprovalStatus.Approved, ImageUrl = "/assets/horse2.png" },
-            new() { Id = Guid.NewGuid(), Name = "Midnight Runner", OwnerId = ownerProfile1.Id, Breed = "Quarter Horse", Gender = "Gelding", DateOfBirth = new DateTime(2021, 1, 20), Age = 4, Weight = 540m, Height = 1.62m, Color = "Black", TotalRaces = 6, TotalWins = 2, ApprovalStatus = ApprovalStatus.Approved },
-            new() { Id = Guid.NewGuid(), Name = "Golden Arrow", OwnerId = ownerProfile2.Id, Breed = "Thoroughbred", Gender = "Stallion", DateOfBirth = new DateTime(2020, 5, 30), Age = 5, Weight = 500m, Height = 1.67m, Color = "Chestnut", TotalRaces = 9, TotalWins = 4, ApprovalStatus = ApprovalStatus.Approved },
-            new() { Id = Guid.NewGuid(), Name = "Storm Chaser", OwnerId = ownerProfile2.Id, Breed = "Thoroughbred", Gender = "Mare", DateOfBirth = new DateTime(2018, 11, 12), Age = 7, Weight = 510m, Height = 1.60m, Color = "Dark Bay", TotalRaces = 22, TotalWins = 10, ApprovalStatus = ApprovalStatus.Approved },
-            new() { Id = Guid.NewGuid(), Name = "Desert Wind", OwnerId = ownerProfile2.Id, Breed = "Arabian", Gender = "Gelding", DateOfBirth = new DateTime(2021, 8, 3), Age = 3, Weight = 460m, Height = 1.55m, Color = "Palomino", TotalRaces = 3, TotalWins = 1, ApprovalStatus = ApprovalStatus.Approved },
+            new() { Id = Guid.NewGuid(), Name = "Silver Comet", OwnerId = ownerProfile1.Id, Breed = "Thoroughbred", Gender = "Stallion", DateOfBirth = Utc(2020, 3, 15), Age = 5, Weight = 520m, Height = 1.65m, Color = "Gray", TotalRaces = 12, TotalWins = 5, ApprovalStatus = ApprovalStatus.Approved, ImageUrl = "/assets/horse1.png" },
+            new() { Id = Guid.NewGuid(), Name = "Thunder Strike", OwnerId = ownerProfile1.Id, Breed = "Arabian", Gender = "Mare", DateOfBirth = Utc(2019, 7, 8), Age = 6, Weight = 480m, Height = 1.58m, Color = "Bay", TotalRaces = 18, TotalWins = 7, ApprovalStatus = ApprovalStatus.Approved, ImageUrl = "/assets/horse2.png" },
+            new() { Id = Guid.NewGuid(), Name = "Midnight Runner", OwnerId = ownerProfile1.Id, Breed = "Quarter Horse", Gender = "Gelding", DateOfBirth = Utc(2021, 1, 20), Age = 4, Weight = 540m, Height = 1.62m, Color = "Black", TotalRaces = 6, TotalWins = 2, ApprovalStatus = ApprovalStatus.Approved },
+            new() { Id = Guid.NewGuid(), Name = "Golden Arrow", OwnerId = ownerProfile2.Id, Breed = "Thoroughbred", Gender = "Stallion", DateOfBirth = Utc(2020, 5, 30), Age = 5, Weight = 500m, Height = 1.67m, Color = "Chestnut", TotalRaces = 9, TotalWins = 4, ApprovalStatus = ApprovalStatus.Approved },
+            new() { Id = Guid.NewGuid(), Name = "Storm Chaser", OwnerId = ownerProfile2.Id, Breed = "Thoroughbred", Gender = "Mare", DateOfBirth = Utc(2018, 11, 12), Age = 7, Weight = 510m, Height = 1.60m, Color = "Dark Bay", TotalRaces = 22, TotalWins = 10, ApprovalStatus = ApprovalStatus.Approved },
+            new() { Id = Guid.NewGuid(), Name = "Desert Wind", OwnerId = ownerProfile2.Id, Breed = "Arabian", Gender = "Gelding", DateOfBirth = Utc(2021, 8, 3), Age = 3, Weight = 460m, Height = 1.55m, Color = "Palomino", TotalRaces = 3, TotalWins = 1, ApprovalStatus = ApprovalStatus.Approved },
         };
         db.Horses.AddRange(horses);
         await db.SaveChangesAsync();
 
         // ── JOCKEYS ──
-        var jockeyProfile1 = new Jockey { Id = Guid.NewGuid(), UserId = jockey1.Id, LicenseNumber = "JKY-001-2024", Nationality = "USA", Gender = "Male", DateOfBirth = new DateTime(1995, 4, 12), Height = 1.70m, Weight = 54m, ExperienceYears = 8, TotalRaces = 340, TotalWins = 82, WinRate = 24.12m, Rank = 5, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
-        var jockeyProfile2 = new Jockey { Id = Guid.NewGuid(), UserId = jockey2.Id, LicenseNumber = "JKY-002-2024", Nationality = "UK", Gender = "Female", DateOfBirth = new DateTime(1998, 9, 25), Height = 1.62m, Weight = 50m, ExperienceYears = 5, TotalRaces = 210, TotalWins = 48, WinRate = 22.86m, Rank = 8, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
+        var jockeyProfile1 = new Jockey { Id = Guid.NewGuid(), UserId = jockey1.Id, LicenseNumber = "JKY-001-2024", Nationality = "USA", Gender = "Male", DateOfBirth = Utc(1995, 4, 12), Height = 1.70m, Weight = 54m, ExperienceYears = 8, TotalRaces = 340, TotalWins = 82, WinRate = 24.12m, Rank = 5, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
+        var jockeyProfile2 = new Jockey { Id = Guid.NewGuid(), UserId = jockey2.Id, LicenseNumber = "JKY-002-2024", Nationality = "UK", Gender = "Female", DateOfBirth = Utc(1998, 9, 25), Height = 1.62m, Weight = 50m, ExperienceYears = 5, TotalRaces = 210, TotalWins = 48, WinRate = 22.86m, Rank = 8, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
         db.Jockeys.AddRange(jockeyProfile1, jockeyProfile2);
         await db.SaveChangesAsync();
 

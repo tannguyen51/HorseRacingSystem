@@ -47,7 +47,7 @@ export function JockeyInvitationPage() {
       setMessage("");
     } catch (error) {
       setInvitations(fallbackInvitations);
-      setMessage(error.message || "Unable to load invitations.");
+      setMessage(error.message || "Không thể tải lời mời.");
     } finally {
       setLoading(false);
     }
@@ -72,9 +72,9 @@ export function JockeyInvitationPage() {
       setInvitations((current) =>
         current.filter((invitation) => invitation.id !== id),
       );
-      setMessage(accept ? "Invitation accepted." : "Invitation rejected.");
+      setMessage(accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời.");
     } catch (error) {
-      setMessage(error.message || "Failed to process invitation.");
+      setMessage(error.message || "Không thể xử lý lời mời.");
     } finally {
       setLoadingId(null);
     }
@@ -85,25 +85,25 @@ export function JockeyInvitationPage() {
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Invitation Management</p>
-            <h3>Race offers</h3>
-            <p className="muted">Accept or reject owner race invitations.</p>
+            <p className="pill">Quản Lý Lời Mời</p>
+            <h3>Đề nghị đua</h3>
+            <p className="muted">Chấp nhận hoặc từ chối lời mời đua từ chủ ngựa.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Pending invitations</p>
-            <h4>{loading ? "Loading..." : pendingInvitations.length}</h4>
-            <span>Requires response</span>
+            <p className="muted">Lời mời đang chờ</p>
+            <h4>{loading ? "Đang tải..." : pendingInvitations.length}</h4>
+            <span>Cần phản hồi</span>
           </div>
         </aside>
 
         <div className="spectator-content">
           <section className="jockey-page-header">
             <div>
-              <span className="pill">Invitations</span>
-              <h1>Invitation Management</h1>
+              <span className="pill">Lời Mời</span>
+              <h1>Quản Lý Lời Mời</h1>
               <p>
-                Review race invitations, inspect assigned horses, and respond
-                before the race card closes.
+                Xem lời mời đua, kiểm tra ngựa được phân công và phản hồi
+                trước khi danh sách đua đóng.
               </p>
               {message ? <p className="jockey-message">{message}</p> : null}
             </div>
@@ -111,11 +111,11 @@ export function JockeyInvitationPage() {
 
           <section className="jockey-invitation-toolbar">
             <div>
-              <span>All invitations</span>
+              <span>Tất cả lời mời</span>
               <strong>{loading ? "--" : invitations.length}</strong>
             </div>
             <div>
-              <span>Pending</span>
+              <span>Đang chờ</span>
               <strong>{loading ? "--" : pendingInvitations.length}</strong>
             </div>
             <button
@@ -124,14 +124,14 @@ export function JockeyInvitationPage() {
               onClick={loadInvitations}
               disabled={loading}
             >
-              Refresh
+              Làm mới
             </button>
           </section>
 
           <section className="jockey-table-panel">
             <div className="section-heading">
-              <h2>Invitations</h2>
-              <p>Open the detail page for full horse and race information.</p>
+              <h2>Lời Mời</h2>
+              <p>Mở trang chi tiết để xem đầy đủ thông tin ngựa và cuộc đua.</p>
             </div>
 
             {loading ? (
@@ -141,8 +141,8 @@ export function JockeyInvitationPage() {
               </div>
             ) : invitations.length === 0 ? (
               <div className="jockey-empty-state">
-                <h3>No invitations</h3>
-                <p className="muted">New invitations will appear here.</p>
+                <h3>Không có lời mời</h3>
+                <p className="muted">Lời mời mới sẽ xuất hiện tại đây.</p>
               </div>
             ) : (
               <div className="jockey-invitation-list">
@@ -155,17 +155,17 @@ export function JockeyInvitationPage() {
                       <div className="jockey-invitation-meta">
                         <span>{formatJockeyDate(invitation.scheduledAt)}</span>
                         <span>{invitation.location}</span>
-                        <span>Horse: {invitation.horseName}</span>
+                        <span>Ngựa: {invitation.horseName}</span>
                       </div>
                     </div>
 
                     <div className="jockey-invitation-card__horse">
-                      <span>Assigned horse</span>
+                      <span>Ngựa được phân công</span>
                       <strong>{invitation.horseName}</strong>
                       <p className="muted">
-                        {[invitation.horseBreed, invitation.horseAge && `${invitation.horseAge} years`]
+                        {[invitation.horseBreed, invitation.horseAge && `${invitation.horseAge} tuổi`]
                           .filter(Boolean)
-                          .join(" / ") || "Profile pending"}
+                          .join(" / ") || "Hồ sơ đang chờ"}
                       </p>
                     </div>
 
@@ -175,7 +175,7 @@ export function JockeyInvitationPage() {
                         to={`/jockey/invitations/${invitation.id}`}
                         state={{ invitation }}
                       >
-                        View Detail
+                        Xem Chi Tiết
                       </Link>
                       <button
                         type="button"
@@ -183,7 +183,7 @@ export function JockeyInvitationPage() {
                         disabled={loadingId !== null}
                         onClick={() => handleResponse(invitation.id, false)}
                       >
-                        Reject
+                        Từ chối
                       </button>
                       <button
                         type="button"
@@ -191,7 +191,7 @@ export function JockeyInvitationPage() {
                         disabled={loadingId !== null}
                         onClick={() => handleResponse(invitation.id, true)}
                       >
-                        {loadingId === invitation.id ? "Processing..." : "Accept"}
+                        {loadingId === invitation.id ? "Đang xử lý..." : "Chấp nhận"}
                       </button>
                     </div>
                   </article>

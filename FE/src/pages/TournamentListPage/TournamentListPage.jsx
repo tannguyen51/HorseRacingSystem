@@ -21,35 +21,34 @@ function TournamentListPage() {
       <div className="tournament-layout">
         <aside className="tournament-sidebar">
           <div className="tournament-sidebar__header">
-            <span className="pill">Tournament List</span>
-            <h3>Browse events</h3>
-            <p className="muted">Explore seasons, rounds, and race capacity.</p>
+            <span className="pill">Danh Sách Giải Đấu</span>
+            <h3>Duyệt sự kiện</h3>
+            <p className="muted">Khám phá các mùa giải, vòng đấu và quy mô cuộc đua.</p>
           </div>
           <div className="tournament-sidebar__card">
-            <p className="muted">Live now</p>
+            <p className="muted">Đang diễn ra</p>
             <h4>{activeCount}</h4>
-            <span>{items.length} total tournaments</span>
+            <span>{items.length} tổng số giải đấu</span>
           </div>
         </aside>
 
         <div className="tournament-content">
           <section className="page-header tournament-hero">
-            <h1>Tournaments</h1>
+            <h1>Giải Đấu</h1>
             <p>
-              Browse all horse racing tournaments, active seasons, and race
-              capacity.
+              Duyệt tất cả các giải đấu đua ngựa, mùa giải đang hoạt động và quy mô cuộc đua.
             </p>
           </section>
 
           {loading ? (
             <div className="empty-state">
-              <h3>Loading tournaments</h3>
-              <p>Fetching the latest schedule and race information.</p>
+              <h3>Đang tải giải đấu</h3>
+              <p>Đang lấy lịch đua và thông tin cuộc đua mới nhất.</p>
             </div>
           ) : items.length === 0 ? (
             <div className="empty-state">
-              <h3>No tournaments found</h3>
-              <p>There are currently no tournaments to display.</p>
+              <h3>Không tìm thấy giải đấu</h3>
+              <p>Hiện không có giải đấu nào để hiển thị.</p>
             </div>
           ) : (
             <div className="tournament-list">
@@ -63,7 +62,7 @@ function TournamentListPage() {
                           : "status-pill"
                       }
                     >
-                      {(t.isActive ?? t.IsActive) ? "Active" : "Inactive"}
+                      {(t.isActive ?? t.IsActive) ? "Đang hoạt động" : "Không hoạt động"}
                     </span>
                   </div>
                   <div className="tournament-body">
@@ -72,16 +71,16 @@ function TournamentListPage() {
                       <p>
                         {t.description ??
                           t.Description ??
-                          "No description available."}
+                          "Không có mô tả."}
                       </p>
                     </div>
                     <div className="tournament-meta">
                       <div>
-                        <span>Rounds</span>
+                        <span>Vòng đấu</span>
                         <strong>{t.roundCount ?? t.RoundCount ?? 0}</strong>
                       </div>
                       <div>
-                        <span>Races</span>
+                        <span>Cuộc đua</span>
                         <strong>{t.raceCount ?? t.RaceCount ?? 0}</strong>
                       </div>
                     </div>
@@ -91,7 +90,7 @@ function TournamentListPage() {
                       className="ghost-button"
                       to={`/tournaments/${t.id ?? t.Id}`}
                     >
-                      View details
+                      Xem chi tiết
                     </Link>
                   </div>
                 </article>

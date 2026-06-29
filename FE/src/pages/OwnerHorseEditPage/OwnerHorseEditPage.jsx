@@ -54,7 +54,7 @@ function OwnerHorseEditPage() {
           imageUrl: img,
         });
         if (img) setImagePreview(getFullUrl(img));
-      } catch (e) { setError(e?.message || "Unable to load horse."); }
+      } catch (e) { setError(e?.message || "Không thể tải ngựa."); }
       finally { setIsLoading(false); }
     })();
   }, [id]);
@@ -78,7 +78,7 @@ function OwnerHorseEditPage() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setError("Max 5MB."); return; }
+    if (file.size > 5 * 1024 * 1024) { setError("Tối đa 5MB."); return; }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
     setError("");
@@ -88,7 +88,7 @@ function OwnerHorseEditPage() {
     event.preventDefault();
     setError("");
     const name = formValues.name.trim();
-    if (!name) { setError("Horse name is required."); return; }
+    if (!name) { setError("Tên ngựa là bắt buộc."); return; }
 
     const age = parseNumber(formValues.age) ?? 0;
     const v = validateHorseStats({ dateOfBirth: formValues.dateOfBirth, age, totalRaces: parseNumber(formValues.totalRaces) ?? 0, totalWins: parseNumber(formValues.totalWins) ?? 0 });
@@ -104,9 +104,9 @@ function OwnerHorseEditPage() {
           fd.append("file", imageFile);
           const data = await request("/api/horses/upload-image", { method: "POST", body: fd });
           imageUrl = data?.url || imageUrl;
-          if (!imageUrl) { setError("Upload failed."); setIsSubmitting(false); return; }
+          if (!imageUrl) { setError("Tải lên thất bại."); setIsSubmitting(false); return; }
         } catch (e) {
-          setError("Upload failed: " + e.message);
+          setError("Tải lên thất bại: " + e.message);
           setIsSubmitting(false);
           return;
         } finally { setUploading(false); }
@@ -125,67 +125,67 @@ function OwnerHorseEditPage() {
         imageUrl: imageUrl || undefined,
       });
       navigate("/owner/horses");
-    } catch (e) { setError(e?.message || "Unable to save."); }
+    } catch (e) { setError(e?.message || "Không thể lưu."); }
     finally { setIsSubmitting(false); }
   };
 
-  if (isLoading) return <div className="owner-page"><p className="muted">Loading...</p></div>;
+  if (isLoading) return <div className="owner-page"><p className="muted">Đang tải...</p></div>;
 
   return (
     <div className="owner-page owner-horse-form-page">
       <div className="owner-layout">
         <aside className="owner-sidebar">
-          <div className="owner-sidebar__header"><p className="pill">Horse Owner</p><h3>Edit horse</h3></div>
+          <div className="owner-sidebar__header"><p className="pill">Chủ Ngựa</p><h3>Chỉnh sửa ngựa</h3></div>
         </aside>
         <div className="owner-content">
-          <section className="page-header"><h1>Edit horse</h1></section>
+          <section className="page-header"><h1>Chỉnh sửa ngựa</h1></section>
           <form className="horse-form-card" onSubmit={handleSubmit}>
             <div className="form-section">
-              <h3>Horse image</h3>
+              <h3>Ảnh ngựa</h3>
               <div style={{ display: "flex", gap: 20, alignItems: "start" }}>
                 <div onClick={() => fileInputRef.current?.click()} style={{ width: 200, height: 160, border: "2px dashed rgba(231,198,120,.2)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: imagePreview ? `url(${imagePreview}) center/cover no-repeat` : "rgba(231,198,120,.04)", overflow: "hidden", flexShrink: 0 }}>
-                  {!imagePreview && <span style={{ color: "#657086", fontSize: 13 }}>Click to upload</span>}
+                  {!imagePreview && <span style={{ color: "#657086", fontSize: 13 }}>Nhấn để tải lên</span>}
                 </div>
                 <div>
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
-                  <p className="muted" style={{ fontSize: 13 }}>JPG, PNG, GIF, WEBP (max 5MB)</p>
+                  <p className="muted" style={{ fontSize: 13 }}>JPG, PNG, GIF, WEBP (tối đa 5MB)</p>
                   {imageFile && <p style={{ color: "#6ee7b7", fontSize: 13 }}>{imageFile.name}</p>}
-                  <button type="button" className="ghost-button" onClick={() => { setImageFile(null); setImagePreview(formValues.imageUrl ? getFullUrl(formValues.imageUrl) : ""); if (fileInputRef.current) fileInputRef.current.value = ""; }} style={{ marginTop: 8 }}>Reset</button>
+                  <button type="button" className="ghost-button" onClick={() => { setImageFile(null); setImagePreview(formValues.imageUrl ? getFullUrl(formValues.imageUrl) : ""); if (fileInputRef.current) fileInputRef.current.value = ""; }} style={{ marginTop: 8 }}>Đặt lại</button>
                 </div>
               </div>
             </div>
 
-            <div className="form-section"><h3>Horse details</h3>
+            <div className="form-section"><h3>Thông tin ngựa</h3>
               <div className="form-field">
-                <label className="label-required">Horse name</label>
+                <label className="label-required">Tên ngựa</label>
                 <input className="form-input" value={formValues.name} onChange={updateField("name")} required />
               </div>
               <div className="form-grid-two">
-                <div className="form-field"><label>Breed</label><input className="form-input" placeholder="Thoroughbred" value={formValues.breed} onChange={updateField("breed")} /></div>
-                <div className="form-field"><label>Gender</label><input className="form-input" placeholder="Mare / Stallion" value={formValues.gender} onChange={updateField("gender")} /></div>
+                <div className="form-field"><label>Giống</label><input className="form-input" placeholder="Thuần chủng" value={formValues.breed} onChange={updateField("breed")} /></div>
+                <div className="form-field"><label>Giới tính</label><input className="form-input" placeholder="Ngựa cái / Ngựa đực" value={formValues.gender} onChange={updateField("gender")} /></div>
               </div>
               <div className="form-grid-two">
-                <div className="form-field"><label>Color</label><input className="form-input" placeholder="Bay" value={formValues.color} onChange={updateField("color")} /></div>
-                <div className="form-field"><label>Date of birth</label><input className="form-input" type="date" value={formValues.dateOfBirth} onChange={updateField("dateOfBirth")} /></div>
+                <div className="form-field"><label>Màu sắc</label><input className="form-input" placeholder="Nâu" value={formValues.color} onChange={updateField("color")} /></div>
+                <div className="form-field"><label>Ngày sinh</label><input className="form-input" type="date" value={formValues.dateOfBirth} onChange={updateField("dateOfBirth")} /></div>
               </div>
               <div className="form-grid-three">
-                <div className="form-field"><label>Age (auto)</label><input className="form-input" type="number" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} /></div>
-                <div className="form-field"><label>Weight (kg)</label><input className="form-input" placeholder="480" value={formValues.weight} onChange={updateField("weight")} /></div>
-                <div className="form-field"><label>Height (cm)</label><input className="form-input" placeholder="165" value={formValues.height} onChange={updateField("height")} /></div>
+                <div className="form-field"><label>Tuổi (tự động)</label><input className="form-input" type="number" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} /></div>
+                <div className="form-field"><label>Cân nặng (kg)</label><input className="form-input" placeholder="480" value={formValues.weight} onChange={updateField("weight")} /></div>
+                <div className="form-field"><label>Chiều cao (cm)</label><input className="form-input" placeholder="165" value={formValues.height} onChange={updateField("height")} /></div>
               </div>
-              <div className="form-section"><h3>Career totals</h3>
+              <div className="form-section"><h3>Tổng sự nghiệp</h3>
                 <div className="form-grid-two">
-                  <div className="form-field"><label>Total races</label><input className="form-input" type="number" value={formValues.totalRaces} onChange={updateField("totalRaces")} min={0} /></div>
-                  <div className="form-field"><label>Total wins</label><input className="form-input" type="number" value={formValues.totalWins} onChange={updateField("totalWins")} min={0} /></div>
+                  <div className="form-field"><label>Tổng số cuộc đua</label><input className="form-input" type="number" value={formValues.totalRaces} onChange={updateField("totalRaces")} min={0} /></div>
+                  <div className="form-field"><label>Tổng số trận thắng</label><input className="form-input" type="number" value={formValues.totalWins} onChange={updateField("totalWins")} min={0} /></div>
                 </div>
               </div>
             </div>
 
             {error && <p className="form-error">{error}</p>}
             <div className="form-actions">
-              <button className="ghost-button" type="button" onClick={() => navigate("/owner/horses")}>Cancel</button>
+              <button className="ghost-button" type="button" onClick={() => navigate("/owner/horses")}>Hủy</button>
               <button className="primary-button" type="submit" disabled={isSubmitting || uploading}>
-                {uploading ? "Uploading..." : isSubmitting ? "Saving..." : "Save horse"}
+                {uploading ? "Đang tải lên..." : isSubmitting ? "Đang lưu..." : "Lưu ngựa"}
               </button>
             </div>
           </form>

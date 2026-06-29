@@ -19,6 +19,20 @@ public class RegisterRequest
     public string? FullName { get; set; }
 
     public string? LicenseNumber { get; set; }
+
+    public string? LicenseFile { get; set; }
+
+    public string? Phone { get; set; }
+
+    public string? Address { get; set; }
+
+    public DateTime? DateOfBirth { get; set; }
+
+    public decimal? Height { get; set; }
+
+    public decimal? Weight { get; set; }
+
+    public string? IdCardNumber { get; set; }
 }
 
 public class LoginRequest

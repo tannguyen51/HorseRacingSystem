@@ -15,24 +15,24 @@ const getImageUrl = (url) => {
   return `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
-const statusFilters = ["All", "Pending", "Approved", "Rejected"];
+const statusFilters = ["Tất cả", "Chờ duyệt", "Đã duyệt", "Từ chối"];
 const approvalStatusMap = {
-  1: "Pending",
-  2: "Approved",
-  3: "Rejected",
+  1: "Chờ duyệt",
+  2: "Đã duyệt",
+  3: "Từ chối",
 };
 
 const invitationStatusMap = {
-  1: "Pending",
-  2: "Accepted",
-  3: "Declined",
+  1: "Chờ duyệt",
+  2: "Đã chấp nhận",
+  3: "Từ chối",
 };
 
 const getInvitationStatus = (invitation) => {
   const status = invitation?.status ?? invitation?.Status;
   return typeof status === "number"
-    ? invitationStatusMap[status] ?? "Pending"
-    : status || "Pending";
+    ? invitationStatusMap[status] ?? "Chờ duyệt"
+    : status || "Chờ duyệt";
 };
 
 const getJockeyName = (invitation) =>
@@ -40,13 +40,13 @@ const getJockeyName = (invitation) =>
   invitation?.Jockey?.User?.FullName ??
   invitation?.jockey?.user?.FullName ??
   invitation?.Jockey?.user?.fullName ??
-  "Selected jockey";
+  "Kỵ sĩ đã chọn";
 
 const getHorseAssignment = (horse) => {
   const invitations = horse?.jockeyInvitations ?? horse?.JockeyInvitations ?? [];
   const activeInvitation = invitations.find((invitation) => {
     const status = getInvitationStatus(invitation).toLowerCase();
-    return status === "pending" || status === "accepted";
+    return status === "chờ duyệt" || status === "đã chấp nhận";
   });
 
   if (activeInvitation) {
@@ -55,16 +55,16 @@ const getHorseAssignment = (horse) => {
       jockeyName: getJockeyName(activeInvitation),
       status,
       isLocked: true,
-      label: status === "Accepted" ? "Assigned" : "Pending",
+      label: status === "Đã chấp nhận" ? "Đã chỉ định" : "Chờ duyệt",
     };
   }
 
   if (horse?.assignedJockeyName) {
     return {
       jockeyName: horse.assignedJockeyName,
-      status: horse.jockeyInvitationStatus || "Pending",
+      status: horse.jockeyInvitationStatus || "Chờ duyệt",
       isLocked: true,
-      label: horse.jockeyInvitationStatus || "Pending",
+      label: horse.jockeyInvitationStatus || "Chờ duyệt",
     };
   }
 
@@ -76,7 +76,7 @@ function OwnerHorseListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("Tất cả");
   const [page, setPage] = useState(1);
   const [jockeys, setJockeys] = useState([]);
   const [isJockeyLoading, setIsJockeyLoading] = useState(false);
@@ -97,14 +97,14 @@ function OwnerHorseListPage() {
 
       if (list.length === 0) {
         setJockeyError(
-          "API returned 0 jockeys. Please check whether jockey accounts exist in the Jockeys table.",
+          "API trả về 0 kỵ sĩ. Vui lòng kiểm tra xem có tài khoản kỵ sĩ trong bảng Jockeys không.",
         );
       }
     } catch (fetchError) {
       const statusPrefix = fetchError?.status ? `HTTP ${fetchError.status}: ` : "";
       setJockeys([]);
       setJockeyError(
-        `${statusPrefix}${fetchError?.message || "Unable to load jockeys."}`,
+        `${statusPrefix}${fetchError?.message || "Không thể tải danh sách kỵ sĩ."}`,
       );
     } finally {
       setIsJockeyLoading(false);
@@ -123,7 +123,7 @@ function OwnerHorseListPage() {
         }
       } catch (fetchError) {
         if (isMounted) {
-          setError(fetchError?.message || "Unable to load horses.");
+          setError(fetchError?.message || "Không thể tải danh sách ngựa.");
         }
       } finally {
         if (isMounted) {
@@ -143,18 +143,18 @@ function OwnerHorseListPage() {
   }, []);
 
   const getStatusLabel = (horse) =>
-    approvalStatusMap[horse.approvalStatus] ?? "Pending";
+    approvalStatusMap[horse.approvalStatus] ?? "Chờ duyệt";
 
   const totalCount = horses.length;
   const pendingCount = horses.filter(
-    (horse) => getStatusLabel(horse) === "Pending",
+    (horse) => getStatusLabel(horse) === "Chờ duyệt",
   ).length;
 
   const filteredHorses = useMemo(() => {
     return horses.filter((horse) => {
       const horseStatus = getStatusLabel(horse);
       const matchesStatus =
-        status === "All" || horseStatus.toLowerCase() === status.toLowerCase();
+        status === "Tất cả" || horseStatus.toLowerCase() === status.toLowerCase();
       const matchesQuery = horse.name
         .toLowerCase()
         .includes(query.toLowerCase());
@@ -197,7 +197,7 @@ function OwnerHorseListPage() {
 
   const handleAssignJockey = async () => {
     if (!assignHorse || !selectedJockeyId) {
-      setJockeyError("Please select a jockey.");
+      setJockeyError("Vui lòng chọn kỵ sĩ.");
       return;
     }
 
@@ -210,21 +210,21 @@ function OwnerHorseListPage() {
         jockeyId: selectedJockeyId,
       });
 
-      const jockeyName = selectedJockey?.fullName || "Selected jockey";
+      const jockeyName = selectedJockey?.fullName || "Kỵ sĩ đã chọn";
       setHorses((current) =>
         current.map((horse) =>
           horse.id === assignHorse.id
             ? {
                 ...horse,
                 assignedJockeyName: jockeyName,
-                jockeyInvitationStatus: "Pending",
+                jockeyInvitationStatus: "Chờ duyệt",
               }
             : horse,
         ),
       );
-      setAssignMessage(`Invitation sent to ${jockeyName}.`);
+      setAssignMessage(`Đã gửi lời mời đến ${jockeyName}.`);
     } catch (assignError) {
-      setJockeyError(assignError?.message || "Unable to assign jockey.");
+      setJockeyError(assignError?.message || "Không thể chỉ định kỵ sĩ.");
     } finally {
       setIsAssigning(false);
     }
@@ -235,38 +235,38 @@ function OwnerHorseListPage() {
       <div className="owner-layout">
         <aside className="owner-sidebar">
           <div className="owner-sidebar__header">
-            <p className="pill">Horse Owner</p>
-            <h3>Horse management</h3>
-            <p className="muted">Search, edit, and track your stable.</p>
+            <p className="pill">Chủ Ngựa</p>
+            <h3>Quản lý ngựa</h3>
+            <p className="muted">Tìm kiếm, chỉnh sửa và theo dõi chuồng ngựa.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Total horses</p>
+            <p className="muted">Tổng số ngựa</p>
             <h4>{totalCount}</h4>
-            <span>In your stable</span>
+            <span>Trong chuồng ngựa</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Pending approvals</p>
+            <p className="muted">Chờ phê duyệt</p>
             <h4>{pendingCount}</h4>
-            <span>Awaiting review</span>
+            <span>Đang chờ xét duyệt</span>
           </div>
         </aside>
 
         <div className="owner-content">
           <section className="page-header">
-            <h1>Horse list</h1>
-            <p>Manage horse profiles and upcoming entries.</p>
+            <h1>Danh sách ngựa</h1>
+            <p>Quản lý hồ sơ ngựa và đăng ký sắp tới.</p>
           </section>
 
           <section className="owner-actions">
             <Link className="primary-button" to="/owner/horses/new">
-              Create horse
+              Tạo ngựa mới
             </Link>
           </section>
 
           <section className="owner-filters">
             <div className="filter-group">
               <label htmlFor="horse-search" className="label-required">
-                Search horse
+                Tìm kiếm ngựa
               </label>
               <input
                 id="horse-search"
@@ -277,12 +277,12 @@ function OwnerHorseListPage() {
                   setQuery(event.target.value);
                   setPage(1);
                 }}
-                placeholder="Search by horse name"
+                placeholder="Tìm theo tên ngựa"
               />
             </div>
             <div className="filter-group">
               <label htmlFor="horse-status" className="label-required">
-                Status
+                Trạng thái
               </label>
               <select
                 id="horse-status"
@@ -306,7 +306,7 @@ function OwnerHorseListPage() {
 
           <section className="horse-grid">
             {isLoading ? (
-              <p className="muted">Loading horses...</p>
+              <p className="muted">Đang tải danh sách ngựa...</p>
             ) : (
               pageItems.map((horse) => {
                 const statusLabel = getStatusLabel(horse);
@@ -333,7 +333,7 @@ function OwnerHorseListPage() {
                       <div className="horse-card__header">
                         <h3>{horse.name}</h3>
                         <p className="muted">
-                          {horse.breed || "Unknown breed"}
+                          {horse.breed || "Không rõ giống"}
                           {horse.color ? ` • ${horse.color}` : ""}
                         </p>
                         {assignment ? (
@@ -344,19 +344,19 @@ function OwnerHorseListPage() {
                       </div>
                       <div className="horse-card__details">
                         <div>
-                          <span>Age</span>
+                          <span>Tuổi</span>
                           <strong>{horse.age ?? "-"}</strong>
                         </div>
                         <div>
-                          <span>Gender</span>
+                          <span>Giới tính</span>
                           <strong>{horse.gender || "-"}</strong>
                         </div>
                         <div>
-                          <span>Total wins</span>
+                          <span>Tổng số trận thắng</span>
                           <strong>{horse.totalWins ?? 0}</strong>
                         </div>
                         <div>
-                          <span>Total races</span>
+                          <span>Tổng số cuộc đua</span>
                           <strong>{horse.totalRaces ?? 0}</strong>
                         </div>
                       </div>
@@ -365,14 +365,14 @@ function OwnerHorseListPage() {
                           className="horse-action horse-action--primary"
                           to={`/owner/horses/${horse.id}`}
                         >
-                          View Details
+                          Xem chi tiết
                         </Link>
                         <div className="horse-card__secondary-actions">
                           <Link
                             className="horse-action horse-action--edit"
                             to={`/owner/horses/${horse.id}/edit`}
                           >
-                            Edit
+                            Chỉnh sửa
                           </Link>
                           <button
                             type="button"
@@ -382,7 +382,7 @@ function OwnerHorseListPage() {
                             onClick={() => openAssignModal(horse)}
                             disabled={assignment?.isLocked}
                           >
-                            {assignment?.isLocked ? "Jockey assigned" : "Assign Jockey"}
+                            {assignment?.isLocked ? "Đã chỉ định kỵ sĩ" : "Chỉ định kỵ sĩ"}
                           </button>
                         </div>
                       </div>
@@ -399,17 +399,17 @@ function OwnerHorseListPage() {
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={page === 1}
             >
-              Previous
+              Trước
             </button>
             <span>
-              Page {page} of {pageCount}
+              Trang {page} / {pageCount}
             </span>
             <button
               className="ghost-button"
               onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))}
               disabled={page === pageCount}
             >
-              Next
+              Sau
             </button>
           </section>
         </div>
@@ -425,14 +425,14 @@ function OwnerHorseListPage() {
           <div className="assign-modal">
             <div className="assign-modal__header">
               <div>
-                <span className="pill">Assign jockey</span>
+                <span className="pill">Chỉ định kỵ sĩ</span>
                 <h3 id="assign-jockey-title">{assignHorse.name}</h3>
               </div>
               <button
                 className="assign-modal__close"
                 type="button"
                 onClick={closeAssignModal}
-                aria-label="Close assign jockey modal"
+                aria-label="Đóng hộp thoại chỉ định kỵ sĩ"
               >
                 ×
               </button>
@@ -440,23 +440,23 @@ function OwnerHorseListPage() {
 
             <div className="assign-modal__body">
               {isJockeyLoading ? (
-                <p className="muted">Loading jockeys...</p>
+                <p className="muted">Đang tải danh sách kỵ sĩ...</p>
               ) : jockeyError && jockeys.length === 0 ? (
                 <div className="assign-empty">
-                  <h4>Unable to show jockeys</h4>
+                  <h4>Không thể hiển thị kỵ sĩ</h4>
                   <p className="muted">{jockeyError}</p>
                 </div>
               ) : jockeys.length === 0 ? (
                 <div className="assign-empty">
-                  <h4>No jockeys available</h4>
+                  <h4>Không có kỵ sĩ nào</h4>
                   <p className="muted">
-                    Jockey accounts from the API will appear here.
+                    Tài khoản kỵ sĩ từ API sẽ xuất hiện tại đây.
                   </p>
                 </div>
               ) : (
                 <>
                   <label className="label-required" htmlFor="assign-jockey">
-                    Available jockeys
+                    Kỵ sĩ khả dụng
                   </label>
                   <select
                     id="assign-jockey"
@@ -467,8 +467,8 @@ function OwnerHorseListPage() {
                     {jockeys.map((jockey) => (
                       <option key={jockey.id} value={jockey.id}>
                         {jockey.fullName} ·{" "}
-                        {jockey.approvalStatusName || "Unknown"} ·{" "}
-                        {jockey.winRate ?? 0}% win rate
+                        {jockey.approvalStatusName || "Không rõ"} ·{" "}
+                        {jockey.winRate ?? 0}% tỷ lệ thắng
                       </option>
                     ))}
                   </select>
@@ -481,14 +481,14 @@ function OwnerHorseListPage() {
                       <div>
                         <h4>{selectedJockey.fullName}</h4>
                         <p className="muted">
-                          License {selectedJockey.licenseNumber || "N/A"} ·{" "}
-                          {selectedJockey.nationality || "Unknown nationality"}
+                          Giấy phép {selectedJockey.licenseNumber || "N/A"} ·{" "}
+                          {selectedJockey.nationality || "Không rõ quốc tịch"}
                         </p>
                       </div>
                       <div className="jockey-preview__stats">
-                        <span>{selectedJockey.approvalStatusName || "Unknown"}</span>
-                        <span>{selectedJockey.totalWins ?? 0} wins</span>
-                        <span>{selectedJockey.totalRaces ?? 0} races</span>
+                        <span>{selectedJockey.approvalStatusName || "Không rõ"}</span>
+                        <span>{selectedJockey.totalWins ?? 0} trận thắng</span>
+                        <span>{selectedJockey.totalRaces ?? 0} cuộc đua</span>
                       </div>
                     </div>
                   ) : null}
@@ -510,7 +510,7 @@ function OwnerHorseListPage() {
                 onClick={handleAssignJockey}
                 disabled={isAssigning || isJockeyLoading || jockeys.length === 0}
               >
-                {isAssigning ? "Sending..." : "Send invitation"}
+                {isAssigning ? "Đang gửi..." : "Gửi lời mời"}
               </button>
               <button
                 className="horse-action horse-action--edit"
@@ -518,7 +518,7 @@ function OwnerHorseListPage() {
                 onClick={closeAssignModal}
                 disabled={isAssigning}
               >
-                Close
+                Đóng
               </button>
             </div>
           </div>

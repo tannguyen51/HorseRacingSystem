@@ -1,74 +1,80 @@
 import { useEffect, useMemo, useState } from "react";
 import { unwrapResponseData } from "../../services/authRoleUtils";
 import { getTournaments } from "../../services/spectatorApi";
-import "../SpectatorSharedLayout.css";
+import heroBg from "../../assets/racing.png";
 import "./SpectatorTournamentListPage.css";
 
-const statusFilters = ["All", "Live", "Open", "Closed"];
+const CATEGORY_LABELS = {
+  "grade 1": "Grade 1",
+  "grade 2": "Grade 2",
+  "grade 3": "Grade 3",
+  listed: "Listed",
+  handicap: "Handicap",
+  maiden: "Maiden",
+  "group 1": "Group 1",
+  "group 2": "Group 2",
+  "group 3": "Group 3",
+};
 
-const formatDateTime = (value) => {
-  if (!value) {
-    return "TBD";
-  }
+const PAGE_SIZE = 9;
 
+const formatDate = (value) => {
+  if (!value) return "Chưa xác định";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "TBD";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
+  if (Number.isNaN(date.getTime())) return "Chưa xác định";
+  return new Intl.DateTimeFormat("vi-VN", {
     day: "numeric",
+    month: "long",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
   }).format(date);
 };
 
-const formatPrizePool = (raceCount) => {
-  if (!raceCount) {
-    return "TBD";
-  }
-  const estimate = Math.max(1, raceCount) * 25000;
-  return `$${estimate.toLocaleString("en-US")}`;
+const formatPrizePool = (value) => {
+  if (value == null || value === 0) return "Đang cập nhật";
+  const num = Number(value);
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M USD`;
+  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K USD`;
+  return `${num.toLocaleString("en-US")} USD`;
 };
 
-const getTournamentStatus = (tournament) => {
-  const isActive = tournament?.isActive ?? tournament?.IsActive;
-  if (!isActive) {
-    return "Closed";
-  }
+const getTournamentStatus = (t) => {
+  const isActive = t.isActive ?? t.IsActive ?? true;
+  const start = t.startDate ?? t.StartDate;
+  const end = t.endDate ?? t.EndDate;
 
-  const start = new Date(tournament?.startDate ?? tournament?.StartDate);
-  const end = new Date(tournament?.endDate ?? tournament?.EndDate);
-  const now = new Date();
+  if (!isActive || (end && new Date(end) < new Date())) return "completed";
 
-  if (
-    !Number.isNaN(start.getTime()) &&
-    !Number.isNaN(end.getTime()) &&
-    now >= start &&
-    now <= end
-  ) {
-    return "Live";
-  }
+  if (start && new Date(start) > new Date()) return "upcoming";
 
-  return "Open";
+  return "active";
 };
 
-const mapTournament = (tournament) => {
-  const raceCount = tournament?.raceCount ?? tournament?.RaceCount ?? 0;
-  const startDate = tournament?.startDate ?? tournament?.StartDate;
+const STATUS_FILTERS = [
+  { value: "all", label: "Tất cả" },
+  { value: "active", label: "Đang diễn ra" },
+  { value: "upcoming", label: "Sắp diễn ra" },
+  { value: "completed", label: "Đã kết thúc" },
+];
 
-  return {
-    id: tournament?.id ?? tournament?.Id,
-    name: tournament?.name ?? tournament?.Name ?? "Tournament",
-    date: formatDateTime(startDate),
-    totalRaces: raceCount,
-    prizePool: formatPrizePool(raceCount),
-    status: getTournamentStatus(tournament),
-    location:
-      tournament?.description ?? tournament?.Description ?? "Location TBD",
-  };
+const mapTournament = (t) => ({
+  id: t?.id ?? t?.Id,
+  name: t?.name ?? t?.Name ?? "Giải đấu",
+  description: t?.description ?? t?.Description ?? "",
+  category: t?.category ?? t?.Category ?? "",
+  venue: t?.venue ?? t?.Venue ?? "Địa điểm chưa xác định",
+  roundCount: t?.roundCount ?? t?.RoundCount ?? 0,
+  raceCount: t?.raceCount ?? t?.RaceCount ?? 0,
+  prizePool: t?.prizePool ?? t?.PrizePool ?? 0,
+  startDate: t?.startDate ?? t?.StartDate,
+  endDate: t?.endDate ?? t?.EndDate,
+  isActive: t?.isActive ?? t?.IsActive ?? true,
+  status: getTournamentStatus(t),
+});
+
+const STATUS_META = {
+  active: { label: "Đang diễn ra", className: "badge--live" },
+  upcoming: { label: "Sắp diễn ra", className: "badge--upcoming" },
+  completed: { label: "Đã kết thúc", className: "badge--completed" },
 };
 
 function SpectatorTournamentListPage() {
@@ -76,299 +82,402 @@ function SpectatorTournamentListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTournament, setActiveTournament] = useState(null);
-  const basePageSize = 6;
-  const fullPageSize = 8;
+  const [detailTournament, setDetailTournament] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadTournaments = async () => {
+    const load = async () => {
       setIsLoading(true);
       setErrorMessage("");
-
       try {
         const response = await getTournaments();
         const payload = unwrapResponseData(response);
         const items = Array.isArray(payload) ? payload.map(mapTournament) : [];
-
+        if (!cancelled) setTournaments(items);
+      } catch (err) {
         if (!cancelled) {
-          setTournaments(items);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load tournaments.");
+          setErrorMessage(err.message || "Không thể tải danh sách giải đấu.");
           setTournaments([]);
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    loadTournaments();
-
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const filteredTournaments = useMemo(() => {
-    return tournaments.filter((tournament) => {
-      const matchesStatus =
-        status === "All" ||
-        tournament.status.toLowerCase() === status.toLowerCase();
-      const matchesQuery =
-        tournament.name.toLowerCase().includes(query.toLowerCase()) ||
-        tournament.location.toLowerCase().includes(query.toLowerCase());
-      return matchesStatus && matchesQuery;
+  const filtered = useMemo(() => {
+    return tournaments.filter((t) => {
+      const matchStatus = statusFilter === "all" || t.status === statusFilter;
+      const keyword = query.toLowerCase();
+      const matchQuery =
+        !keyword ||
+        t.name.toLowerCase().includes(keyword) ||
+        t.venue.toLowerCase().includes(keyword) ||
+        (t.category && t.category.toLowerCase().includes(keyword));
+      return matchStatus && matchQuery;
     });
-  }, [tournaments, query, status]);
+  }, [tournaments, query, statusFilter]);
 
-  const effectivePageSize =
-    filteredTournaments.length === 0
-      ? basePageSize
-      : filteredTournaments.length <= fullPageSize
-        ? filteredTournaments.length
-        : basePageSize;
-  const pageCount = Math.max(
-    1,
-    Math.ceil(filteredTournaments.length / effectivePageSize),
-  );
-  const safePage = Math.min(currentPage, pageCount);
-  const pageItems = filteredTournaments.slice(
-    (safePage - 1) * effectivePageSize,
-    safePage * effectivePageSize,
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageItems = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
   );
 
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
-  };
+  // reset page on filter change
+  useEffect(() => setCurrentPage(1), [query, statusFilter]);
 
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(pageCount, prev + 1));
+  const handlePrevPage = () =>
+    setCurrentPage((p) => Math.max(1, p - 1));
+  const handleNextPage = () =>
+    setCurrentPage((p) => Math.min(totalPages, p + 1));
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, safePage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   return (
-    <div className="spectator-page">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Spectator</p>
-            <h3>Tournament Finder</h3>
-            <p className="muted">Browse upcoming and live events.</p>
+    <div className="stl-page">
+      {/* ── Hero Banner ── */}
+      <section className="stl-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+        <div className="stl-hero__content">
+          <span className="stl-eyebrow">Khán giả</span>
+          <h1 className="stl-title">Giải đấu</h1>
+          <p className="stl-subtitle">
+            Khám phá các giải đua đang diễn ra, sắp tới và đã kết thúc.
+          </p>
+          <div className="stl-header__stats">
+            <div className="stl-stat-pill">
+              <span className="stl-stat-pill__value">{tournaments.length}</span>
+              <span className="stl-stat-pill__label">Tổng giải đấu</span>
+            </div>
+            <div className="stl-stat-pill">
+              <span className="stl-stat-pill__value">
+                {tournaments.filter((t) => t.status === "active").length}
+              </span>
+              <span className="stl-stat-pill__label">Đang diễn ra</span>
+            </div>
           </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Filters</p>
-            <h4>{status}</h4>
-            <span>{filteredTournaments.length} tournaments</span>
+        </div>
+      </section>
+
+      {/* ── Filters ── */}
+      <section className="stl-filters">
+        <div className="stl-search">
+          <svg
+            className="stl-search__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            className="stl-search__input"
+            type="text"
+            placeholder="Tìm theo tên giải đấu, địa điểm..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="stl-status-tabs">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              className={`stl-status-tab${
+                statusFilter === f.value ? " stl-status-tab--active" : ""
+              }`}
+              onClick={() => setStatusFilter(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Content ── */}
+      <section className="stl-content">
+        {isLoading ? (
+          <div className="stl-empty">
+            <div className="stl-empty__icon">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+            </div>
+            <h3>Đang tải giải đấu</h3>
+            <p>Vui lòng đợi trong giây lát...</p>
           </div>
-        </aside>
-
-        <div className="spectator-content">
-          <section className="page-header">
-            <h1>Spectator Tournaments</h1>
-            <p>Search live tournaments and plan your next watchlist.</p>
-          </section>
-
-          <section className="spectator-filters">
-            <div className="filter-group">
-              <label htmlFor="search" className="label-required">
-                Search
-              </label>
-              <input
-                id="search"
-                className="form-input"
-                type="text"
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setCurrentPage(1);
-                }}
-                placeholder="Search tournaments or locations"
-              />
-            </div>
-            <div className="filter-group">
-              <label htmlFor="status" className="label-required">
-                Status
-              </label>
-              <select
-                id="status"
-                className="form-select"
-                value={status}
-                onChange={(event) => {
-                  setStatus(event.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                {statusFilters.map((filter) => (
-                  <option key={filter} value={filter}>
-                    {filter}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </section>
-
-          {isLoading ? (
-            <div className="empty-state">
-              <h3>Loading tournaments</h3>
-              <p>Fetching the latest tournament schedule.</p>
-            </div>
-          ) : errorMessage ? (
-            <div className="empty-state">
-              <h3>Unable to load tournaments</h3>
-              <p>{errorMessage}</p>
-              <button
-                className="ghost-button"
-                onClick={() => location.reload()}
-              >
-                Try again
-              </button>
-            </div>
-          ) : pageItems.length === 0 ? (
-            <div className="empty-state">
-              <h3>No tournaments found</h3>
-              <p>Try a different keyword or reset your filters.</p>
-              <button
-                className="ghost-button"
-                onClick={() => {
-                  setQuery("");
-                  setStatus("All");
-                  setCurrentPage(1);
-                }}
-              >
-                Reset filters
-              </button>
-            </div>
-          ) : (
-            <section className="tournament-grid">
-              {pageItems.map((tournament) => (
-                <article
-                  key={tournament.id}
-                  className="spectator-card hover-lift"
-                >
-                  <div className="tournament-banner">
-                    <span className="badge">{tournament.status}</span>
+        ) : errorMessage ? (
+          <div className="stl-empty stl-empty--error">
+            <h3>Không thể tải giải đấu</h3>
+            <p>{errorMessage}</p>
+            <button
+              className="stl-btn stl-btn--primary"
+              onClick={() => window.location.reload()}
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : pageItems.length === 0 ? (
+          <div className="stl-empty">
+            <h3>Không tìm thấy giải đấu</h3>
+            <p>Thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
+            <button
+              className="stl-btn stl-btn--ghost"
+              onClick={() => {
+                setQuery("");
+                setStatusFilter("all");
+              }}
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        ) : (
+          <div className="stl-grid">
+            {pageItems.map((t) => {
+              const meta = STATUS_META[t.status] || STATUS_META.upcoming;
+              return (
+                <article key={t.id} className="stl-card">
+                  <div className="stl-card__banner">
+                    <span className={`stl-badge ${meta.className}`}>
+                      {meta.label}
+                    </span>
+                    {t.category && (
+                      <span className="stl-badge stl-badge--category">
+                        {CATEGORY_LABELS[t.category.toLowerCase()] ||
+                          t.category}
+                      </span>
+                    )}
                   </div>
-                  <div className="tournament-body">
-                    <div>
-                      <h3>{tournament.name}</h3>
-                      <p className="muted">{tournament.date}</p>
-                      <p>{tournament.location}</p>
+                  <div className="stl-card__body">
+                    <h3 className="stl-card__title">{t.name}</h3>
+                    <div className="stl-card__venue">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      <span>{t.venue}</span>
                     </div>
-                    <div className="tournament-meta">
-                      <div>
-                        <span>Total races</span>
-                        <strong>{tournament.totalRaces}</strong>
+                    {t.description && (
+                      <p className="stl-card__desc">{t.description}</p>
+                    )}
+                    <div className="stl-card__stats">
+                      <div className="stl-card__stat">
+                        <span className="stl-card__stat-value">
+                          {t.roundCount}
+                        </span>
+                        <span className="stl-card__stat-label">Vòng đua</span>
                       </div>
-                      <div>
-                        <span>Prize pool</span>
-                        <strong>{tournament.prizePool}</strong>
+                      <div className="stl-card__stat">
+                        <span className="stl-card__stat-value">
+                          {t.raceCount}
+                        </span>
+                        <span className="stl-card__stat-label">Cuộc đua</span>
+                      </div>
+                      <div className="stl-card__stat">
+                        <span className="stl-card__stat-value">
+                          {formatPrizePool(t.prizePool)}
+                        </span>
+                        <span className="stl-card__stat-label">Giải thưởng</span>
                       </div>
                     </div>
+                    <div className="stl-card__dates">
+                      <span>
+                        {formatDate(t.startDate)} – {formatDate(t.endDate)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="tournament-actions">
+                  <div className="stl-card__actions">
                     <button
-                      className="ghost-button"
-                      onClick={() => setActiveTournament(tournament)}
+                      className="stl-btn stl-btn--ghost"
+                      onClick={() => setDetailTournament(t)}
                     >
-                      View details
-                    </button>
-                    <button
-                      className="primary-button"
-                      type="button"
-                      disabled
-                      title="Follow is not available yet"
-                    >
-                      Follow
+                      Xem chi tiết
                     </button>
                   </div>
                 </article>
-              ))}
-            </section>
-          )}
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-          {pageCount > 1 ? (
-            <div className="pagination">
+      {/* ── Pagination ── */}
+      {!isLoading && !errorMessage && totalPages > 1 && (
+        <nav className="stl-pagination">
+          <button
+            className="stl-btn stl-btn--ghost"
+            onClick={handlePrevPage}
+            disabled={safePage === 1}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            Trước
+          </button>
+          <div className="stl-pagination__numbers">
+            {renderPageNumbers().map((p) => (
               <button
-                className="ghost-button"
-                onClick={handlePrevious}
-                disabled={safePage === 1}
+                key={p}
+                className={`stl-pagination__num${
+                  p === safePage ? " stl-pagination__num--active" : ""
+                }`}
+                onClick={() => setCurrentPage(p)}
               >
-                Previous
+                {p}
               </button>
-              <span>
-                Page {safePage} of {pageCount}
-              </span>
-              <button
-                className="ghost-button"
-                onClick={handleNext}
-                disabled={safePage === pageCount}
-              >
-                Next
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </div>
+            ))}
+          </div>
+          <button
+            className="stl-btn stl-btn--ghost"
+            onClick={handleNextPage}
+            disabled={safePage === totalPages}
+          >
+            Tiếp
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </nav>
+      )}
 
-      {activeTournament ? (
+      {/* ── Detail Modal ── */}
+      {detailTournament && (
         <div
-          className="modal-overlay"
+          className="stl-modal-overlay"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="spectator-tournament-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDetailTournament(null);
+          }}
         >
-          <div className="spectator-modal">
-            <div className="modal-header">
+          <div className="stl-modal">
+            <div className="stl-modal__header">
               <div>
-                <span className="badge">{activeTournament.status}</span>
-                <h3 id="spectator-tournament-dialog-title">
-                  {activeTournament.name}
-                </h3>
-                <p className="muted">{activeTournament.date}</p>
+                <span
+                  className={`stl-badge ${
+                    STATUS_META[detailTournament.status]?.className || ""
+                  }`}
+                >
+                  {STATUS_META[detailTournament.status]?.label || ""}
+                </span>
+                <h2>{detailTournament.name}</h2>
               </div>
               <button
-                className="ghost-button"
-                onClick={() => setActiveTournament(null)}
+                className="stl-modal__close"
+                onClick={() => setDetailTournament(null)}
+                aria-label="Đóng"
               >
-                Close
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
             </div>
-            <div className="modal-body">
-              <div>
-                <h4>Location</h4>
-                <p>{activeTournament.location}</p>
+            <div className="stl-modal__grid">
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Địa điểm</span>
+                <span className="stl-modal__value">{detailTournament.venue}</span>
               </div>
-              <div>
-                <h4>Total races</h4>
-                <p>{activeTournament.totalRaces}</p>
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Hạng mục</span>
+                <span className="stl-modal__value">
+                  {detailTournament.category || "Chưa xác định"}
+                </span>
               </div>
-              <div>
-                <h4>Prize pool</h4>
-                <p>{activeTournament.prizePool}</p>
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Số vòng đua</span>
+                <span className="stl-modal__value">{detailTournament.roundCount}</span>
               </div>
-              <div>
-                <h4>Status</h4>
-                <p>{activeTournament.status}</p>
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Tổng cuộc đua</span>
+                <span className="stl-modal__value">{detailTournament.raceCount}</span>
+              </div>
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Giải thưởng</span>
+                <span className="stl-modal__value">
+                  {formatPrizePool(detailTournament.prizePool)}
+                </span>
+              </div>
+              <div className="stl-modal__field">
+                <span className="stl-modal__label">Thời gian</span>
+                <span className="stl-modal__value">
+                  {formatDate(detailTournament.startDate)} –{" "}
+                  {formatDate(detailTournament.endDate)}
+                </span>
               </div>
             </div>
-            <div className="modal-actions">
-              <button className="primary-button">Follow tournament</button>
+            {detailTournament.description && (
+              <div className="stl-modal__desc">
+                <span className="stl-modal__label">Mô tả</span>
+                <p>{detailTournament.description}</p>
+              </div>
+            )}
+            <div className="stl-modal__actions">
               <button
-                className="ghost-button"
-                onClick={() => setActiveTournament(null)}
+                className="stl-btn stl-btn--primary"
+                onClick={() => setDetailTournament(null)}
               >
-                Done
+                Đóng
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

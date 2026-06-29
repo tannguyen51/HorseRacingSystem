@@ -12,7 +12,7 @@ function DetailRow({ label, value }) {
   return (
     <div className="jockey-detail-row">
       <span>{label}</span>
-      <strong>{value || "TBD"}</strong>
+      <strong>{value || "Chưa xác định"}</strong>
     </div>
   );
 }
@@ -39,7 +39,7 @@ function JockeyInvitationDetailPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setMessage(error.message || "Unable to load invitation detail.");
+          setMessage(error.message || "Không thể tải chi tiết lời mời.");
         }
       } finally {
         if (!cancelled) {
@@ -65,10 +65,10 @@ function JockeyInvitationDetailPage() {
     try {
       await respondJockeyInvitation(id, accept);
       navigate("/jockey/invitations", {
-        state: { message: accept ? "Invitation accepted." : "Invitation rejected." },
+        state: { message: accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời." },
       });
     } catch (error) {
-      setMessage(error.message || "Failed to process invitation.");
+      setMessage(error.message || "Không thể xử lý lời mời.");
     } finally {
       setSubmitting(false);
     }
@@ -79,28 +79,28 @@ function JockeyInvitationDetailPage() {
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Invitation Detail</p>
-            <h3>Race review</h3>
-            <p className="muted">Confirm the race and horse before responding.</p>
+            <p className="pill">Chi Tiết Lời Mời</p>
+            <h3>Xem lại cuộc đua</h3>
+            <p className="muted">Xác nhận cuộc đua và ngựa trước khi phản hồi.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Invitation status</p>
-            <h4>{invitation?.status ?? "Loading..."}</h4>
-            <span>{formatJockeyDate(invitation?.createdAt, "Created date TBD")}</span>
+            <p className="muted">Trạng thái lời mời</p>
+            <h4>{invitation?.status ?? "Đang tải..."}</h4>
+            <span>{formatJockeyDate(invitation?.createdAt, "Ngày tạo chưa xác định")}</span>
           </div>
           <Link className="jockey-back-link" to="/jockey/invitations">
-            Back to invitations
+            Quay lại lời mời
           </Link>
         </aside>
 
         <div className="spectator-content">
           <section className="jockey-page-header">
             <div>
-              <span className="pill">Invitation Detail</span>
-              <h1>{invitation?.raceName ?? "Race invitation"}</h1>
+              <span className="pill">Chi Tiết Lời Mời</span>
+              <h1>{invitation?.raceName ?? "Lời mời đua"}</h1>
               <p>
-                View race info and horse info, then accept or reject this
-                invitation.
+                Xem thông tin cuộc đua và ngựa, sau đó chấp nhận hoặc từ chối
+                lời mời này.
               </p>
               {message ? <p className="jockey-message">{message}</p> : null}
             </div>
@@ -113,53 +113,53 @@ function JockeyInvitationDetailPage() {
             </div>
           ) : !invitation ? (
             <div className="jockey-empty-state">
-              <h3>Invitation not found</h3>
-              <p className="muted">It may have already been accepted or rejected.</p>
+              <h3>Không tìm thấy lời mời</h3>
+              <p className="muted">Lời mời có thể đã được chấp nhận hoặc từ chối.</p>
             </div>
           ) : (
             <>
               <section className="jockey-detail-grid">
                 <article className="jockey-detail-panel">
                   <div className="section-heading">
-                    <h2>Race Info</h2>
-                    <p>Official race assignment details.</p>
+                    <h2>Thông Tin Cuộc Đua</h2>
+                    <p>Chi tiết phân công cuộc đua chính thức.</p>
                   </div>
-                  <DetailRow label="Race" value={invitation.raceName} />
-                  <DetailRow label="Tournament" value={invitation.tournamentName} />
+                  <DetailRow label="Cuộc đua" value={invitation.raceName} />
+                  <DetailRow label="Giải đấu" value={invitation.tournamentName} />
                   <DetailRow
-                    label="Scheduled time"
+                    label="Thời gian dự kiến"
                     value={formatJockeyDate(invitation.scheduledAt)}
                   />
-                  <DetailRow label="Track" value={invitation.location} />
+                  <DetailRow label="Đường đua" value={invitation.location} />
                   <DetailRow
-                    label="Distance"
+                    label="Cự ly"
                     value={invitation.distance ? `${invitation.distance}m` : ""}
                   />
                   <DetailRow
-                    label="Max participants"
+                    label="Số người tham gia tối đa"
                     value={invitation.maxParticipants}
                   />
                 </article>
 
                 <article className="jockey-detail-panel">
                   <div className="section-heading">
-                    <h2>Horse Info</h2>
-                    <p>Assigned mount profile for this invitation.</p>
+                    <h2>Thông Tin Ngựa</h2>
+                    <p>Hồ sơ ngựa được phân công cho lời mời này.</p>
                   </div>
-                  <DetailRow label="Horse" value={invitation.horseName} />
-                  <DetailRow label="Breed" value={invitation.horseBreed} />
-                  <DetailRow label="Age" value={invitation.horseAge} />
-                  <DetailRow label="Weight" value={invitation.horseWeight} />
-                  <DetailRow label="Color" value={invitation.horseColor} />
-                  <DetailRow label="Win rate" value={horseWinRate} />
+                  <DetailRow label="Ngựa" value={invitation.horseName} />
+                  <DetailRow label="Giống" value={invitation.horseBreed} />
+                  <DetailRow label="Tuổi" value={invitation.horseAge} />
+                  <DetailRow label="Cân nặng" value={invitation.horseWeight} />
+                  <DetailRow label="Màu sắc" value={invitation.horseColor} />
+                  <DetailRow label="Tỷ lệ thắng" value={horseWinRate} />
                 </article>
               </section>
 
               <section className="jockey-response-panel">
                 <div>
-                  <h2>Respond to invitation</h2>
+                  <h2>Phản hồi lời mời</h2>
                   <p className="muted">
-                    Accepting confirms you as the jockey for this race entry.
+                    Chấp nhận xác nhận bạn là kỵ sĩ cho cuộc đua này.
                   </p>
                 </div>
                 <div className="jockey-response-panel__actions">
@@ -169,7 +169,7 @@ function JockeyInvitationDetailPage() {
                     disabled={submitting}
                     onClick={() => handleResponse(false)}
                   >
-                    Reject Invitation
+                    Từ Chối Lời Mời
                   </button>
                   <button
                     type="button"
@@ -177,7 +177,7 @@ function JockeyInvitationDetailPage() {
                     disabled={submitting}
                     onClick={() => handleResponse(true)}
                   >
-                    {submitting ? "Processing..." : "Accept Invitation"}
+                    {submitting ? "Đang xử lý..." : "Chấp Nhận Lời Mời"}
                   </button>
                 </div>
               </section>

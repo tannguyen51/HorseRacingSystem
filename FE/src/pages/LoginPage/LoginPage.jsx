@@ -26,7 +26,7 @@ function LoginPage() {
 
       if (!apiRole) {
         const rawRole = JSON.stringify(payload?.role ?? payload?.Role);
-        throw new Error(`Unsupported role returned by server: ${rawRole}`);
+        throw new Error(`Vai trò không hợp lệ từ máy chủ: ${rawRole}`);
       }
 
       const normalizedRole = apiRole;
@@ -54,8 +54,8 @@ function LoginPage() {
     } catch (error) {
       setErrorMessage(
         error.status === 401
-          ? "Invalid email or password. Default admin: Admin@gmail.com / Admin123."
-          : error.message || "Login failed. Please try again.",
+          ? "Email hoặc mật khẩu không đúng. Tài khoản admin mặc định: Admin@gmail.com / Admin123."
+          : error.message || "Đăng nhập thất bại. Vui lòng thử lại.",
       );
     } finally {
       setIsSubmitting(false);
@@ -65,24 +65,24 @@ function LoginPage() {
   return (
     <div className="auth-page login-page">
       <section className="page-header">
-        <h1>Welcome Back</h1>
-        <p>Sign in to your RaceMaster account to continue</p>
+        <h1>Chào mừng trở lại</h1>
+        <p>Đăng nhập vào tài khoản RaceMaster để tiếp tục</p>
       </section>
 
       <div className="auth-card single-card">
         <form className="auth-form" onSubmit={handleSubmit}>
-          <h2>Sign In</h2>
+          <h2>Đăng nhập</h2>
 
           <div className="form-group">
             <label htmlFor="email" className="label-required">
-              Email Address
+              Địa chỉ Email
             </label>
             <input
               id="email"
               type="email"
               name="email"
+              placeholder="Nhập địa chỉ email của bạn"
               autoComplete="email"
-              placeholder="you@stable.com"
               className="form-input"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -92,14 +92,14 @@ function LoginPage() {
 
           <div className="form-group">
             <label htmlFor="password" className="label-required">
-              Password
+              Mật khẩu
             </label>
             <input
               id="password"
               type="password"
               name="password"
+              placeholder="Nhập mật khẩu của bạn"
               autoComplete="current-password"
-              placeholder="••••••••"
               className="form-input"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -114,13 +114,13 @@ function LoginPage() {
             className="primary-button btn-block"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Signing In..." : "Sign In"}
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
 
           <p className="form-footer">
-            Don't have an account?{" "}
+            Chưa có tài khoản?{" "}
             <a href="/register" className="link-accent">
-              Create one
+              Đăng ký ngay
             </a>
           </p>
         </form>

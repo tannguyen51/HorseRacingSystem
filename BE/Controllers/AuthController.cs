@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
@@ -116,5 +117,30 @@ public class AuthController : ControllerBase
             .ToArray();
 
         return Ok(roles);
+    }
+
+    [HttpPost("upload-document")]
+    public async Task<ActionResult> UploadDocument(IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "No file uploaded." });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext is not ".jpg" and not ".jpeg" and not ".png" and not ".pdf")
+            return BadRequest(new { message = "Only JPG, PNG, PDF allowed." });
+
+        if (file.Length > 10 * 1024 * 1024)
+            return BadRequest(new { message = "Max 10MB." });
+
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
+        Directory.CreateDirectory(uploadsDir);
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var url = $"/uploads/documents/{fileName}";
+        return Ok(new { url });
     }
 }

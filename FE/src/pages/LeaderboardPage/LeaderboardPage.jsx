@@ -13,15 +13,15 @@ function LeaderboardPage() {
 
   return (
     <div className="leaderboard-page">
-      <section className="page-header"><h1>Leaderboard</h1><p>Tournament standings and top performers.</p></section>
-      {tournaments.length === 0 ? <p>No active tournaments with standings yet.</p> : (
+      <section className="page-header"><h1>Bảng Xếp Hạng</h1><p>Bảng xếp hạng giải đấu và những người dẫn đầu.</p></section>
+      {tournaments.length === 0 ? <p>Chưa có giải đấu đang hoạt động với bảng xếp hạng.</p> : (
         <div className="leaderboard-grid">
           {tournaments.map((t) => (
             <div key={t.id ?? t.Id} className="leaderboard-card">
               <h3>{t.name ?? t.Name}</h3>
-              <p>Category: {t.category ?? t.Category ?? "-"}</p>
-              <p>Prize Pool: ${t.prizePool ?? t.PrizePool ?? 0}</p>
-              <p>Races: {t.raceCount ?? t.RaceCount ?? 0}</p>
+              <p>Hạng mục: {t.category ?? t.Category ?? "-"}</p>
+              <p>Giải thưởng: ${t.prizePool ?? t.PrizePool ?? 0}</p>
+              <p>Cuộc đua: {t.raceCount ?? t.RaceCount ?? 0}</p>
             </div>
           ))}
         </div>

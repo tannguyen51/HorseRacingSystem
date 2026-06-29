@@ -8,8 +8,8 @@ import "./OwnerTournamentRegisterPage.css";
 const formatDate = (value) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
-    ? "TBD"
-    : new Intl.DateTimeFormat("en-US", {
+    ? "Chưa xác định"
+    : new Intl.DateTimeFormat("vi-VN", {
         month: "long",
         day: "numeric",
         year: "numeric",
@@ -18,10 +18,10 @@ const formatDate = (value) => {
 
 const mapTournament = (tournament) => ({
   id: tournament?.id ?? tournament?.Id,
-  name: tournament?.name ?? tournament?.Name ?? "Tournament",
-  status: (tournament?.isActive ?? tournament?.IsActive) ? "Open" : "Closed",
+  name: tournament?.name ?? tournament?.Name ?? "Giải đấu",
+  status: (tournament?.isActive ?? tournament?.IsActive) ? "Mở" : "Đã đóng",
   description:
-    tournament?.description ?? tournament?.Description ?? "No description.",
+    tournament?.description ?? tournament?.Description ?? "Không có mô tả.",
   date: formatDate(tournament?.startDate ?? tournament?.StartDate),
   raceCount: tournament?.raceCount ?? tournament?.RaceCount ?? 0,
 });
@@ -76,7 +76,7 @@ function OwnerTournamentRegisterPage() {
         if (isMounted) {
           setHorses([]);
           setSelectedHorseId("");
-          setHorseError(fetchError?.message || "Unable to load approved horses.");
+          setHorseError(fetchError?.message || "Không thể tải danh sách ngựa đã duyệt.");
         }
       } finally {
         if (isMounted) {
@@ -88,7 +88,7 @@ function OwnerTournamentRegisterPage() {
         const data = await getOwnerTournaments();
         const openTournaments = (Array.isArray(data) ? data : [])
           .map(mapTournament)
-          .filter((tournament) => tournament.status === "Open");
+          .filter((tournament) => tournament.status === "Mở");
 
         if (isMounted) {
           setTournaments(openTournaments);
@@ -99,7 +99,7 @@ function OwnerTournamentRegisterPage() {
           setTournaments([]);
           setSelectedTournamentId("");
           setTournamentError(
-            fetchError?.message || "Unable to load open tournaments.",
+            fetchError?.message || "Không thể tải giải đấu đang mở.",
           );
         }
       } finally {
@@ -127,27 +127,27 @@ function OwnerTournamentRegisterPage() {
 
   const eligibilityChecks = [
     {
-      label: "Horse approval",
-      value: selectedHorse ? "Approved" : "No horse selected",
+      label: "Duyệt ngựa",
+      value: selectedHorse ? "Đã duyệt" : "Không có ngựa được chọn",
       tone: selectedHorse ? "success" : "warning",
     },
     {
-      label: "Age requirement",
-      value: selectedHorse?.age >= 3 ? "Eligible" : "Too young",
+      label: "Yêu cầu tuổi",
+      value: selectedHorse?.age >= 3 ? "Đủ điều kiện" : "Quá trẻ",
       tone: selectedHorse?.age >= 3 ? "success" : "warning",
     },
     {
-      label: "Race record",
+      label: "Thành tích đua",
       value: selectedHorse
-        ? `${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
+        ? `${selectedHorse.totalWins ?? 0} trận thắng / ${selectedHorse.totalRaces ?? 0} cuộc đua`
         : "-",
       tone: selectedHorse ? "success" : "warning",
     },
     {
-      label: "Tournament races",
+      label: "Cuộc đua giải đấu",
       value: selectedTournament
-        ? `${selectedTournament.raceCount} races scheduled`
-        : "No tournament selected",
+        ? `${selectedTournament.raceCount} cuộc đua đã lên lịch`
+        : "Không có giải đấu được chọn",
       tone: selectedTournament ? "success" : "warning",
     },
   ];
@@ -164,17 +164,17 @@ function OwnerTournamentRegisterPage() {
           horse: selectedHorse.name,
           tournament: selectedTournament.name,
           race: races.find((r) => (r.id ?? r.Id) === selectedRaceId)?.name ?? selectedRaceId,
-          status: "Pending review",
+          status: "Chờ xét duyệt",
           submitted: new Date().toISOString().slice(0, 10),
         },
         ...current,
       ]);
-      setMsg("Registration submitted successfully!");
+      setMsg("Đăng ký đã được gửi thành công!");
     } catch (err) {
       if (err.message?.includes("already registered")) {
-        setMsg("This horse is already registered for this race. Please choose a different horse or a different race.");
+        setMsg("Ngựa này đã được đăng ký cho cuộc đua này. Vui lòng chọn ngựa khác hoặc cuộc đua khác.");
       } else {
-        setMsg("Error: " + err.message);
+        setMsg("Lỗi: " + err.message);
       }
     } finally {
       setIsSubmitting(false);
@@ -187,38 +187,38 @@ function OwnerTournamentRegisterPage() {
       <div className="owner-layout">
         <aside className="owner-sidebar">
           <div className="owner-sidebar__header">
-            <p className="pill">Horse Owner</p>
-            <h3>Register tournament</h3>
-            <p className="muted">Submit your horse for tournament entry.</p>
+            <p className="pill">Chủ Ngựa</p>
+            <h3>Đăng ký giải đấu</h3>
+            <p className="muted">Gửi ngựa của bạn để đăng ký giải đấu.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Open registrations</p>
-            <h4>{tournaments.length} tournaments</h4>
-            <span>Slots available</span>
+            <p className="muted">Đăng ký đang mở</p>
+            <h4>{tournaments.length} giải đấu</h4>
+            <span>Còn chỗ trống</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Tracked entries</p>
-            <h4>{registrations.length} requests</h4>
-            <span>Mock status board</span>
+            <p className="muted">Đăng ký đã theo dõi</p>
+            <h4>{registrations.length} yêu cầu</h4>
+            <span>Bảng trạng thái mẫu</span>
           </div>
         </aside>
 
         <div className="owner-content">
           <section className="page-header">
-            <h1>Register horse into tournament</h1>
-            <p>Select a horse, review eligibility, and track each request.</p>
+            <h1>Đăng ký ngựa vào giải đấu</h1>
+            <p>Chọn ngựa, kiểm tra điều kiện và theo dõi từng yêu cầu.</p>
           </section>
 
           <section className="register-grid">
             <form className="register-form">
               <div className="register-form__heading">
-                <span className="pill">New registration</span>
-                <h2>Tournament entry</h2>
-                <p>Only approved horses are available for registration.</p>
+                <span className="pill">Đăng ký mới</span>
+                <h2>Đăng ký giải đấu</h2>
+                <p>Chỉ những ngựa đã được duyệt mới có thể đăng ký.</p>
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-horse">
-                  Select horse
+                  Chọn ngựa
                 </label>
                 <select
                   id="select-horse"
@@ -228,13 +228,13 @@ function OwnerTournamentRegisterPage() {
                   disabled={isHorseLoading || horses.length === 0}
                 >
                   {isHorseLoading ? (
-                    <option value="">Loading approved horses...</option>
+                    <option value="">Đang tải danh sách ngựa đã duyệt...</option>
                   ) : horses.length === 0 ? (
-                    <option value="">No approved horses available</option>
+                    <option value="">Không có ngựa đã duyệt nào</option>
                   ) : null}
                   {horses.map((horse) => (
                     <option key={horse.id} value={horse.id}>
-                      {horse.name} · Approved · {horse.age ?? "-"} years
+                      {horse.name} · Đã duyệt · {horse.age ?? "-"} tuổi
                     </option>
                   ))}
                 </select>
@@ -242,7 +242,7 @@ function OwnerTournamentRegisterPage() {
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-tournament">
-                  Select tournament
+                  Chọn giải đấu
                 </label>
                 <select
                   id="select-tournament"
@@ -254,9 +254,9 @@ function OwnerTournamentRegisterPage() {
                   disabled={isTournamentLoading || tournaments.length === 0}
                 >
                   {isTournamentLoading ? (
-                    <option value="">Loading open tournaments...</option>
+                    <option value="">Đang tải giải đấu đang mở...</option>
                   ) : tournaments.length === 0 ? (
-                    <option value="">No open tournaments available</option>
+                    <option value="">Không có giải đấu đang mở nào</option>
                   ) : null}
                   {tournaments.map((tournament) => (
                     <option key={tournament.id} value={tournament.id}>
@@ -270,7 +270,7 @@ function OwnerTournamentRegisterPage() {
               </div>
               <div className="form-field">
                 <label className="label-required" htmlFor="select-race">
-                  Select race
+                  Chọn cuộc đua
                 </label>
                 <select
                   id="select-race"
@@ -280,56 +280,56 @@ function OwnerTournamentRegisterPage() {
                   disabled={!selectedTournamentId || races.length === 0}
                 >
                   {!selectedTournamentId ? (
-                    <option value="">Select a tournament first</option>
+                    <option value="">Chọn giải đấu trước</option>
                   ) : races.length === 0 ? (
-                    <option value="">No races available</option>
+                    <option value="">Không có cuộc đua nào</option>
                   ) : (
-                    <option value="">-- Choose a race --</option>
+                    <option value="">-- Chọn cuộc đua --</option>
                   )}
                   {races.map((race) => (
                     <option key={race.id ?? race.Id} value={race.id ?? race.Id}>
-                      {race.name ?? race.Name} · {race.status ?? race.Status ?? "Scheduled"}
+                      {race.name ?? race.Name} · {race.status ?? race.Status ?? "Đã lên lịch"}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="selection-summary">
                 <div>
-                  <span>Horse</span>
-                  <strong>{selectedHorse?.name ?? "No approved horse"}</strong>
+                  <span>Ngựa</span>
+                  <strong>{selectedHorse?.name ?? "Không có ngựa đã duyệt"}</strong>
                   <p>
                     {selectedHorse
-                      ? `${selectedHorse.age ?? "-"} years · ${selectedHorse.totalWins ?? 0} wins / ${selectedHorse.totalRaces ?? 0} races`
-                      : "An approved horse is required."}
+                      ? `${selectedHorse.age ?? "-"} tuổi · ${selectedHorse.totalWins ?? 0} trận thắng / ${selectedHorse.totalRaces ?? 0} cuộc đua`
+                      : "Cần có ngựa đã được duyệt."}
                   </p>
                 </div>
                 <div>
-                  <span>Tournament</span>
-                  <strong>{selectedTournament?.name ?? "No open tournament"}</strong>
+                  <span>Giải đấu</span>
+                  <strong>{selectedTournament?.name ?? "Không có giải đấu đang mở"}</strong>
                   <p>
                     {selectedTournament
                       ? `${selectedTournament.description} · ${selectedTournament.date}`
-                      : "An open tournament is required."}
+                      : "Cần có giải đấu đang mở."}
                   </p>
                 </div>
               </div>
               <div className="register-actions">
-                {msg && <p className={msg.startsWith("Error") ? "form-error" : "form-success"}>{msg}</p>}
+                {msg && <p className={msg.startsWith("Lỗi") ? "form-error" : "form-success"}>{msg}</p>}
                 <button
                   className="primary-button"
                   type="button"
                   onClick={() => setShowConfirm(true)}
                   disabled={!selectedHorse || !selectedTournament || !selectedRaceId || isSubmitting}
                 >
-                  {isSubmitting ? "Submitting..." : "Review registration"}
+                  {isSubmitting ? "Đang gửi..." : "Xem lại đăng ký"}
                 </button>
               </div>
             </form>
 
             <div className="eligibility-card">
               <div className="section-heading">
-                <h2>Eligibility check</h2>
-                <p>Preview for the currently selected entry.</p>
+                <h2>Kiểm tra điều kiện</h2>
+                <p>Xem trước cho lựa chọn hiện tại.</p>
               </div>
               <div className="eligibility-list">
                 {eligibilityChecks.map((check) => (
@@ -343,10 +343,10 @@ function OwnerTournamentRegisterPage() {
                 ))}
               </div>
               <div className="eligibility-note">
-                <h4>Reminder</h4>
+                <h4>Nhắc nhở</h4>
                 <p className="muted">
-                  Confirm race schedule and jockey availability before
-                  submitting.
+                  Xác nhận lịch đua và tình trạng kỵ sĩ trước khi
+                  gửi.
                 </p>
               </div>
             </div>
@@ -354,26 +354,26 @@ function OwnerTournamentRegisterPage() {
 
           <section className="registration-status">
             <div className="section-heading">
-              <h2>Registration status</h2>
-              <p>Track tournament requests submitted by your stable.</p>
+              <h2>Trạng thái đăng ký</h2>
+              <p>Theo dõi yêu cầu giải đấu đã gửi từ chuồng ngựa.</p>
             </div>
             <div className="registration-table">
               {registrations.map((registration) => (
                 <article key={registration.id} className="registration-row">
                   <div>
-                    <span>Horse</span>
+                    <span>Ngựa</span>
                     <strong>{registration.horse}</strong>
                   </div>
                   <div>
-                    <span>Tournament</span>
+                    <span>Giải đấu</span>
                     <strong>{registration.tournament}</strong>
                   </div>
                   <div>
-                    <span>Submitted</span>
+                    <span>Đã gửi</span>
                     <strong>{registration.submitted}</strong>
                   </div>
                   <div>
-                    <span>Status</span>
+                    <span>Trạng thái</span>
                     <strong
                       className={`registration-status-pill registration-status-pill--${registration.status
                         .toLowerCase()
@@ -399,33 +399,33 @@ function OwnerTournamentRegisterPage() {
           <div className="owner-modal">
             <div className="modal-header">
               <div>
-                <span className="badge">Ready to submit</span>
-                <h3 id="register-modal-title">Confirm registration</h3>
-                <p className="muted">Review before submitting the entry.</p>
+                <span className="badge">Sẵn sàng gửi</span>
+                <h3 id="register-modal-title">Xác nhận đăng ký</h3>
+                <p className="muted">Xem lại trước khi gửi đăng ký.</p>
               </div>
               <button
                 className="ghost-button"
                 onClick={() => setShowConfirm(false)}
               >
-                Close
+                Đóng
               </button>
             </div>
             <div className="modal-body">
               <div>
-                <h4>Horse</h4>
+                <h4>Ngựa</h4>
                 <p>{selectedHorse?.name}</p>
               </div>
               <div>
-                <h4>Tournament</h4>
+                <h4>Giải đấu</h4>
                 <p>{selectedTournament?.name}</p>
               </div>
               <div>
-                <h4>Description</h4>
+                <h4>Mô tả</h4>
                 <p>{selectedTournament?.description}</p>
               </div>
               <div>
-                <h4>Races</h4>
-                <p>{selectedTournament?.raceCount} scheduled</p>
+                <h4>Cuộc đua</h4>
+                <p>{selectedTournament?.raceCount} đã lên lịch</p>
               </div>
             </div>
             <div className="modal-actions">
@@ -433,13 +433,13 @@ function OwnerTournamentRegisterPage() {
                 className="primary-button"
                 onClick={handleSubmitRegistration}
               >
-                Submit registration
+                Gửi đăng ký
               </button>
               <button
                 className="ghost-button"
                 onClick={() => setShowConfirm(false)}
               >
-                Back
+                Quay lại
               </button>
             </div>
           </div>

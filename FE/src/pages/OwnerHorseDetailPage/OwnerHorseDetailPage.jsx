@@ -27,9 +27,9 @@ function OwnerHorseDetailPage() {
 
   const approvalStatusMap = useMemo(
     () => ({
-      1: "Pending",
-      2: "Approved",
-      3: "Rejected",
+      1: "Chờ duyệt",
+      2: "Đã duyệt",
+      3: "Từ chối",
     }),
     [],
   );
@@ -44,12 +44,12 @@ function OwnerHorseDetailPage() {
         if (isMounted) {
           setHorse(data || null);
           if (!data) {
-            setError("Horse not found.");
+            setError("Không tìm thấy ngựa.");
           }
         }
       } catch (fetchError) {
         if (isMounted) {
-          setError(fetchError?.message || "Unable to load horse details.");
+          setError(fetchError?.message || "Không thể tải chi tiết ngựa.");
         }
       } finally {
         if (isMounted) {
@@ -65,8 +65,8 @@ function OwnerHorseDetailPage() {
   }, [id]);
 
   const statusLabel = horse
-    ? (approvalStatusMap[horse.approvalStatus] ?? "Pending")
-    : "Pending";
+    ? (approvalStatusMap[horse.approvalStatus] ?? "Chờ duyệt")
+    : "Chờ duyệt";
 
   const formattedDob = horse?.dateOfBirth
     ? new Date(horse.dateOfBirth).toLocaleDateString()
@@ -79,26 +79,26 @@ function OwnerHorseDetailPage() {
 
   const primaryDetails = horse
     ? [
-        { label: "Breed", value: horse.breed || "-" },
-        { label: "Gender", value: horse.gender || "-" },
-        { label: "Color", value: horse.color || "-" },
-        { label: "Date of birth", value: formattedDob },
+        { label: "Giống", value: horse.breed || "-" },
+        { label: "Giới tính", value: horse.gender || "-" },
+        { label: "Màu sắc", value: horse.color || "-" },
+        { label: "Ngày sinh", value: formattedDob },
       ]
     : [];
 
   const metricDetails = horse
     ? [
-        { label: "Age", value: horse.age ?? "-" },
-        { label: "Weight (kg)", value: horse.weight ?? "-" },
-        { label: "Height (cm)", value: horse.height ?? "-" },
+        { label: "Tuổi", value: horse.age ?? "-" },
+        { label: "Cân nặng (kg)", value: horse.weight ?? "-" },
+        { label: "Chiều cao (cm)", value: horse.height ?? "-" },
       ]
     : [];
 
   const careerDetails = horse
     ? [
-        { label: "Total races", value: horse.totalRaces ?? 0 },
-        { label: "Total wins", value: horse.totalWins ?? 0 },
-        { label: "Approval status", value: statusLabel },
+        { label: "Tổng số cuộc đua", value: horse.totalRaces ?? 0 },
+        { label: "Tổng số trận thắng", value: horse.totalWins ?? 0 },
+        { label: "Trạng thái duyệt", value: statusLabel },
       ]
     : [];
 
@@ -107,19 +107,19 @@ function OwnerHorseDetailPage() {
       <div className="owner-layout">
         <aside className="owner-sidebar">
           <div className="owner-sidebar__header">
-            <p className="pill">Horse Owner</p>
-            <h3>Horse profile</h3>
-            <p className="muted">Review performance and medical status.</p>
+            <p className="pill">Chủ Ngựa</p>
+            <h3>Hồ sơ ngựa</h3>
+            <p className="muted">Xem hiệu suất và trạng thái sức khỏe.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Current status</p>
+            <p className="muted">Trạng thái hiện tại</p>
             <h4>{statusLabel}</h4>
-            <span>{horse?.name || "Loading horse"}</span>
+            <span>{horse?.name || "Đang tải ngựa"}</span>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Win rate</p>
+            <p className="muted">Tỷ lệ thắng</p>
             <h4>{winRate}%</h4>
-            <span>{horse?.totalWins ?? 0} wins</span>
+            <span>{horse?.totalWins ?? 0} trận thắng</span>
           </div>
         </aside>
 
@@ -127,9 +127,9 @@ function OwnerHorseDetailPage() {
           {error ? <p className="form-error">{error}</p> : null}
 
           {isLoading || !horse ? (
-            <p className="muted">Loading horse details...</p>
+            <p className="muted">Đang tải chi tiết ngựa...</p>
           ) : (
-            <section className="horse-banner" aria-label={`${horse.name} detail`}>
+            <section className="horse-banner" aria-label={`${horse.name} chi tiết`}>
               <div className="horse-banner__media">
                 {imageUrl ? (
                   <img src={imageUrl} alt={horse.name} />
@@ -145,31 +145,31 @@ function OwnerHorseDetailPage() {
                     {statusLabel}
                   </span>
                   <Link className="secondary-button" to={`/owner/horses/${horse.id}/edit`}>
-                    Edit profile
+                    Chỉnh sửa hồ sơ
                   </Link>
                 </div>
-                <span className="pill">Horse detail</span>
+                <span className="pill">Chi tiết ngựa</span>
                 <h1>{horse.name}</h1>
                 <p>
-                  {horse.breed || "Unknown breed"}
+                  {horse.breed || "Không rõ giống"}
                   {horse.color ? ` • ${horse.color}` : ""}
                   {horse.gender ? ` • ${horse.gender}` : ""}
                 </p>
                 <div className="horse-banner__meta">
                   <div>
-                    <span>Age</span>
-                    <strong>{horse.age ?? "-"} years</strong>
+                    <span>Tuổi</span>
+                    <strong>{horse.age ?? "-"} tuổi</strong>
                   </div>
                   <div>
-                    <span>Weight</span>
+                    <span>Cân nặng</span>
                     <strong>{horse.weight ?? "-"} kg</strong>
                   </div>
                   <div>
-                    <span>Height</span>
+                    <span>Chiều cao</span>
                     <strong>{horse.height ?? "-"} cm</strong>
                   </div>
                   <div>
-                    <span>Born</span>
+                    <span>Ngày sinh</span>
                     <strong>{formattedDob}</strong>
                   </div>
                 </div>
@@ -180,29 +180,29 @@ function OwnerHorseDetailPage() {
           <section className="stat-grid">
             <article className="stat-card">
               <span className="stat-card__label">01</span>
-              <p className="muted">Total wins</p>
+              <p className="muted">Tổng số trận thắng</p>
               <h3>{horse?.totalWins ?? 0}</h3>
-              <span className="stat-trend">Career total</span>
+              <span className="stat-trend">Tổng sự nghiệp</span>
             </article>
             <article className="stat-card">
               <span className="stat-card__label">02</span>
-              <p className="muted">Total races</p>
+              <p className="muted">Tổng số cuộc đua</p>
               <h3>{horse?.totalRaces ?? 0}</h3>
-              <span className="stat-trend">Career total</span>
+              <span className="stat-trend">Tổng sự nghiệp</span>
             </article>
             <article className="stat-card">
               <span className="stat-card__label">03</span>
-              <p className="muted">Win rate</p>
+              <p className="muted">Tỷ lệ thắng</p>
               <h3>{winRate}%</h3>
-              <span className="stat-trend">Race performance</span>
+              <span className="stat-trend">Hiệu suất đua</span>
             </article>
           </section>
 
           <section className="horse-detail-columns">
             <div className="horse-detail-stack">
               <div className="section-heading">
-                <h2>Horse profile</h2>
-                <p>Core profile details from the horse registry.</p>
+                <h2>Hồ sơ ngựa</h2>
+                <p>Thông tin cốt lõi từ sổ đăng ký ngựa.</p>
               </div>
               <div className="horse-info-list">
                 {primaryDetails.map((item) => (
@@ -216,8 +216,8 @@ function OwnerHorseDetailPage() {
 
             <div className="horse-detail-stack">
               <div className="section-heading">
-                <h2>Physical metrics</h2>
-                <p>Latest recorded measurements.</p>
+                <h2>Chỉ số thể chất</h2>
+                <p>Số đo mới nhất được ghi nhận.</p>
               </div>
               <div className="horse-info-list">
                 {metricDetails.map((item) => (
@@ -229,8 +229,8 @@ function OwnerHorseDetailPage() {
               </div>
 
               <div className="section-heading">
-                <h2>Career totals</h2>
-                <p>Wins and races for this horse.</p>
+                <h2>Tổng sự nghiệp</h2>
+                <p>Số trận thắng và cuộc đua của ngựa này.</p>
               </div>
               <div className="horse-info-list">
                 {careerDetails.map((item) => (

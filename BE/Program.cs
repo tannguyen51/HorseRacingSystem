@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+// Npgsql: treat Unspecified DateTime as UTC for PostgreSQL timestamptz compatibility
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -45,8 +48,12 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+// Use Railway's DATABASE_URL env var if present, otherwise fall back to appsettings.json
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(connectionString)
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.MultipleCollectionIncludeWarning)));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var frontendOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()

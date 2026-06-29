@@ -16,12 +16,12 @@ function AdminHeader() {
         <span className="admin-header__mark">RM</span>
         <span>
           <strong>RaceMaster</strong>
-          <small>Administration Console</small>
+          <small>Bảng điều khiển quản trị</small>
         </span>
       </Link>
       <div className="admin-header__actions">
-        <span className="admin-header__status">System online</span>
-        <button className="ghost-button" onClick={logout}>Logout</button>
+        <span className="admin-header__status">Hệ thống đang hoạt động</span>
+        <button className="ghost-button" onClick={logout}>Đăng xuất</button>
       </div>
     </header>
   );

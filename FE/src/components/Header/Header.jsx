@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
 const navItems = [
-  { to: "/", label: "Home", end: true },
-  { to: "/tournaments", label: "Tournament List" },
-  { to: "/schedule", label: "Race Schedule" },
-  { to: "/live-results", label: "Live Results" },
-  { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/", label: "Trang chủ", end: true },
+  { to: "/tournaments", label: "Giải đấu" },
+  { to: "/schedule", label: "Lịch đua" },
+  { to: "/live-results", label: "Kết quả trực tiếp" },
+  { to: "/leaderboard", label: "Bảng xếp hạng" },
 ];
 
 function Header({ isLoggedIn = false }) {
@@ -25,7 +25,7 @@ function Header({ isLoggedIn = false }) {
         <div className="brand-mark">RM</div>
         <div>
           <p className="brand-title">RaceMaster</p>
-          <p className="brand-subtitle">Tournament Platform</p>
+          <p className="brand-subtitle">Nền tảng giải đấu</p>
         </div>
       </Link>
 
@@ -47,15 +47,15 @@ function Header({ isLoggedIn = false }) {
       <div className="site-header__actions">
         {isLoggedIn ? (
           <button className="ghost-button btn" onClick={handleLogout}>
-            Logout
+            Đăng xuất
           </button>
         ) : (
           <>
             <Link className="ghost-button btn" to="/login">
-              Login
+              Đăng nhập
             </Link>
             <Link className="primary-button btn" to="/register">
-              Register
+              Đăng ký
             </Link>
           </>
         )}

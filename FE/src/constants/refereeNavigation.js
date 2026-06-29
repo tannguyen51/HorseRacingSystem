@@ -1,6 +1,6 @@
 export const refereeNavItems = [
-  { to: "/referee", label: "Dashboard", end: true },
-  { to: "/referee/assignments", label: "Assignments" },
-  { to: "/referee/health-checks", label: "Health Checks" },
-  { to: "/referee/violations", label: "Violations" },
+  { to: "/referee", label: "Tổng quan", end: true },
+  { to: "/referee/assignments", label: "Phân công" },
+  { to: "/referee/health-checks", label: "Kiểm tra sức khỏe" },
+  { to: "/referee/violations", label: "Vi phạm" },
 ];

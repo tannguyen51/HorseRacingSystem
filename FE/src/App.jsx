@@ -4,6 +4,7 @@ import {
   Route,
   Routes,
   useLocation,
+  Outlet,
 } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
@@ -18,13 +19,11 @@ import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailP
 import RaceSchedulePage from "./pages/RaceSchedulePage/RaceSchedulePage";
 import LiveResultsPage from "./pages/LiveResultsPage/LiveResultsPage";
 import LeaderboardPage from "./pages/LeaderboardPage/LeaderboardPage";
-import SpectatorDashboardPage from "./pages/SpectatorDashboardPage/SpectatorDashboardPage";
 import SpectatorTournamentListPage from "./pages/SpectatorTournamentListPage/SpectatorTournamentListPage";
 import SpectatorRaceSchedulePage from "./pages/SpectatorRaceSchedulePage/SpectatorRaceSchedulePage";
 import SpectatorLiveRankingPage from "./pages/SpectatorLiveRankingPage/SpectatorLiveRankingPage";
 import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage";
 import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
-import SpectatorRewardNotificationsPage from "./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage";
 import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
 import JockeyInvitationDetailPage from "./pages/JockeyInvitationPage/JockeyInvitationDetailPage";
 import JockeyDashboardPage from "./pages/JockeyDashboardPage/JockeyDashboardPage";
@@ -45,6 +44,8 @@ import RefereeViolationPage from "./pages/RefereeViolationPage/RefereeViolationP
 import { OwnerProfilePage, JockeyProfilePage, RefereeProfilePage, SpectatorProfilePage } from "./pages/ProfilePages";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
+import RegisterHorseOwnerPage from "./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage";
+import RegisterJockeyPage from "./pages/RegisterJockeyPage/RegisterJockeyPage";
 import AdminPage from "./pages/AdminPage/AdminPage";
 import "./App.css";
 
@@ -60,6 +61,14 @@ const getStoredAuthUser = () => {
     return null;
   }
 };
+
+function RequireAuth() {
+  const hasAuthToken = Boolean(localStorage.getItem("authToken"));
+  if (!hasAuthToken) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
+}
 
 function AppLayout() {
   const location = useLocation();
@@ -106,87 +115,51 @@ function AppLayout() {
       {renderHeader()}
       <main className="page-wrapper">
         <Routes>
+          {/* Public — không cần đăng nhập */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/tournaments" element={<TournamentListPage />} />
-          <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
-          <Route path="/schedule" element={<RaceSchedulePage />} />
-          <Route path="/live-results" element={<LiveResultsPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/spectator" element={<SpectatorDashboardPage />} />
-          <Route
-            path="/spectator/tournaments"
-            element={<SpectatorTournamentListPage />}
-          />
-          <Route
-            path="/spectator/schedule"
-            element={<SpectatorRaceSchedulePage />}
-          />
-          <Route
-            path="/spectator/live-ranking"
-            element={<SpectatorLiveRankingPage />}
-          />
-          <Route
-            path="/spectator/predictions"
-            element={<SpectatorPredictionFormPage />}
-          />
-          <Route
-            path="/spectator/predictions/results"
-            element={<SpectatorPredictionResultPage />}
-          />
-          <Route
-            path="/spectator/rewards"
-            element={<SpectatorRewardNotificationsPage />}
-          />
-          <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
-          <Route path="/jockey" element={<JockeyDashboardPage />} />
-          <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
-          <Route
-            path="/jockey/invitations/:id"
-            element={<JockeyInvitationDetailPage />}
-          />
-          <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
-          <Route
-            path="/jockey/performance"
-            element={<JockeyPerformancePage />}
-          />
-          <Route path="/jockey/profile" element={<JockeyProfilePage />} />
-          <Route path="/owner" element={<OwnerDashboardPage />} />
-          <Route path="/owner/horses" element={<OwnerHorseListPage />} />
-          <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
-          <Route path="/owner/horses/:id" element={<OwnerHorseDetailPage />} />
-          <Route
-            path="/owner/horses/:id/edit"
-            element={<OwnerHorseEditPage />}
-          />
-          <Route
-            path="/owner/tournaments"
-            element={<OwnerTournamentListPage />}
-          />
-          <Route
-            path="/owner/register-tournament"
-            element={<OwnerTournamentRegisterPage />}
-          />
-          <Route
-            path="/owner/race-confirmations"
-            element={<OwnerRaceConfirmationPage />}
-          />
-          <Route path="/owner/profile" element={<OwnerProfilePage />} />
-          <Route path="/referee" element={<RefereeDashboardPage />} />
-          <Route
-            path="/referee/assignments"
-            element={<RefereeAssignmentPage />}
-          />
-          <Route
-            path="/referee/health-checks"
-            element={<RefereeHealthCheckPage />}
-          />
-          <Route
-            path="/referee/violations"
-            element={<RefereeViolationPage />}
-          />
-          <Route path="/referee/profile" element={<RefereeProfilePage />} />
+          <Route path="/register/horse-owner" element={<RegisterHorseOwnerPage />} />
+          <Route path="/register/jockey" element={<RegisterJockeyPage />} />
+
+          {/* Protected — cần đăng nhập */}
+          <Route element={<RequireAuth />}>
+            <Route path="/tournaments" element={<TournamentListPage />} />
+            <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
+            <Route path="/schedule" element={<RaceSchedulePage />} />
+            <Route path="/live-results" element={<LiveResultsPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/spectator" element={<Navigate to="/" replace />} />
+            <Route path="/spectator/tournaments" element={<SpectatorTournamentListPage />} />
+            <Route path="/spectator/schedule" element={<SpectatorRaceSchedulePage />} />
+            <Route path="/spectator/live-ranking" element={<SpectatorLiveRankingPage />} />
+            <Route path="/spectator/predictions" element={<SpectatorPredictionFormPage />} />
+            <Route path="/spectator/predictions/results" element={<SpectatorPredictionResultPage />} />
+            <Route path="/spectator/rewards" element={<Navigate to="/spectator/predictions/results" replace />} />
+            <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
+            <Route path="/jockey" element={<JockeyDashboardPage />} />
+            <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
+            <Route path="/jockey/invitations/:id" element={<JockeyInvitationDetailPage />} />
+            <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
+            <Route path="/jockey/performance" element={<JockeyPerformancePage />} />
+            <Route path="/jockey/profile" element={<JockeyProfilePage />} />
+            <Route path="/owner" element={<OwnerDashboardPage />} />
+            <Route path="/owner/horses" element={<OwnerHorseListPage />} />
+            <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
+            <Route path="/owner/horses/:id" element={<OwnerHorseDetailPage />} />
+            <Route path="/owner/horses/:id/edit" element={<OwnerHorseEditPage />} />
+            <Route path="/owner/tournaments" element={<OwnerTournamentListPage />} />
+            <Route path="/owner/register-tournament" element={<OwnerTournamentRegisterPage />} />
+            <Route path="/owner/race-confirmations" element={<OwnerRaceConfirmationPage />} />
+            <Route path="/owner/profile" element={<OwnerProfilePage />} />
+            <Route path="/referee" element={<RefereeDashboardPage />} />
+            <Route path="/referee/assignments" element={<RefereeAssignmentPage />} />
+            <Route path="/referee/health-checks" element={<RefereeHealthCheckPage />} />
+            <Route path="/referee/violations" element={<RefereeViolationPage />} />
+            <Route path="/referee/profile" element={<RefereeProfilePage />} />
+          </Route>
+
+          {/* Admin */}
           <Route path="/admin" element={adminPage} />
           <Route path="/admin/users" element={adminPage} />
           <Route path="/admin/users/:id" element={adminPage} />

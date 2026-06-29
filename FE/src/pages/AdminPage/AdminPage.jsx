@@ -52,13 +52,13 @@ function AdminHorseImage({ imageUrl, name, className = "" }) {
       {resolvedUrl && !hasError ? (
         <img
           src={resolvedUrl}
-          alt={name ? `${name} horse` : "Horse"}
+          alt={name ? `${name} ngựa` : "Ngựa"}
           onError={() => setHasError(true)}
         />
       ) : (
-        <div className="admin-horse-image__fallback" aria-label="Horse image unavailable">
+        <div className="admin-horse-image__fallback" aria-label="Không có ảnh ngựa">
           <span>{initial}</span>
-          <small>Image unavailable</small>
+          <small>Không có ảnh</small>
         </div>
       )}
     </div>
@@ -66,48 +66,48 @@ function AdminHorseImage({ imageUrl, name, className = "" }) {
 }
 
 const navGroups = [
-  { label: "Overview", items: [{ to: "/admin", label: "Dashboard", end: true }] },
+  { label: "Tổng quan", items: [{ to: "/admin", label: "Bảng điều khiển", end: true }] },
   {
-    label: "User Management",
+    label: "Quản lý người dùng",
     items: [
-      { to: "/admin/users", label: "User List" },
-      { to: "/admin/registrations", label: "Registrations" },
-      { to: "/admin/roles", label: "Role Management" },
+      { to: "/admin/users", label: "Danh sách người dùng" },
+      { to: "/admin/registrations", label: "Đăng ký" },
+      { to: "/admin/roles", label: "Quản lý vai trò" },
     ],
   },
   {
-    label: "Tournament Management",
+    label: "Quản lý giải đấu",
     items: [
-      { to: "/admin/tournaments", label: "Tournaments" },
-      { to: "/admin/rounds", label: "Rounds" },
-      { to: "/admin/races", label: "Races & Scheduling" },
+      { to: "/admin/tournaments", label: "Giải đấu" },
+      { to: "/admin/rounds", label: "Vòng đấu" },
+      { to: "/admin/races", label: "Cuộc đua & Lịch trình" },
     ],
   },
   {
-    label: "Operations",
+    label: "Vận hành",
     items: [
-      { to: "/admin/prizes", label: "Prize Money" },
-      { to: "/admin/protests", label: "Protests" },
-      { to: "/admin/transfers", label: "Horse Transfers" },
-      { to: "/admin/contracts", label: "Contracts" },
-      { to: "/admin/injuries", label: "Injury Records" },
+      { to: "/admin/prizes", label: "Tiền thưởng" },
+      { to: "/admin/protests", label: "Khiếu nại" },
+      { to: "/admin/transfers", label: "Chuyển nhượng ngựa" },
+      { to: "/admin/contracts", label: "Hợp đồng" },
+      { to: "/admin/injuries", label: "Hồ sơ chấn thương" },
     ],
   },
   {
-    label: "System",
+    label: "Hệ thống",
     items: [
-      { to: "/admin/audit", label: "Audit Logs" },
-      { to: "/admin/notifications", label: "Notifications" },
+      { to: "/admin/audit", label: "Nhật ký kiểm toán" },
+      { to: "/admin/notifications", label: "Thông báo" },
     ],
   },
 ];
 
 const roleCards = [
-  ["Admin", "Full system control and management access"],
-  ["Referee", "Race control, validation, and result duties"],
-  ["HorseOwner", "Horse stable and tournament registration"],
-  ["Jockey", "Invitations, schedules, and performance"],
-  ["Spectator", "Schedules, rankings, predictions, and rewards"],
+  ["Admin", "Toàn quyền kiểm soát và quản lý hệ thống"],
+  ["Referee", "Điều khiển cuộc đua, xác nhận và kết quả"],
+  ["HorseOwner", "Quản lý chuồng ngựa và đăng ký giải đấu"],
+  ["Jockey", "Lời mời, lịch trình và thành tích"],
+  ["Spectator", "Lịch trình, xếp hạng, dự đoán và phần thưởng"],
 ];
 
 const formatDate = (value) =>
@@ -131,9 +131,9 @@ function AdminShell({ children }) {
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar__intro">
-          <span className="pill">Admin</span>
-          <h3>Control center</h3>
-          <p>Operate users, tournaments, rounds, and race schedules.</p>
+          <span className="pill">Quản trị</span>
+          <h3>Trung tâm điều khiển</h3>
+          <p>Vận hành người dùng, giải đấu, vòng đấu và lịch đua.</p>
         </div>
         <nav className="admin-nav">
           {navGroups.map((group) => (
@@ -186,38 +186,38 @@ function Dashboard() {
   }, []);
 
   const stats = [
-    ["Total users", data?.totalUsers ?? data?.TotalUsers ?? "-"],
-    ["Active tournaments", data?.activeTournaments ?? data?.ActiveTournaments ?? "-"],
-    ["Live races", data?.ongoingRaces ?? data?.OngoingRaces ?? "-"],
-    ["Upcoming races", data?.upcomingRaces ?? data?.UpcomingRaces ?? "-"],
+    ["Tổng người dùng", data?.totalUsers ?? data?.TotalUsers ?? "-"],
+    ["Giải đấu đang hoạt động", data?.activeTournaments ?? data?.ActiveTournaments ?? "-"],
+    ["Cuộc đua trực tiếp", data?.ongoingRaces ?? data?.OngoingRaces ?? "-"],
+    ["Cuộc đua sắp tới", data?.upcomingRaces ?? data?.UpcomingRaces ?? "-"],
   ];
 
   return (
     <>
-      <PageTitle eyebrow="Admin Dashboard" title="System overview" description="Monitor platform activity and keep racing operations moving." />
+      <PageTitle eyebrow="Bảng điều khiển" title="Tổng quan hệ thống" description="Giám sát hoạt động nền tảng và duy trì vận hành đua." />
       <Notice message={error} error />
       <section className="admin-stat-grid">
         {stats.map(([label, value]) => (
           <article key={label} className="admin-stat-card">
-            <span>{label}</span><strong>{value}</strong><small>Live platform data</small>
+            <span>{label}</span><strong>{value}</strong><small>Dữ liệu nền tảng trực tiếp</small>
           </article>
         ))}
       </section>
       <section className="admin-panel-grid">
         <article className="admin-panel">
-          <div className="admin-panel__heading"><div><span>System analytics</span><h2>Operations health</h2></div></div>
+          <div className="admin-panel__heading"><div><span>Phân tích hệ thống</span><h2>Tình trạng vận hành</h2></div></div>
           <div className="admin-bars">
-            {[["User activity", 82], ["Tournament capacity", 68], ["Race scheduling", 74], ["Platform availability", 99]].map(([label, value]) => (
+            {[["Hoạt động người dùng", 82], ["Sức chứa giải đấu", 68], ["Lên lịch đua", 74], ["Khả dụng nền tảng", 99]].map(([label, value]) => (
               <div key={label}><p><span>{label}</span><strong>{value}%</strong></p><div><i style={{ width: `${value}%` }} /></div></div>
             ))}
           </div>
         </article>
         <article className="admin-panel">
-          <div className="admin-panel__heading"><div><span>Attention needed</span><h2>Admin queue</h2></div></div>
+          <div className="admin-panel__heading"><div><span>Cần chú ý</span><h2>Hàng đợi quản trị</h2></div></div>
           <div className="admin-queue">
-            <div><strong>{data?.pendingRegistrations ?? data?.PendingRegistrations ?? "-"}</strong><span>Pending registrations</span></div>
-            <div><strong>{data?.totalReferees ?? data?.TotalReferees ?? "-"}</strong><span>Available referees</span></div>
-            <div><strong>{data?.upcomingRaces ?? data?.UpcomingRaces ?? "-"}</strong><span>Races to coordinate</span></div>
+            <div><strong>{data?.pendingRegistrations ?? data?.PendingRegistrations ?? "-"}</strong><span>Đăng ký chờ duyệt</span></div>
+            <div><strong>{data?.totalReferees ?? data?.TotalReferees ?? "-"}</strong><span>Trọng tài khả dụng</span></div>
+            <div><strong>{data?.upcomingRaces ?? data?.UpcomingRaces ?? "-"}</strong><span>Cuộc đua cần điều phối</span></div>
           </div>
         </article>
       </section>
@@ -245,7 +245,7 @@ function UserList() {
     const active = user.isActive ?? user.IsActive;
     try {
       await setUserActive(id, !active);
-      setMessage(`User ${active ? "banned" : "reactivated"} successfully.`);
+      setMessage(`Người dùng ${active ? "đã khóa" : "đã kích hoạt lại"} thành công.`);
       load();
     } catch (err) {
       setMessage(err.message);
@@ -254,19 +254,19 @@ function UserList() {
 
   return (
     <>
-      <PageTitle eyebrow="User Management" title="User list" description="Search accounts, inspect details, and control account access." />
-      <div className="admin-toolbar"><input placeholder="Search users, email, or role..." value={query} onChange={(e) => setQuery(e.target.value)} /><span>{filtered.length} users</span></div>
+      <PageTitle eyebrow="Quản lý người dùng" title="Danh sách người dùng" description="Tìm kiếm tài khoản, xem chi tiết và kiểm soát quyền truy cập." />
+      <div className="admin-toolbar"><input placeholder="Tìm kiếm người dùng, email hoặc vai trò..." value={query} onChange={(e) => setQuery(e.target.value)} /><span>{filtered.length} người dùng</span></div>
       <Notice message={message} />
       <div className="admin-table-wrap">
-        <table className="admin-table"><thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+        <table className="admin-table"><thead><tr><th>Người dùng</th><th>Vai trò</th><th>Tham gia</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>{filtered.map((user) => {
             const id = user.id ?? user.Id;
             const active = user.isActive ?? user.IsActive;
             return <tr key={id}>
-              <td><strong>{user.fullName ?? user.FullName ?? "Unnamed user"}</strong><small>{user.email ?? user.Email}</small></td>
+              <td><strong>{user.fullName ?? user.FullName ?? "Người dùng chưa đặt tên"}</strong><small>{user.email ?? user.Email}</small></td>
               <td>{user.role ?? user.Role}</td><td>{formatDate(user.createdAt ?? user.CreatedAt)}</td>
-              <td><span className={active ? "status status--active" : "status status--inactive"}>{active ? "Active" : "Banned"}</span></td>
-              <td><div className="admin-actions"><button onClick={() => navigate(`/admin/users/${id}`)}>Detail</button><button onClick={() => toggle(user)}>{active ? "Ban" : "Unban"}</button></div></td>
+              <td><span className={active ? "status status--active" : "status status--inactive"}>{active ? "Hoạt động" : "Đã khóa"}</span></td>
+              <td><div className="admin-actions"><button onClick={() => navigate(`/admin/users/${id}`)}>Chi tiết</button><button onClick={() => toggle(user)}>{active ? "Khóa" : "Mở khóa"}</button></div></td>
             </tr>;
           })}</tbody>
         </table>
@@ -315,20 +315,20 @@ function UserDetail() {
     try {
       await setUserActive(id, !active);
       setUser(await getAdminUser(id));
-      setMessage(`Account ${active ? "banned" : "reactivated"} successfully.`);
+      setMessage(`Tài khoản ${active ? "đã khóa" : "đã kích hoạt lại"} thành công.`);
     } catch (err) { setMessage(err.message); }
   };
 
   const changeHorseStatus = async (horse, status) => {
     let note = null;
     if (status === "Rejected") {
-      note = window.prompt("Enter a rejection reason:");
+      note = window.prompt("Nhập lý do từ chối:");
       if (!note?.trim()) return;
     }
 
     try {
       await updateOwnerHorseStatus(id, horse.id ?? horse.Id, { status, note });
-      setMessage(`${horse.name ?? horse.Name} changed to ${status}.`);
+      setMessage(`${horse.name ?? horse.Name} đã đổi thành ${status}.`);
       const horseData = await getOwnerHorses(id);
       setHorses(Array.isArray(horseData) ? horseData : []);
     } catch (err) {
@@ -338,28 +338,28 @@ function UserDetail() {
 
   return (
     <>
-      <PageTitle eyebrow="User Management" title="User detail" description="Review account information and access status." action={<button className="ghost-button" onClick={() => navigate("/admin/users")}>Back to users</button>} />
+      <PageTitle eyebrow="Quản lý người dùng" title="Chi tiết người dùng" description="Xem thông tin tài khoản và trạng thái truy cập." action={<button className="ghost-button" onClick={() => navigate("/admin/users")}>Quay lại danh sách</button>} />
       <Notice message={message} />
       <article className="admin-profile">
         <div className="admin-profile__avatar">{(user?.fullName ?? user?.FullName ?? "U").slice(0, 1)}</div>
-        <div><span className={active ? "status status--active" : "status status--inactive"}>{active ? "Active" : "Banned"}</span><h2>{user?.fullName ?? user?.FullName ?? "Loading..."}</h2><p>{user?.email ?? user?.Email}</p></div>
-        <button className="primary-button" onClick={toggle} disabled={!user}>{active ? "Ban user" : "Unban user"}</button>
+        <div><span className={active ? "status status--active" : "status status--inactive"}>{active ? "Hoạt động" : "Đã khóa"}</span><h2>{user?.fullName ?? user?.FullName ?? "Đang tải..."}</h2><p>{user?.email ?? user?.Email}</p></div>
+        <button className="primary-button" onClick={toggle} disabled={!user}>{active ? "Khóa người dùng" : "Mở khóa người dùng"}</button>
       </article>
       <section className="admin-detail-grid">
-        <div><span>Role</span><strong>{role ?? "-"}</strong></div>
-        <div><span>Created at</span><strong>{formatDate(user?.createdAt ?? user?.CreatedAt)}</strong></div>
-        <div><span>Registered horses</span><strong>{user?.horseCount ?? user?.HorseCount ?? 0}</strong></div>
-        <div><span>User ID</span><strong>{id}</strong></div>
+        <div><span>Vai trò</span><strong>{role ?? "-"}</strong></div>
+        <div><span>Ngày tạo</span><strong>{formatDate(user?.createdAt ?? user?.CreatedAt)}</strong></div>
+        <div><span>Ngựa đã đăng ký</span><strong>{user?.horseCount ?? user?.HorseCount ?? 0}</strong></div>
+        <div><span>ID người dùng</span><strong>{id}</strong></div>
       </section>
       {role === "HorseOwner" && <>
         <div className="section-heading">
-          <h2>Owner horses</h2>
-          <p>Review and change approval status for each horse.</p>
+          <h2>Ngựa của chủ sở hữu</h2>
+          <p>Xem và thay đổi trạng thái phê duyệt cho từng con ngựa.</p>
         </div>
         <section className="admin-horse-grid">
           {horses.map((horse) => {
             const status = horse.approvalStatus ?? horse.ApprovalStatus;
-            const horseName = horse.name ?? horse.Name ?? "Unnamed horse";
+            const horseName = horse.name ?? horse.Name ?? "Ngựa chưa đặt tên";
             return <article key={horse.id ?? horse.Id} className="admin-horse-card">
               <div className="admin-horse-card__media">
                 <AdminHorseImage
@@ -372,19 +372,19 @@ function UserDetail() {
                 <div className="admin-horse-card__heading">
                   <div>
                     <h3>{horseName}</h3>
-                    <p>{horse.breed ?? horse.Breed ?? "Unknown breed"} · {horse.gender ?? horse.Gender ?? "Unknown gender"} · Age {horse.age ?? horse.Age}</p>
+                    <p>{horse.breed ?? horse.Breed ?? "Giống không xác định"} · {horse.gender ?? horse.Gender ?? "Giới tính không xác định"} · Tuổi {horse.age ?? horse.Age}</p>
                   </div>
                   <button
                     className="admin-horse-card__detail"
                     onClick={() => navigate(`/admin/users/${id}/horses/${horse.id ?? horse.Id}`)}
                   >
-                    View detail
+                    Xem chi tiết
                   </button>
                 </div>
                 <div className="admin-horse-card__stats">
-                  <div><span>Races</span><strong>{horse.totalRaces ?? horse.TotalRaces ?? 0}</strong></div>
-                  <div><span>Wins</span><strong>{horse.totalWins ?? horse.TotalWins ?? 0}</strong></div>
-                  <div><span>Win rate</span><strong>{horse.totalRaces ?? horse.TotalRaces ? `${Math.round(((horse.totalWins ?? horse.TotalWins ?? 0) / (horse.totalRaces ?? horse.TotalRaces)) * 100)}%` : "0%"}</strong></div>
+                  <div><span>Số cuộc đua</span><strong>{horse.totalRaces ?? horse.TotalRaces ?? 0}</strong></div>
+                  <div><span>Thắng</span><strong>{horse.totalWins ?? horse.TotalWins ?? 0}</strong></div>
+                  <div><span>Tỷ lệ thắng</span><strong>{horse.totalRaces ?? horse.TotalRaces ? `${Math.round(((horse.totalWins ?? horse.TotalWins ?? 0) / (horse.totalRaces ?? horse.TotalRaces)) * 100)}%` : "0%"}</strong></div>
                 </div>
                 {(horse.approvalNote ?? horse.ApprovalNote) && <p className="admin-horse-card__note">{horse.approvalNote ?? horse.ApprovalNote}</p>}
               </div>
@@ -426,10 +426,10 @@ function HorseDetail() {
   return (
     <>
       <PageTitle
-        eyebrow="Horse Management"
-        title="Horse detail"
-        description="Review complete horse information and ownership data."
-        action={<button className="ghost-button" onClick={() => navigate(`/admin/users/${userId}`)}>Back to owner</button>}
+        eyebrow="Quản lý ngựa"
+        title="Chi tiết ngựa"
+        description="Xem thông tin đầy đủ về ngựa và dữ liệu sở hữu."
+        action={<button className="ghost-button" onClick={() => navigate(`/admin/users/${userId}`)}>Quay lại chủ sở hữu</button>}
       />
       <Notice message={message} error />
       {horse && <section className="admin-horse-detail">
@@ -442,22 +442,22 @@ function HorseDetail() {
           <div>
             <span className={`status status--${status.toLowerCase()}`}>{status}</span>
             <h2>{value("name", "Name")}</h2>
-            <p>{value("breed", "Breed", "Unknown breed")} · {value("gender", "Gender", "Unknown gender")} · {value("color", "Color", "Unknown color")}</p>
+            <p>{value("breed", "Breed", "Giống không xác định")} · {value("gender", "Gender", "Giới tính không xác định")} · {value("color", "Color", "Màu không xác định")}</p>
           </div>
         </article>
         <section className="admin-horse-detail__grid">
-          <div><span>Owner</span><strong>{value("ownerName", "OwnerName")}</strong></div>
-          <div><span>Age</span><strong>{value("age", "Age")}</strong></div>
-          <div><span>Date of birth</span><strong>{formatDate(value("dateOfBirth", "DateOfBirth", null))}</strong></div>
-          <div><span>Weight</span><strong>{value("weight", "Weight")} kg</strong></div>
-          <div><span>Height</span><strong>{value("height", "Height")} cm</strong></div>
-          <div><span>Total races</span><strong>{value("totalRaces", "TotalRaces", 0)}</strong></div>
-          <div><span>Total wins</span><strong>{value("totalWins", "TotalWins", 0)}</strong></div>
-          <div><span>Win rate</span><strong>{value("totalRaces", "TotalRaces", 0) ? `${Math.round((value("totalWins", "TotalWins", 0) / value("totalRaces", "TotalRaces", 0)) * 100)}%` : "0%"}</strong></div>
-          <div><span>Horse ID</span><strong>{horseId}</strong></div>
-          <div><span>Owner ID</span><strong>{value("ownerId", "OwnerId")}</strong></div>
+          <div><span>Chủ sở hữu</span><strong>{value("ownerName", "OwnerName")}</strong></div>
+          <div><span>Tuổi</span><strong>{value("age", "Age")}</strong></div>
+          <div><span>Ngày sinh</span><strong>{formatDate(value("dateOfBirth", "DateOfBirth", null))}</strong></div>
+          <div><span>Cân nặng</span><strong>{value("weight", "Weight")} kg</strong></div>
+          <div><span>Chiều cao</span><strong>{value("height", "Height")} cm</strong></div>
+          <div><span>Tổng số cuộc đua</span><strong>{value("totalRaces", "TotalRaces", 0)}</strong></div>
+          <div><span>Tổng số thắng</span><strong>{value("totalWins", "TotalWins", 0)}</strong></div>
+          <div><span>Tỷ lệ thắng</span><strong>{value("totalRaces", "TotalRaces", 0) ? `${Math.round((value("totalWins", "TotalWins", 0) / value("totalRaces", "TotalRaces", 0)) * 100)}%` : "0%"}</strong></div>
+          <div><span>ID ngựa</span><strong>{horseId}</strong></div>
+          <div><span>ID chủ sở hữu</span><strong>{value("ownerId", "OwnerId")}</strong></div>
         </section>
-        {(value("approvalNote", "ApprovalNote", "")) && <article className="admin-horse-detail__note"><span>Approval note</span><p>{value("approvalNote", "ApprovalNote")}</p></article>}
+        {(value("approvalNote", "ApprovalNote", "")) && <article className="admin-horse-detail__note"><span>Ghi chú phê duyệt</span><p>{value("approvalNote", "ApprovalNote")}</p></article>}
       </section>}
     </>
   );
@@ -481,13 +481,13 @@ function Roles() {
       if (approved) {
         await approveJockey(jockey.id);
       } else {
-        const reason = window.prompt("Reason for rejecting this jockey?");
+        const reason = window.prompt("Lý do từ chối kỵ sĩ này?");
         if (reason === null) return;
-        await rejectJockey(jockey.id, reason || "Rejected by admin");
+        await rejectJockey(jockey.id, reason || "Bị từ chối bởi quản trị viên");
       }
 
       setMessage(
-        `${jockey.fullName} ${approved ? "approved" : "rejected"} successfully.`,
+        `${jockey.fullName} ${approved ? "đã phê duyệt" : "đã từ chối"} thành công.`,
       );
       loadJockeys();
     } catch (err) {
@@ -497,28 +497,28 @@ function Roles() {
 
   return (
     <>
-      <PageTitle eyebrow="User Management" title="Role management" description="Understand permission boundaries across the RaceMaster platform." />
+      <PageTitle eyebrow="Quản lý người dùng" title="Quản lý vai trò" description="Tìm hiểu phạm vi quyền trên nền tảng RaceMaster." />
       <Notice message={message} />
-      <section className="admin-role-grid">{roleCards.map(([role, detail]) => <article key={role}><span>{role.slice(0, 1)}</span><h3>{role}</h3><p>{detail}</p><button disabled>Assign via backend role API</button></article>)}</section>
-      <p className="admin-muted-note">Role assignment is displayed as unavailable because the current backend has no role update endpoint.</p>
+      <section className="admin-role-grid">{roleCards.map(([role, detail]) => <article key={role}><span>{role.slice(0, 1)}</span><h3>{role}</h3><p>{detail}</p><button disabled>Phân quyền qua API vai trò backend</button></article>)}</section>
+      <p className="admin-muted-note">Phân quyền hiển thị không khả dụng vì backend hiện tại chưa có endpoint cập nhật vai trò.</p>
       <section className="admin-panel">
         <div className="admin-panel__heading">
-          <span>Jockey Management</span>
-          <h2>Jockey approval</h2>
+          <span>Quản lý kỵ sĩ</span>
+          <h2>Phê duyệt kỵ sĩ</h2>
         </div>
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Jockey</th>
-                <th>License</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Kỵ sĩ</th>
+                <th>Giấy phép</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {jockeys.map((jockey) => {
-                const status = jockey.approvalStatusName || "Unknown";
+                const status = jockey.approvalStatusName || "Không xác định";
                 return (
                   <tr key={jockey.id}>
                     <td>
@@ -537,14 +537,14 @@ function Roles() {
                           disabled={status === "Approved"}
                           onClick={() => updateJockeyStatus(jockey, true)}
                         >
-                          Approve
+                          Phê duyệt
                         </button>
                         <button
                           className="admin-danger"
                           disabled={status === "Rejected"}
                           onClick={() => updateJockeyStatus(jockey, false)}
                         >
-                          Reject
+                          Từ chối
                         </button>
                       </div>
                     </td>
@@ -553,7 +553,7 @@ function Roles() {
               })}
               {jockeys.length === 0 ? (
                 <tr>
-                  <td colSpan="4">No jockey accounts found.</td>
+                  <td colSpan="4">Không tìm thấy tài khoản kỵ sĩ nào.</td>
                 </tr>
               ) : null}
             </tbody>
@@ -581,7 +581,7 @@ function TournamentManagement() {
       const payload = { ...form, startDate: new Date(form.startDate).toISOString(), endDate: new Date(form.endDate).toISOString() };
       if (editingId) await updateTournament(editingId, payload);
       else await createTournament(payload);
-      setMessage(`Tournament ${editingId ? "updated" : "created"} successfully.`);
+      setMessage(`Giải đấu ${editingId ? "đã cập nhật" : "đã tạo"} thành công.`);
       setShowForm(false); setEditingId(""); load();
     } catch (err) { setMessage(err.message); }
   };
@@ -600,18 +600,18 @@ function TournamentManagement() {
     setShowForm(true);
   };
   const remove = async (id) => {
-    if (!window.confirm("Delete this tournament?")) return;
-    try { await deleteTournament(id); setMessage("Tournament deleted."); load(); } catch (err) { setMessage(err.message); }
+    if (!window.confirm("Xóa giải đấu này?")) return;
+    try { await deleteTournament(id); setMessage("Đã xóa giải đấu."); load(); } catch (err) { setMessage(err.message); }
   };
 
   return (
     <>
-      <PageTitle eyebrow="Tournament Management" title="Tournaments" description="Create tournaments and coordinate their rounds and races." action={<button className="primary-button" onClick={() => { setEditingId(""); setForm({ name: "", description: "", startDate: inputDate(7), endDate: inputDate(14) }); setShowForm(!showForm); }}>Create tournament</button>} />
+      <PageTitle eyebrow="Quản lý giải đấu" title="Giải đấu" description="Tạo giải đấu và điều phối vòng đấu, cuộc đua." action={<button className="primary-button" onClick={() => { setEditingId(""); setForm({ name: "", description: "", startDate: inputDate(7), endDate: inputDate(14) }); setShowForm(!showForm); }}>Tạo giải đấu</button>} />
       <Notice message={message} />
-      {showForm && <form className="admin-form" onSubmit={submit}><input placeholder="Tournament name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /><input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /><input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /><input type="datetime-local" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /><button className="primary-button">Save tournament</button></form>}
+      {showForm && <form className="admin-form" onSubmit={submit}><input placeholder="Tên giải đấu" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /><input placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /><input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /><input type="datetime-local" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /><button className="primary-button">Lưu giải đấu</button></form>}
       <section className="admin-card-grid">{items.map((item) => {
         const id = item.id ?? item.Id;
-        return <article key={id} className="admin-tournament-card"><div><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Active" : "Inactive"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "No description"}</p></div><dl><div><dt>Start</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Rounds</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Races</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions"><button onClick={() => edit(item)}>Edit</button><button className="admin-danger" onClick={() => remove(id)}>Delete</button></div></article>;
+        return <article key={id} className="admin-tournament-card"><div><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Hoạt động" : "Không hoạt động"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "Không có mô tả"}</p></div><dl><div><dt>Bắt đầu</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Vòng đấu</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Cuộc đua</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions"><button onClick={() => edit(item)}>Sửa</button><button className="admin-danger" onClick={() => remove(id)}>Xóa</button></div></article>;
       })}</section>
     </>
   );
@@ -732,7 +732,7 @@ function ScheduleManagement({ type }) {
         await createRace({ ...form, tournamentId: selected, roundId: form.roundId || null, scheduledAt: new Date(form.scheduledAt).toISOString(), maxParticipants: Number(form.maxParticipants), distance: Number(form.distance) });
         setItems(await getTournamentRaces(selected));
       }
-      setMessage(`${type === "round" ? "Round" : "Race"} created successfully.`);
+      setMessage(`${type === "round" ? "Vòng đấu" : "Cuộc đua"} đã tạo thành công.`);
     } catch (err) { setMessage(err.message); }
   };
 
@@ -742,12 +742,12 @@ function ScheduleManagement({ type }) {
     const jockeyId = assignment.jockeyId.trim();
 
     if (!isGuid(horseId)) {
-      setMessage("Horse ID must be a valid GUID.");
+      setMessage("ID ngựa phải là GUID hợp lệ.");
       return;
     }
 
     if (jockeyId && !isGuid(jockeyId)) {
-      setMessage("Jockey ID must be a valid GUID or left empty.");
+      setMessage("ID kỵ sĩ phải là GUID hợp lệ hoặc để trống.");
       return;
     }
 
@@ -756,73 +756,73 @@ function ScheduleManagement({ type }) {
         horseId,
         jockeyId: jockeyId || null,
       });
-      setMessage("Horse assigned to race successfully.");
+      setMessage("Đã phân công ngựa vào cuộc đua thành công.");
       setAssignment({ raceId: "", horseId: "", jockeyId: "" });
       setItems(await getTournamentRaces(selected));
     } catch (err) { setMessage(err.message); }
   };
 
   const handleRaceAction = async (raceId, action) => {
-    const labels = { start: "start", end: "end", cancel: "cancel" };
-    if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} this race?`)) return;
+    const labels = { start: "bắt đầu", end: "kết thúc", cancel: "hủy" };
+    if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} cuộc đua này?`)) return;
     try {
       if (action === "start") await startRace(raceId);
       else if (action === "end") await endRace(raceId);
       else if (action === "cancel") await cancelRace(raceId);
-      setMessage(`Race ${labels[action]}ed successfully.`);
+      setMessage(`Cuộc đua đã ${labels[action]} thành công.`);
       setItems(await getTournamentRaces(selected));
     } catch (err) { setMessage(err.message); }
   };
 
-  const title = type === "round" ? "Round management" : "Race management & scheduling";
+  const title = type === "round" ? "Quản lý vòng đấu" : "Quản lý cuộc đua & lên lịch";
   return (
     <>
-      <PageTitle eyebrow="Tournament Management" title={title} description={type === "round" ? "Build tournament stages and define their date windows." : "Arrange races, set schedules, and prepare horse assignments."} />
+      <PageTitle eyebrow="Quản lý giải đấu" title={title} description={type === "round" ? "Xây dựng giai đoạn giải đấu và xác định khung thời gian." : "Sắp xếp cuộc đua, đặt lịch và chuẩn bị phân công ngựa."} />
       <Notice message={message} />
-      <div className="admin-select-row"><label>Tournament<select value={selected} onChange={(e) => setSelected(e.target.value)}>{tournaments.map((item) => <option key={item.id ?? item.Id} value={item.id ?? item.Id}>{item.name ?? item.Name}</option>)}</select></label></div>
+      <div className="admin-select-row"><label>Giải đấu<select value={selected} onChange={(e) => setSelected(e.target.value)}>{tournaments.map((item) => <option key={item.id ?? item.Id} value={item.id ?? item.Id}>{item.name ?? item.Name}</option>)}</select></label></div>
       <form className="admin-form" onSubmit={submit}>
-        <input placeholder={`${type === "round" ? "Round" : "Race"} name`} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <input placeholder={`Tên ${type === "round" ? "vòng đấu" : "cuộc đua"}`} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         {type === "round" ? <>
           <input type="number" min="1" value={form.roundNumber} onChange={(e) => setForm({ ...form, roundNumber: Number(e.target.value) })} />
           <input type="datetime-local" value={form.scheduledStartDate} onChange={(e) => setForm({ ...form, scheduledStartDate: e.target.value })} />
           <input type="datetime-local" value={form.scheduledEndDate} onChange={(e) => setForm({ ...form, scheduledEndDate: e.target.value })} />
         </> : <>
           <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
-          <input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          <input type="number" min="1" placeholder="Max participants" value={form.maxParticipants} onChange={(e) => setForm({ ...form, maxParticipants: e.target.value })} />
-          <input type="number" min="100" placeholder="Distance (m)" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
+          <input placeholder="Địa điểm" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          <input type="number" min="1" placeholder="Số người tham gia tối đa" value={form.maxParticipants} onChange={(e) => setForm({ ...form, maxParticipants: e.target.value })} />
+          <input type="number" min="100" placeholder="Khoảng cách (m)" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
         </>}
-        <button className="primary-button" disabled={!selected}>Create {type}</button>
+        <button className="primary-button" disabled={!selected}>Tạo {type === "round" ? "vòng đấu" : "cuộc đua"}</button>
       </form>
       {type === "race" && <form className="admin-form" onSubmit={assignHorse}>
         <select required value={assignment.raceId} onChange={(e) => setAssignment({ ...assignment, raceId: e.target.value })}>
-          <option value="">Select race for horse assignment</option>
+          <option value="">Chọn cuộc đua để phân công ngựa</option>
           {items.map((item) => <option key={item.id ?? item.Id} value={item.id ?? item.Id}>{item.name ?? item.Name}</option>)}
         </select>
         <select required value={assignment.horseId} onChange={(e) => selectHorse(e.target.value)}>
-          <option value="">Select approved horse</option>
+          <option value="">Chọn ngựa đã được phê duyệt</option>
           {visibleHorses.map((horse) => {
             const jockeyName =
               horse.assignedJockeyName ?? horse.AssignedJockeyName;
             const assignmentStatus =
               horse.jockeyAssignmentStatus ?? horse.JockeyAssignmentStatus;
-            return <option key={horse.id ?? horse.Id} value={horse.id ?? horse.Id}>{horse.name ?? horse.Name} · {jockeyName ? `${jockeyName} (${assignmentStatus || "Assigned"})` : "No jockey"}</option>;
+            return <option key={horse.id ?? horse.Id} value={horse.id ?? horse.Id}>{horse.name ?? horse.Name} · {jockeyName ? `${jockeyName} (${assignmentStatus || "Đã phân công"})` : "Không có kỵ sĩ"}</option>;
           })}
         </select>
         <select value={assignment.jockeyId} onChange={(e) => selectJockey(e.target.value)} disabled={Boolean(selectedHorseJockeyId)}>
-          <option value="">No jockey</option>
+          <option value="">Không có kỵ sĩ</option>
           {approvedJockeys.map((jockey) => <option key={jockey.id} value={jockey.id}>{jockey.fullName}</option>)}
         </select>
-        <button className="primary-button" disabled={!assignment.raceId || !assignment.horseId}>Assign horse</button>
+        <button className="primary-button" disabled={!assignment.raceId || !assignment.horseId}>Phân công ngựa</button>
       </form>}
       {type === "race" && selectedHorseJockeyId ? (
         <p className="admin-muted-note">
-          This horse is assigned to {selectedHorseJockeyName || "the selected jockey"}. The jockey will be added automatically.
+          Ngựa này được phân công cho {selectedHorseJockeyName || "kỵ sĩ đã chọn"}. Kỵ sĩ sẽ được thêm tự động.
         </p>
       ) : null}
       {type === "race" && approvedJockeys.length === 0 ? (
         <p className="admin-muted-note">
-          No approved jockeys are available. Approve jockey accounts in Role Management before assigning one to a race.
+          Không có kỵ sĩ nào được phê duyệt. Hãy phê duyệt tài khoản kỵ sĩ trong Quản lý vai trò trước khi phân công vào cuộc đua.
         </p>
       ) : null}
       <section className="admin-card-grid">{items.map((item) => {
@@ -832,22 +832,22 @@ function ScheduleManagement({ type }) {
           <span className="badge">{item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
           <h3>{item.name ?? item.Name}</h3>
           <p>{formatDate(item.scheduledAt ?? item.ScheduledAt ?? item.scheduledStartDate ?? item.ScheduledStartDate)}</p>
-          <small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} races` : `${item.entriesCount ?? item.EntriesCount ?? 0} assigned horses`}</small>
+          <small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} cuộc đua` : `${item.entriesCount ?? item.EntriesCount ?? 0} ngựa đã phân công`}</small>
           {type === "race" && (
             <div className="admin-actions admin-race-actions">
               {itemStatus !== "inprogress" && itemStatus !== "finished" && (
                 <button onClick={() => handleRaceAction(itemId, "start")} disabled={itemStatus === "cancelled"}>
-                  Start
+                  Bắt đầu
                 </button>
               )}
               {itemStatus === "inprogress" && (
                 <button onClick={() => handleRaceAction(itemId, "end")}>
-                  End
+                  Kết thúc
                 </button>
               )}
               {itemStatus !== "finished" && itemStatus !== "cancelled" && (
                 <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
-                  Cancel
+                  Hủy
                 </button>
               )}
             </div>
@@ -881,33 +881,33 @@ function RegistrationManagement() {
     const id = registration.id ?? registration.Id;
     try {
       await approveRegistration(id);
-      setMessage("Registration approved.");
+      setMessage("Đăng ký đã được phê duyệt.");
       load();
     } catch (err) { setMessage(err.message); }
   };
 
   const reject = async (registration) => {
     const id = registration.id ?? registration.Id;
-    const reason = window.prompt("Rejection reason (optional):");
+    const reason = window.prompt("Lý do từ chối (tùy chọn):");
     if (reason === null) return;
     try {
-      await rejectRegistration(id, reason || "Rejected by admin");
-      setMessage("Registration rejected.");
+      await rejectRegistration(id, reason || "Bị từ chối bởi quản trị viên");
+      setMessage("Đăng ký đã bị từ chối.");
       load();
     } catch (err) { setMessage(err.message); }
   };
 
   return (
     <>
-      <PageTitle eyebrow="User Management" title="Registration approvals" description="Review and approve new user registrations before they can access the platform." />
+      <PageTitle eyebrow="Quản lý người dùng" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký người dùng mới trước khi họ có thể truy cập nền tảng." />
       <div className="admin-toolbar">
-        <input placeholder="Search by name, email, or role..." value={query} onChange={(e) => setQuery(e.target.value)} />
-        <span>{filtered.length} pending</span>
+        <input placeholder="Tìm kiếm theo tên, email hoặc vai trò..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <span>{filtered.length} đang chờ</span>
       </div>
       <Notice message={message} />
       <div className="admin-table-wrap">
         <table className="admin-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
           <tbody>
             {filtered.map((item) => {
               const id = item.id ?? item.Id;
@@ -921,15 +921,15 @@ function RegistrationManagement() {
                   <td>{formatDate(item.createdAt ?? item.CreatedAt)}</td>
                   <td>
                     <div className="admin-actions">
-                      <button disabled={status !== "Pending"} onClick={() => approve(item)}>Approve</button>
-                      <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Reject</button>
+                      <button disabled={status !== "Pending"} onClick={() => approve(item)}>Phê duyệt</button>
+                      <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Từ chối</button>
                     </div>
                   </td>
                 </tr>
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={6}>No pending registrations found.</td></tr>
+              <tr><td colSpan={6}>Không tìm thấy đăng ký đang chờ nào.</td></tr>
             )}
           </tbody>
         </table>

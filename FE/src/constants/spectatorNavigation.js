@@ -1,9 +1,8 @@
 export const spectatorNavItems = [
-  { to: "/spectator", label: "Dashboard", end: true },
-  { to: "/spectator/tournaments", label: "Tournaments" },
-  { to: "/spectator/schedule", label: "Schedule" },
-  { to: "/spectator/live-ranking", label: "Live Ranking" },
-  { to: "/spectator/predictions", label: "Predictions" },
-  { to: "/spectator/predictions/results", label: "Prediction Results" },
-  { to: "/spectator/rewards", label: "Rewards" },
+  { to: "/", label: "Trang chủ", end: true },
+  { to: "/spectator/tournaments", label: "Giải đấu" },
+  { to: "/spectator/schedule", label: "Lịch đua" },
+  { to: "/spectator/live-ranking", label: "BXH trực tiếp" },
+  { to: "/spectator/predictions", label: "Dự đoán" },
+  { to: "/spectator/predictions/results", label: "Kết quả dự đoán" },
 ];

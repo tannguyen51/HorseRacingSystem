@@ -17,7 +17,7 @@ function Modal({ title, children, onClose }) {
       <div className="owner-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
         <div className="modal-header">
           <h3>{title}</h3>
-          <button className="ghost-button" onClick={onClose}>Close</button>
+          <button className="ghost-button" onClick={onClose}>Đóng</button>
         </div>
         <div className="modal-body">{children}</div>
       </div>
@@ -34,28 +34,28 @@ export function PrizeManagement() {
   const load = () => getPrizes().then((d) => setItems(Array.isArray(d) ? d : [])).catch((e) => setMsg(e.message));
   useEffect(() => { load(); getAdminTournaments().then((d) => setTournaments(Array.isArray(d) ? d : [])); }, []);
 
-  const submit = async (ev) => { ev.preventDefault(); try { await createPrize({ ...form, amount: Number(form.amount), position: Number(form.position), tournamentId: form.tournamentId || null, raceId: form.raceId || null }); setMsg("Prize created."); load(); } catch (e) { setMsg(e.message); } };
-  const remove = async (id) => { if (!confirm("Delete?")) return; try { await deletePrize(id); load(); } catch (e) { setMsg(e.message); } };
+  const submit = async (ev) => { ev.preventDefault(); try { await createPrize({ ...form, amount: Number(form.amount), position: Number(form.position), tournamentId: form.tournamentId || null, raceId: form.raceId || null }); setMsg("Đã tạo giải thưởng."); load(); } catch (e) { setMsg(e.message); } };
+  const remove = async (id) => { if (!confirm("Xóa?")) return; try { await deletePrize(id); load(); } catch (e) { setMsg(e.message); } };
 
   return (
     <div>
-      <h2>Prize Money</h2>
-      <p style={{ color: "#657086", marginBottom: 16 }}>Manage prize distribution for tournaments and races.</p>
+      <h2>Tiền thưởng</h2>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Quản lý phân phối tiền thưởng cho giải đấu và cuộc đua.</p>
       {msg && <p className="admin-notice">{msg}</p>}
       <form onSubmit={submit} className="admin-form" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        <input placeholder="Prize name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <input type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
-        <input type="number" placeholder="Position (1,2,3...)" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
+        <input placeholder="Tên giải thưởng" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <input type="number" placeholder="Số tiền" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+        <input type="number" placeholder="Vị trí (1,2,3...)" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
         <select value={form.tournamentId} onChange={(e) => setForm({ ...form, tournamentId: e.target.value })}>
-          <option value="">Tournament (optional)</option>
+          <option value="">Giải đấu (tùy chọn)</option>
           {tournaments.map((t) => <option key={t.id ?? t.Id} value={t.id ?? t.Id}>{t.name ?? t.Name}</option>)}
         </select>
-        <input placeholder="Sponsor" value={form.sponsorName} onChange={(e) => setForm({ ...form, sponsorName: e.target.value })} />
-        <button className="primary-button" type="submit">Add Prize</button>
+        <input placeholder="Nhà tài trợ" value={form.sponsorName} onChange={(e) => setForm({ ...form, sponsorName: e.target.value })} />
+        <button className="primary-button" type="submit">Thêm giải thưởng</button>
       </form>
       <div className="admin-table-wrap"><table className="admin-table">
-        <thead><tr><th>Name</th><th>Amount</th><th>Pos</th><th>Sponsor</th><th>Distributed</th><th>Actions</th></tr></thead>
-        <tbody>{items.map((p) => <tr key={p.id}><td>{p.name}</td><td>{p.amount} {p.currency}</td><td>#{p.position}</td><td>{p.sponsorName || "-"}</td><td>{p.isDistributed ? "Yes" : "No"}</td><td><button onClick={() => remove(p.id)}>Delete</button></td></tr>)}</tbody>
+        <thead><tr><th>Tên</th><th>Số tiền</th><th>Vị trí</th><th>Nhà tài trợ</th><th>Đã phân phối</th><th>Thao tác</th></tr></thead>
+        <tbody>{items.map((p) => <tr key={p.id}><td>{p.name}</td><td>{p.amount} {p.currency}</td><td>#{p.position}</td><td>{p.sponsorName || "-"}</td><td>{p.isDistributed ? "Có" : "Không"}</td><td><button onClick={() => remove(p.id)}>Xóa</button></td></tr>)}</tbody>
       </table></div>
     </div>
   );
@@ -74,46 +74,46 @@ export function ProtestManagement() {
   const submitRule = async () => {
     if (!modal) return;
     const ruling = modal.type === "upheld"
-      ? `Upheld - ${modalText || "Protest upheld"}`
-      : `Rejected - ${modalText || "Insufficient evidence"}`;
-    try { await ruleProtest(modal.id, { ruling, resolution: modalText }); setMsg(`Protest ${modal.type === "upheld" ? "upheld" : "rejected"}.`); setModal(null); load(); }
+      ? `Chấp nhận - ${modalText || "Khiếu nại được chấp nhận"}`
+      : `Từ chối - ${modalText || "Không đủ bằng chứng"}`;
+    try { await ruleProtest(modal.id, { ruling, resolution: modalText }); setMsg(`Khiếu nại đã ${modal.type === "upheld" ? "chấp nhận" : "từ chối"}.`); setModal(null); load(); }
     catch (e) { setMsg(e.message); }
   };
 
   return (
     <div>
-      <h2>Protests</h2>
-      <p style={{ color: "#657086", marginBottom: 16 }}>Review and rule on race protests filed by owners and jockeys.</p>
+      <h2>Khiếu nại</h2>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Xem xét và phán quyết khiếu nại cuộc đua từ chủ sở hữu và kỵ sĩ.</p>
       {msg && <p className="admin-notice">{msg}</p>}
 
       {modal && (
-        <Modal title={modal.type === "upheld" ? "Upheld Protest - Details" : "Reject Protest - Reason"} onClose={() => setModal(null)}>
+        <Modal title={modal.type === "upheld" ? "Chấp nhận khiếu nại - Chi tiết" : "Từ chối khiếu nại - Lý do"} onClose={() => setModal(null)}>
           <div className="form-group">
-            <label>{modal.type === "upheld" ? "Resolution details" : "Rejection reason"}</label>
+            <label>{modal.type === "upheld" ? "Chi tiết giải quyết" : "Lý do từ chối"}</label>
             <textarea className="form-textarea" rows={4} value={modalText} onChange={(e) => setModalText(e.target.value)}
-              placeholder={modal.type === "upheld" ? "Describe the resolution..." : "Why is this protest being rejected?"} />
+              placeholder={modal.type === "upheld" ? "Mô tả cách giải quyết..." : "Tại sao khiếu nại này bị từ chối?"} />
           </div>
           <div className="modal-actions" style={{ marginTop: 16 }}>
-            <button className="primary-button" onClick={submitRule}>{modal.type === "upheld" ? "Upheld" : "Reject"}</button>
-            <button className="ghost-button" onClick={() => setModal(null)}>Cancel</button>
+            <button className="primary-button" onClick={submitRule}>{modal.type === "upheld" ? "Chấp nhận" : "Từ chối"}</button>
+            <button className="ghost-button" onClick={() => setModal(null)}>Hủy</button>
           </div>
         </Modal>
       )}
 
-      {items.length === 0 ? <p className="muted">No pending protests.</p> : (
+      {items.length === 0 ? <p className="muted">Không có khiếu nại đang chờ.</p> : (
         <div className="admin-card-grid">
           {items.map((p) => (
             <article key={p.id} className="admin-simple-card">
               <span className="badge">{p.status}</span>
-              <h3>{p.filedByName || "Unknown"}</h3>
-              <p>Race: {p.raceName || p.raceId}</p>
-              <p>Against: {p.againstHorseName || p.againstEntryId}</p>
-              <p><strong>Reason:</strong> {p.reason}</p>
-              {p.evidence && <p><strong>Evidence:</strong> {p.evidence}</p>}
-              <p className="time">Filed: {fDate(p.filedAt)}</p>
+              <h3>{p.filedByName || "Không xác định"}</h3>
+              <p>Cuộc đua: {p.raceName || p.raceId}</p>
+              <p>Chống lại: {p.againstHorseName || p.againstEntryId}</p>
+              <p><strong>Lý do:</strong> {p.reason}</p>
+              {p.evidence && <p><strong>Bằng chứng:</strong> {p.evidence}</p>}
+              <p className="time">Nộp: {fDate(p.filedAt)}</p>
               <div className="admin-actions" style={{ marginTop: 8 }}>
-                <button onClick={() => openRuleModal(p.id, "upheld")}>Upheld</button>
-                <button className="admin-danger" onClick={() => openRuleModal(p.id, "reject")}>Reject</button>
+                <button onClick={() => openRuleModal(p.id, "upheld")}>Chấp nhận</button>
+                <button className="admin-danger" onClick={() => openRuleModal(p.id, "reject")}>Từ chối</button>
               </div>
             </article>
           ))}
@@ -132,32 +132,32 @@ export function TransferManagement() {
   const load = () => getPendingTransfers().then((d) => setItems(Array.isArray(d) ? d : [])).catch((e) => setMsg(e.message));
   useEffect(() => { load(); }, []);
 
-  const approve = async (id) => { try { await approveTransfer(id); setMsg("Transfer approved."); load(); } catch (e) { setMsg(e.message); } };
-  const submitReject = async () => { if (!rejectModal) return; try { await rejectTransfer(rejectModal.id, rejectReason || "Rejected"); setMsg("Transfer rejected."); setRejectModal(null); load(); } catch (e) { setMsg(e.message); } };
+  const approve = async (id) => { try { await approveTransfer(id); setMsg("Đã phê duyệt chuyển nhượng."); load(); } catch (e) { setMsg(e.message); } };
+  const submitReject = async () => { if (!rejectModal) return; try { await rejectTransfer(rejectModal.id, rejectReason || "Bị từ chối"); setMsg("Đã từ chối chuyển nhượng."); setRejectModal(null); load(); } catch (e) { setMsg(e.message); } };
 
   return (
     <div>
-      <h2>Horse Transfers</h2>
-      <p style={{ color: "#657086", marginBottom: 16 }}>Review and approve horse ownership transfers.</p>
+      <h2>Chuyển nhượng ngựa</h2>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Xem xét và phê duyệt chuyển nhượng quyền sở hữu ngựa.</p>
       {msg && <p className="admin-notice">{msg}</p>}
 
       {rejectModal && (
-        <Modal title="Reject Transfer" onClose={() => setRejectModal(null)}>
+        <Modal title="Từ chối chuyển nhượng" onClose={() => setRejectModal(null)}>
           <div className="form-group">
-            <label>Rejection reason</label>
-            <textarea className="form-textarea" rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Why is this transfer being rejected?" />
+            <label>Lý do từ chối</label>
+            <textarea className="form-textarea" rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Tại sao chuyển nhượng này bị từ chối?" />
           </div>
           <div className="modal-actions" style={{ marginTop: 16 }}>
-            <button className="primary-button" onClick={submitReject}>Reject Transfer</button>
-            <button className="ghost-button" onClick={() => setRejectModal(null)}>Cancel</button>
+            <button className="primary-button" onClick={submitReject}>Từ chối chuyển nhượng</button>
+            <button className="ghost-button" onClick={() => setRejectModal(null)}>Hủy</button>
           </div>
         </Modal>
       )}
 
-      {items.length === 0 ? <p className="muted">No pending transfers.</p> : (
+      {items.length === 0 ? <p className="muted">Không có chuyển nhượng đang chờ.</p> : (
         <div className="admin-table-wrap"><table className="admin-table">
-          <thead><tr><th>Horse</th><th>From</th><th>To</th><th>Type</th><th>Price</th><th>Requested</th><th>Actions</th></tr></thead>
-          <tbody>{items.map((t) => <tr key={t.id}><td>{t.horseName || t.horseId}</td><td>{t.fromOwnerName || "-"}</td><td>{t.toOwnerName || "-"}</td><td>{t.transferType}</td><td>{t.price ? `${t.price}` : "-"}</td><td>{fDate(t.requestedAt)}</td><td><div className="admin-actions"><button onClick={() => approve(t.id)}>Approve</button><button className="admin-danger" onClick={() => setRejectModal({ id: t.id })}>Reject</button></div></td></tr>)}</tbody>
+          <thead><tr><th>Ngựa</th><th>Từ</th><th>Đến</th><th>Loại</th><th>Giá</th><th>Ngày yêu cầu</th><th>Thao tác</th></tr></thead>
+          <tbody>{items.map((t) => <tr key={t.id}><td>{t.horseName || t.horseId}</td><td>{t.fromOwnerName || "-"}</td><td>{t.toOwnerName || "-"}</td><td>{t.transferType}</td><td>{t.price ? `${t.price}` : "-"}</td><td>{fDate(t.requestedAt)}</td><td><div className="admin-actions"><button onClick={() => approve(t.id)}>Phê duyệt</button><button className="admin-danger" onClick={() => setRejectModal({ id: t.id })}>Từ chối</button></div></td></tr>)}</tbody>
         </table></div>
       )}
     </div>
@@ -173,12 +173,12 @@ export function ContractManagement() {
 
   return (
     <div>
-      <h2>Contracts</h2>
-      <p style={{ color: "#657086", marginBottom: 16 }}>Owner-Jockey contracts and agreements.</p>
+      <h2>Hợp đồng</h2>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Hợp đồng và thỏa thuận Chủ sở hữu - Kỵ sĩ.</p>
       {msg && <p className="admin-notice">{msg}</p>}
-      {items.length === 0 ? <p className="muted">No contracts.</p> : (
+      {items.length === 0 ? <p className="muted">Không có hợp đồng.</p> : (
         <div className="admin-table-wrap"><table className="admin-table">
-          <thead><tr><th>Title</th><th>Owner</th><th>Jockey</th><th>Horse</th><th>Status</th><th>Period</th><th>Fee</th></tr></thead>
+          <thead><tr><th>Tiêu đề</th><th>Chủ sở hữu</th><th>Kỵ sĩ</th><th>Ngựa</th><th>Trạng thái</th><th>Thời hạn</th><th>Phí</th></tr></thead>
           <tbody>{items.map((c) => <tr key={c.id}><td>{c.title}</td><td>{c.ownerName || "-"}</td><td>{c.jockeyName || "-"}</td><td>{c.horseName || "-"}</td><td><span className={`status status--${c.status?.toLowerCase()}`}>{c.status}</span></td><td>{fDate(c.startDate)} - {fDate(c.endDate)}</td><td>{c.baseFee ? `$${c.baseFee}` : "-"}</td></tr>)}</tbody>
         </table></div>
       )}
@@ -195,13 +195,13 @@ export function InjuryManagement() {
 
   return (
     <div>
-      <h2>Injury Records</h2>
-      <p style={{ color: "#657086", marginBottom: 16 }}>Track horse injuries, treatment, and recovery status.</p>
+      <h2>Hồ sơ chấn thương</h2>
+      <p style={{ color: "#657086", marginBottom: 16 }}>Theo dõi chấn thương ngựa, điều trị và tình trạng hồi phục.</p>
       {msg && <p className="admin-notice">{msg}</p>}
-      {items.length === 0 ? <p className="muted">No injury records.</p> : (
+      {items.length === 0 ? <p className="muted">Không có hồ sơ chấn thương.</p> : (
         <div className="admin-table-wrap"><table className="admin-table">
-          <thead><tr><th>Horse</th><th>Injury</th><th>Severity</th><th>Status</th><th>Veterinarian</th><th>Diagnosed</th><th>Cleared</th></tr></thead>
-          <tbody>{items.map((r) => <tr key={r.id}><td>{r.horseName || r.horseId}</td><td>{r.injuryType}</td><td><span className="status status--inactive">{r.severity}</span></td><td><span className={`status status--${r.status?.toLowerCase()}`}>{r.status}</span></td><td>{r.veterinarianName || "-"}</td><td>{fDate(r.diagnosedAt)}</td><td>{r.clearedToRace ? "Yes" : "No"}</td></tr>)}</tbody>
+          <thead><tr><th>Ngựa</th><th>Chấn thương</th><th>Mức độ</th><th>Trạng thái</th><th>Bác sĩ thú y</th><th>Chẩn đoán</th><th>Đã khỏi</th></tr></thead>
+          <tbody>{items.map((r) => <tr key={r.id}><td>{r.horseName || r.horseId}</td><td>{r.injuryType}</td><td><span className="status status--inactive">{r.severity}</span></td><td><span className={`status status--${r.status?.toLowerCase()}`}>{r.status}</span></td><td>{r.veterinarianName || "-"}</td><td>{fDate(r.diagnosedAt)}</td><td>{r.clearedToRace ? "Có" : "Không"}</td></tr>)}</tbody>
         </table></div>
       )}
     </div>

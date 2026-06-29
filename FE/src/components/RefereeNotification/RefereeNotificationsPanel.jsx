@@ -5,7 +5,7 @@ import "./RefereeNotificationsPanel.css";
 /**
  * RefereeNotificationsPanel Component
  * Container component that displays all pending referee assignment notifications
- * 
+ *
  * Usage:
  * <RefereeNotificationsPanel />
  */
@@ -40,7 +40,7 @@ export function RefereeNotificationsPanel() {
   if (isLoading && assignments.length === 0) {
     return (
       <div className="referee-notifications-panel loading">
-        <p>Loading assignments...</p>
+        <p>Đang tải phân công...</p>
       </div>
     );
   }
@@ -49,8 +49,8 @@ export function RefereeNotificationsPanel() {
   if (error && assignments.length === 0) {
     return (
       <div className="referee-notifications-panel error">
-        <p>Failed to load assignments: {error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <p>Không thể tải phân công: {error}</p>
+        <button onClick={() => window.location.reload()}>Thử lại</button>
       </div>
     );
   }
@@ -59,7 +59,7 @@ export function RefereeNotificationsPanel() {
   if (assignments.length === 0) {
     return (
       <div className="referee-notifications-panel empty">
-        <p>No pending referee assignments</p>
+        <p>Không có phân công trọng tài đang chờ</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export function RefereeNotificationsPanel() {
   return (
     <div className="referee-notifications-panel">
       <div className="notifications-header">
-        <h2>Referee Assignments ({assignments.length})</h2>
+        <h2>Phân công trọng tài ({assignments.length})</h2>
       </div>
 
       <div className="notifications-list">

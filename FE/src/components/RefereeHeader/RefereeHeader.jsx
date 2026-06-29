@@ -8,7 +8,7 @@ function RefereeHeader() {
     <header className="referee-header">
       <Link className="referee-header__brand" to="/referee">
         <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Referee Portal</p></div>
+        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Cổng Trọng Tài</p></div>
       </Link>
       <nav className="referee-header__nav" aria-label="Referee">
         {refereeNavItems.map((item) => (

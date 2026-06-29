@@ -62,7 +62,7 @@ function JockeyDashboardPage() {
           setRaces(fallbackRaces);
           setInvitations([]);
           setErrorMessage(
-            error.message || "Unable to load jockey dashboard data.",
+            error.message || "Không thể tải dữ liệu bảng điều khiển.",
           );
         }
       } finally {
@@ -105,21 +105,21 @@ function JockeyDashboardPage() {
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Jockey Dashboard</p>
-            <h3>Rider command</h3>
-            <p className="muted">Assigned races, invitations, and readiness.</p>
+            <p className="pill">Bảng Điều Khiển Nài Ngựa</p>
+            <h3>Bảng điều khiển</h3>
+            <p className="muted">Các cuộc đua được phân công, lời mời và trạng thái sẵn sàng.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Next schedule</p>
-            <h4>{nextRace?.title ?? "No race assigned"}</h4>
-            <span>{formatJockeyDate(nextRace?.scheduledAt, "Waiting")}</span>
+            <p className="muted">Lịch tiếp theo</p>
+            <h4>{nextRace?.title ?? "Chưa có cuộc đua"}</h4>
+            <span>{formatJockeyDate(nextRace?.scheduledAt, "Đang chờ")}</span>
           </div>
           <div className="jockey-side-actions">
             <Link to="/jockey/invitations" className="jockey-side-link">
-              Manage invitations
+              Quản lý lời mời
             </Link>
             <Link to="/jockey/schedule" className="jockey-side-link">
-              Open race calendar
+              Mở lịch đua
             </Link>
           </div>
         </aside>
@@ -127,25 +127,25 @@ function JockeyDashboardPage() {
         <div className="spectator-content">
           <section className="jockey-hero">
             <div>
-              <span className="pill">Rider overview</span>
-              <h1>Jockey Dashboard</h1>
+              <span className="pill">Tổng quan kỵ sĩ</span>
+              <h1>Bảng Điều Khiển Nài Ngựa</h1>
               <p>
-                Review assigned races, keep your upcoming schedule clear, and
-                monitor performance before race day.
+                Xem các cuộc đua được phân công, theo dõi lịch trình sắp tới và
+                giám sát hiệu suất trước ngày đua.
               </p>
               {errorMessage ? <p className="jockey-inline-warning">{errorMessage}</p> : null}
             </div>
             <div className="jockey-hero__panel">
               <div>
-                <span>Assigned races</span>
+                <span>Cuộc đua được phân công</span>
                 <strong>{loading ? "--" : races.length}</strong>
               </div>
               <div>
-                <span>Pending invitations</span>
+                <span>Lời mời đang chờ</span>
                 <strong>{loading ? "--" : invitations.length}</strong>
               </div>
               <div>
-                <span>Win summary</span>
+                <span>Tổng kết chiến thắng</span>
                 <strong>{winRate}</strong>
               </div>
             </div>
@@ -153,27 +153,27 @@ function JockeyDashboardPage() {
 
           <section className="jockey-stat-grid">
             <article className="jockey-stat-card hover-lift">
-              <p className="muted">Assigned races</p>
+              <p className="muted">Cuộc đua được phân công</p>
               <h3>{races.length}</h3>
-              <span>Confirmed ride list</span>
+              <span>Danh sách cưỡi đã xác nhận</span>
             </article>
             <article className="jockey-stat-card hover-lift">
-              <p className="muted">Upcoming schedule</p>
-              <h3>{nextRace ? formatJockeyDate(nextRace.scheduledAt) : "None"}</h3>
-              <span>{nextRace?.location ?? "No track booked"}</span>
+              <p className="muted">Lịch sắp tới</p>
+              <h3>{nextRace ? formatJockeyDate(nextRace.scheduledAt) : "Không có"}</h3>
+              <span>{nextRace?.location ?? "Chưa đặt đường đua"}</span>
             </article>
             <article className="jockey-stat-card hover-lift">
-              <p className="muted">Performance summary</p>
+              <p className="muted">Tổng kết hiệu suất</p>
               <h3>{winRate}</h3>
-              <span>{totalHorseWins} wins from assigned mounts</span>
+              <span>{totalHorseWins} chiến thắng từ ngựa được phân công</span>
             </article>
           </section>
 
           <section className="jockey-dashboard-grid">
             <div className="jockey-panel">
               <div className="section-heading">
-                <h2>Upcoming Schedule</h2>
-                <p>Your nearest confirmed race assignments.</p>
+                <h2>Lịch Sắp Tới</h2>
+                <p>Các cuộc đua được xác nhận gần nhất của bạn.</p>
               </div>
               <div className="jockey-list">
                 {sortedRaces.slice(0, 4).map((race) => (
@@ -186,20 +186,20 @@ function JockeyDashboardPage() {
                     <div className="jockey-list-item__meta">
                       <strong>{formatJockeyDate(race.scheduledAt)}</strong>
                       <span>{race.location}</span>
-                      <span>Horse: {race.horseName}</span>
+                      <span>Ngựa: {race.horseName}</span>
                     </div>
                   </article>
                 ))}
                 {!loading && sortedRaces.length === 0 ? (
-                  <p className="muted">No assigned races yet.</p>
+                  <p className="muted">Chưa có cuộc đua nào được phân công.</p>
                 ) : null}
               </div>
             </div>
 
             <div className="jockey-panel">
               <div className="section-heading">
-                <h2>Invitation Management</h2>
-                <p>Race offers waiting for your response.</p>
+                <h2>Quản Lý Lời Mời</h2>
+                <p>Các đề nghị đua đang chờ phản hồi của bạn.</p>
               </div>
               <div className="jockey-list">
                 {invitations.slice(0, 3).map((invitation) => (
@@ -207,18 +207,18 @@ function JockeyDashboardPage() {
                     <div>
                       <span className="badge">{invitation.status}</span>
                       <h3>{invitation.raceName}</h3>
-                      <p className="muted">Horse: {invitation.horseName}</p>
+                      <p className="muted">Ngựa: {invitation.horseName}</p>
                     </div>
                     <Link
                       to={`/jockey/invitations/${invitation.id}`}
                       className="jockey-text-link"
                     >
-                      View detail
+                      Xem chi tiết
                     </Link>
                   </article>
                 ))}
                 {!loading && invitations.length === 0 ? (
-                  <p className="muted">No pending invitations.</p>
+                  <p className="muted">Không có lời mời đang chờ.</p>
                 ) : null}
               </div>
             </div>

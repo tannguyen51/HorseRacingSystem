@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const getInitials = (name) => (name || "User").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const getInitials = (name) => (name || "Người dùng").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
 export default function ProfileDropdown({ profileUrl }) {
   const [open, setOpen] = useState(false);
@@ -20,9 +20,17 @@ export default function ProfileDropdown({ profileUrl }) {
     window.location.assign("/login");
   };
 
-  const fullName = user?.fullName || user?.email || "User";
+  const fullName = user?.fullName || user?.email || "Người dùng";
   const email = user?.email || "";
-  const role = user?.role || "user";
+  const role = user?.role || "người dùng";
+
+  const ROLE_LABELS = {
+    horse_owner: "Chủ Ngựa",
+    jockey: "Kỵ Sĩ",
+    spectator: "Khán giả",
+    referee: "Trọng tài",
+    admin: "Quản trị viên",
+  };
 
   return (
     <div className="profile-dropdown" style={{ position: "relative" }}>
@@ -44,7 +52,7 @@ export default function ProfileDropdown({ profileUrl }) {
         </span>
         <span style={{ fontSize: 13, textAlign: "left" }}>
           <span style={{ display: "block", color: "#172033", lineHeight: 1.2 }}>{fullName}</span>
-          <span style={{ display: "block", color: "#657086", fontSize: 11, lineHeight: 1.2 }}>{role}</span>
+          <span style={{ display: "block", color: "#657086", fontSize: 11, lineHeight: 1.2 }}>{ROLE_LABELS[role] || role}</span>
         </span>
       </button>
 
@@ -65,7 +73,7 @@ export default function ProfileDropdown({ profileUrl }) {
                 display: "block", padding: "8px 10px", borderRadius: 8, color: "#34415b",
                 textDecoration: "none", fontSize: 13, marginBottom: 4,
               }} onMouseOver={(e) => e.target.style.background = "rgba(231,198,120,.08)"} onMouseOut={(e) => e.target.style.background = "none"}>
-                Profile
+                Hồ sơ
               </Link>
             )}
             <button onClick={handleLogout} style={{
@@ -73,7 +81,7 @@ export default function ProfileDropdown({ profileUrl }) {
               borderRadius: 8, border: "none", background: "none", color: "#fca5a5",
               cursor: "pointer", fontSize: 13, marginTop: 2,
             }} onMouseOver={(e) => e.target.style.background = "rgba(248,113,113,.08)"} onMouseOut={(e) => e.target.style.background = "none"}>
-              Logout
+              Đăng xuất
             </button>
           </div>
         </>

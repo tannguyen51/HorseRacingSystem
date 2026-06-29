@@ -4,13 +4,13 @@ import { getOwnerTournaments } from "../../services/ownerApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentListPage.css";
 
-const statusFilters = ["All", "Live", "Open", "Closed"];
+const statusFilters = ["Tất cả", "Đang diễn ra", "Mở", "Đã đóng"];
 
 const formatDate = (value) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
-    ? "TBD"
-    : new Intl.DateTimeFormat("en-US", {
+    ? "Chưa xác định"
+    : new Intl.DateTimeFormat("vi-VN", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -19,7 +19,7 @@ const formatDate = (value) => {
 
 const getTournamentStatus = (tournament) => {
   if (!(tournament?.isActive ?? tournament?.IsActive)) {
-    return "Closed";
+    return "Đã đóng";
   }
 
   const start = new Date(tournament?.startDate ?? tournament?.StartDate);
@@ -30,8 +30,8 @@ const getTournamentStatus = (tournament) => {
     !Number.isNaN(end.getTime()) &&
     now >= start &&
     now <= end
-    ? "Live"
-    : "Open";
+    ? "Đang diễn ra"
+    : "Mở";
 };
 
 const mapTournament = (tournament) => {
@@ -40,9 +40,9 @@ const mapTournament = (tournament) => {
 
   return {
     id: tournament?.id ?? tournament?.Id,
-    name: tournament?.name ?? tournament?.Name ?? "Tournament",
+    name: tournament?.name ?? tournament?.Name ?? "Giải đấu",
     description:
-      tournament?.description ?? tournament?.Description ?? "No description.",
+      tournament?.description ?? tournament?.Description ?? "Không có mô tả.",
     dates: `${formatDate(startDate)} - ${formatDate(endDate)}`,
     status: getTournamentStatus(tournament),
     raceCount: tournament?.raceCount ?? tournament?.RaceCount ?? 0,
@@ -56,7 +56,7 @@ function OwnerTournamentListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("Tất cả");
   const [activeTournament, setActiveTournament] = useState(null);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ function OwnerTournamentListPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load tournaments.");
+          setErrorMessage(error.message || "Không thể tải danh sách giải đấu.");
         }
       } finally {
         if (!cancelled) {
@@ -88,7 +88,7 @@ function OwnerTournamentListPage() {
   const filteredTournaments = useMemo(() => {
     return tournaments.filter((tournament) => {
       const matchesStatus =
-        status === "All" ||
+        status === "Tất cả" ||
         tournament.status.toLowerCase() === status.toLowerCase();
       const matchesQuery = tournament.name
         .toLowerCase()
@@ -102,29 +102,29 @@ function OwnerTournamentListPage() {
       <div className="owner-layout">
         <aside className="owner-sidebar">
           <div className="owner-sidebar__header">
-            <p className="pill">Horse Owner</p>
-            <h3>Tournament list</h3>
-            <p className="muted">Discover upcoming opportunities.</p>
+            <p className="pill">Chủ Ngựa</p>
+            <h3>Danh sách giải đấu</h3>
+            <p className="muted">Khám phá cơ hội sắp tới.</p>
           </div>
           <div className="owner-sidebar__card">
-            <p className="muted">Open tournaments</p>
+            <p className="muted">Giải đấu đang mở</p>
             <h4>
-              {tournaments.filter((tournament) => tournament.status === "Open").length}
+              {tournaments.filter((tournament) => tournament.status === "Mở").length}
             </h4>
-            <span>{tournaments.length} total tournaments</span>
+            <span>{tournaments.length} tổng số giải đấu</span>
           </div>
         </aside>
 
         <div className="owner-content">
           <section className="page-header">
-            <h1>Owner tournaments</h1>
-            <p>Search tournaments and plan your entries.</p>
+            <h1>Giải đấu của chủ ngựa</h1>
+            <p>Tìm kiếm giải đấu và lên kế hoạch đăng ký.</p>
           </section>
 
           <section className="owner-filters">
             <div className="filter-group">
               <label htmlFor="tournament-search" className="label-required">
-                Search tournaments
+                Tìm kiếm giải đấu
               </label>
               <input
                 id="tournament-search"
@@ -132,12 +132,12 @@ function OwnerTournamentListPage() {
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by tournament name"
+                placeholder="Tìm theo tên giải đấu"
               />
             </div>
             <div className="filter-group">
               <label htmlFor="tournament-status" className="label-required">
-                Status
+                Trạng thái
               </label>
               <select
                 id="tournament-status"
@@ -156,18 +156,18 @@ function OwnerTournamentListPage() {
 
           {isLoading ? (
             <div className="empty-state">
-              <h3>Loading tournaments</h3>
-              <p>Fetching the latest tournament schedule.</p>
+              <h3>Đang tải giải đấu</h3>
+              <p>Đang tải lịch giải đấu mới nhất.</p>
             </div>
           ) : errorMessage ? (
             <div className="empty-state">
-              <h3>Unable to load tournaments</h3>
+              <h3>Không thể tải giải đấu</h3>
               <p>{errorMessage}</p>
             </div>
           ) : filteredTournaments.length === 0 ? (
             <div className="empty-state">
-              <h3>No tournaments found</h3>
-              <p>Try a different keyword or status.</p>
+              <h3>Không tìm thấy giải đấu</h3>
+              <p>Thử từ khóa hoặc trạng thái khác.</p>
             </div>
           ) : (
             <section className="tournament-grid">
@@ -184,11 +184,11 @@ function OwnerTournamentListPage() {
                   </div>
                   <div className="tournament-meta">
                     <div>
-                      <span>Races</span>
+                      <span>Cuộc đua</span>
                       <strong>{tournament.raceCount}</strong>
                     </div>
                     <div>
-                      <span>Rounds</span>
+                      <span>Vòng</span>
                       <strong>{tournament.roundCount}</strong>
                     </div>
                   </div>
@@ -198,13 +198,13 @@ function OwnerTournamentListPage() {
                     className="ghost-button"
                     onClick={() => setActiveTournament(tournament)}
                   >
-                    View details
+                    Xem chi tiết
                   </button>
                   <button
                     className="primary-button"
                     onClick={() => navigate("/owner/register-tournament")}
                   >
-                    Register
+                    Đăng ký
                   </button>
                 </div>
               </article>
@@ -232,24 +232,24 @@ function OwnerTournamentListPage() {
                 className="ghost-button"
                 onClick={() => setActiveTournament(null)}
               >
-                Close
+                Đóng
               </button>
             </div>
             <div className="modal-body">
               <div>
-                <h4>Dates</h4>
+                <h4>Ngày</h4>
                 <p>{activeTournament.dates}</p>
               </div>
               <div>
-                <h4>Races</h4>
+                <h4>Cuộc đua</h4>
                 <p>{activeTournament.raceCount}</p>
               </div>
               <div>
-                <h4>Rounds</h4>
+                <h4>Vòng</h4>
                 <p>{activeTournament.roundCount}</p>
               </div>
               <div>
-                <h4>Status</h4>
+                <h4>Trạng thái</h4>
                 <p>{activeTournament.status}</p>
               </div>
             </div>
@@ -258,13 +258,13 @@ function OwnerTournamentListPage() {
                 className="primary-button"
                 onClick={() => navigate("/owner/register-tournament")}
               >
-                Register now
+                Đăng ký ngay
               </button>
               <button
                 className="ghost-button"
                 onClick={() => setActiveTournament(null)}
               >
-                Back
+                Quay lại
               </button>
             </div>
           </div>

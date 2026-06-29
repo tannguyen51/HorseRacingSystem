@@ -18,12 +18,12 @@ const VIOLATION_TYPES = [
 ];
 
 const TYPE_LABELS = {
-  DangerousBehavior: "Dangerous Behavior",
-  FalseStart: "False Start",
-  Interference: "Interference",
-  AnimalWelfare: "Animal Welfare",
-  EquipmentViolation: "Equipment Violation",
-  Other: "Other",
+  DangerousBehavior: "Hành vi nguy hiểm",
+  FalseStart: "Xuất phát sai",
+  Interference: "Can thiệp",
+  AnimalWelfare: "Phúc lợi động vật",
+  EquipmentViolation: "Vi phạm thiết bị",
+  Other: "Khác",
 };
 
 function RefereeViolationPage() {
@@ -52,7 +52,7 @@ function RefereeViolationPage() {
         const data = await getMyAssignments();
         if (!ignore) setAssignments(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
       } catch (e) {
-        if (!ignore) setError("Failed to load assignments: " + e.message);
+        if (!ignore) setError("Không thể tải phân công: " + e.message);
       }
     };
     fetchAssignments();
@@ -79,7 +79,7 @@ function RefereeViolationPage() {
       const data = await getRaceViolations(raceId);
       setViolations(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
     } catch (e) {
-      setError("Failed to load violations: " + e.message);
+      setError("Không thể tải vi phạm: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -105,11 +105,11 @@ function RefereeViolationPage() {
     setSuccessMsg("");
 
     if (!form.raceEntryId || !form.refereeId || !selectedRaceId) {
-      setError("Race, Referee, and Race Entry are required.");
+      setError("Cuộc đua, Trọng tài và Mục tham gia là bắt buộc.");
       return;
     }
     if (!form.description.trim()) {
-      setError("Description is required.");
+      setError("Mô tả là bắt buộc.");
       return;
     }
 
@@ -123,7 +123,7 @@ function RefereeViolationPage() {
         evidence: form.evidence || undefined,
         penalty: form.penalty || undefined,
       });
-      setSuccessMsg("Violation recorded successfully.");
+      setSuccessMsg("Đã ghi nhận vi phạm thành công.");
       setShowForm(false);
       setForm((f) => ({
         ...f,
@@ -148,12 +148,12 @@ function RefereeViolationPage() {
       <div className="referee-layout">
         <aside className="referee-sidebar">
           <div className="referee-sidebar__header">
-            <p className="pill">Referee</p>
-            <h3>Violations</h3>
-            <p className="muted">Record race violations.</p>
+            <p className="pill">Trọng tài</p>
+            <h3>Vi phạm</h3>
+            <p className="muted">Ghi nhận vi phạm cuộc đua.</p>
           </div>
           <div className="referee-sidebar__card">
-            <p className="muted">Violation Types</p>
+            <p className="muted">Loại vi phạm</p>
             <ul className="side-list">
               {VIOLATION_TYPES.map((t) => (
                 <li key={t}>{TYPE_LABELS[t]}</li>
@@ -165,9 +165,9 @@ function RefereeViolationPage() {
         <div className="referee-content">
           <section className="referee-hero">
             <div>
-              <span className="pill">Race Day</span>
-              <h1>Violation Records</h1>
-              <p>Document rule violations during races to maintain fair competition.</p>
+              <span className="pill">Ngày đua</span>
+              <h1>Hồ sơ vi phạm</h1>
+              <p>Ghi nhận vi phạm quy tắc trong cuộc đua để duy trì cạnh tranh công bằng.</p>
             </div>
           </section>
 
@@ -176,14 +176,14 @@ function RefereeViolationPage() {
 
           <section className="referee-section">
             <div className="section-heading">
-              <h2>Select Race</h2>
+              <h2>Chọn cuộc đua</h2>
             </div>
             <select
               className="form-select"
               value={selectedRaceId}
               onChange={(e) => handleRaceSelect(e.target.value)}
             >
-              <option value="">-- Choose a race --</option>
+              <option value="">-- Chọn một cuộc đua --</option>
               {assignedRaces.map((a) => (
                 <option key={a.raceId} value={a.raceId}>
                   {a.raceName || a.raceId}
@@ -195,23 +195,23 @@ function RefereeViolationPage() {
           {selectedRaceId && (
             <section className="referee-section">
               <div className="section-heading">
-                <h2>Violations</h2>
+                <h2>Vi phạm</h2>
                 <button className="primary-button" onClick={() => setShowForm(!showForm)}>
-                  {showForm ? "Cancel" : "+ Record Violation"}
+                  {showForm ? "Hủy" : "+ Ghi nhận vi phạm"}
                 </button>
               </div>
 
               {showForm && (
                 <form className="violation-form" onSubmit={handleSubmit}>
                   <div className="form-group">
-                    <label className="label-required">Race Entry (Horse & Jockey)</label>
+                    <label className="label-required">Mục tham gia (Ngựa & Nài)</label>
                     <select
                       className="form-select"
                       value={form.raceEntryId}
                       onChange={(e) => setForm({ ...form, raceEntryId: e.target.value })}
                       required
                     >
-                      <option value="">-- Select an entry --</option>
+                      <option value="">-- Chọn mục tham gia --</option>
                       {entries.map((entry) => (
                         <option key={entry.entryId} value={entry.entryId}>
                           {entry.horseName} {entry.jockeyName ? `- ${entry.jockeyName}` : ""}
@@ -219,14 +219,14 @@ function RefereeViolationPage() {
                       ))}
                     </select>
                     {entries.length === 0 && (
-                      <p className="muted">No entries in this race.</p>
+                      <p className="muted">Không có mục tham gia nào trong cuộc đua này.</p>
                     )}
                     {selectedEntry && (
-                      <p className="muted">Horse: {selectedEntry.horseName} | Jockey: {selectedEntry.jockeyName || "Unassigned"}</p>
+                      <p className="muted">Ngựa: {selectedEntry.horseName} | Nài: {selectedEntry.jockeyName || "Chưa phân công"}</p>
                     )}
                   </div>
                   <div className="form-group">
-                    <label className="label-required">Violation Type</label>
+                    <label className="label-required">Loại vi phạm</label>
                     <select
                       className="form-select"
                       value={form.violationType}
@@ -238,42 +238,42 @@ function RefereeViolationPage() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="label-required">Description</label>
+                    <label className="label-required">Mô tả</label>
                     <textarea
                       className="form-textarea"
                       rows={3}
-                      placeholder="Describe the violation in detail..."
+                      placeholder="Mô tả chi tiết vi phạm..."
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label>Evidence</label>
+                    <label>Bằng chứng</label>
                     <input
                       className="form-input"
-                      placeholder="URL or description of evidence"
+                      placeholder="URL hoặc mô tả bằng chứng"
                       value={form.evidence}
                       onChange={(e) => setForm({ ...form, evidence: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
-                    <label>Penalty</label>
+                    <label>Hình phạt</label>
                     <input
                       className="form-input"
-                      placeholder="e.g. Time penalty, Disqualification"
+                      placeholder="VD: Phạt thời gian, Truất quyền thi đấu"
                       value={form.penalty}
                       onChange={(e) => setForm({ ...form, penalty: e.target.value })}
                     />
                   </div>
-                  <button type="submit" className="primary-button">Record Violation</button>
+                  <button type="submit" className="primary-button">Ghi nhận vi phạm</button>
                 </form>
               )}
 
               {loading ? (
-                <p>Loading violations...</p>
+                <p>Đang tải vi phạm...</p>
               ) : violations.length === 0 ? (
-                <p className="muted">No violations recorded for this race yet.</p>
+                <p className="muted">Chưa có vi phạm nào được ghi nhận cho cuộc đua này.</p>
               ) : (
                 <div className="violation-list">
                   {violations.map((v) => (
@@ -285,10 +285,10 @@ function RefereeViolationPage() {
                         </span>
                       </div>
                       <p>{v.description}</p>
-                      {v.evidence && <p><strong>Evidence:</strong> {v.evidence}</p>}
-                      {v.penalty && <p><strong>Penalty:</strong> {v.penalty}</p>}
-                      <p className="time">Recorded: {new Date(v.recordedAt).toLocaleString()}</p>
-                      {v.refereeName && <p className="muted">By: {v.refereeName}</p>}
+                      {v.evidence && <p><strong>Bằng chứng:</strong> {v.evidence}</p>}
+                      {v.penalty && <p><strong>Hình phạt:</strong> {v.penalty}</p>}
+                      <p className="time">Đã ghi nhận: {new Date(v.recordedAt).toLocaleString()}</p>
+                      {v.refereeName && <p className="muted">Bởi: {v.refereeName}</p>}
                     </div>
                   ))}
                 </div>

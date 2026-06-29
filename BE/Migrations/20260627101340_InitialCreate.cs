@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HorseRacing.Migrations
 {
     /// <inheritdoc />
-    public partial class TenMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,20 +15,20 @@ namespace HorseRacing.Migrations
                 name: "Tournaments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Venue = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    SurfaceType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MaxRounds = table.Column<int>(type: "int", nullable: false),
-                    PrizePool = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Venue = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    SurfaceType = table.Column<string>(type: "text", nullable: true),
+                    MaxRounds = table.Column<int>(type: "integer", nullable: false),
+                    PrizePool = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -39,17 +39,17 @@ namespace HorseRacing.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    AvatarUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    AvatarUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,15 +60,15 @@ namespace HorseRacing.Migrations
                 name: "Rounds",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoundNumber = table.Column<int>(type: "int", nullable: false),
-                    ScheduledStartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ScheduledEndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ActualStartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ActualEndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    TournamentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoundNumber = table.Column<int>(type: "integer", nullable: false),
+                    ScheduledStartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ScheduledEndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ActualStartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ActualEndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -85,19 +85,19 @@ namespace HorseRacing.Migrations
                 name: "AuditLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    EntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OldValues = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    NewValues = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    IpAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    UserAgent = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ChangesSummary = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AdminId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EntityType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EntityId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Action = table.Column<string>(type: "text", nullable: false),
+                    OldValues = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    NewValues = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    UserAgent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ChangesSummary = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -120,24 +120,24 @@ namespace HorseRacing.Migrations
                 name: "Jockeys",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    Weight = table.Column<decimal>(type: "decimal(6,2)", nullable: true),
-                    ExperienceYears = table.Column<int>(type: "int", nullable: false),
-                    TotalRaces = table.Column<int>(type: "int", nullable: false),
-                    TotalWins = table.Column<int>(type: "int", nullable: false),
-                    WinRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    Rank = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
-                    ApprovalNote = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LicenseNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Gender = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Nationality = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Height = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
+                    Weight = table.Column<decimal>(type: "numeric(6,2)", nullable: true),
+                    ExperienceYears = table.Column<int>(type: "integer", nullable: false),
+                    TotalRaces = table.Column<int>(type: "integer", nullable: false),
+                    TotalWins = table.Column<int>(type: "integer", nullable: false),
+                    WinRate = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    Rank = table.Column<int>(type: "integer", nullable: true),
+                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "integer", nullable: false),
+                    ApprovalNote = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -154,23 +154,23 @@ namespace HorseRacing.Migrations
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    RelatedEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RelatedEntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsSent = table.Column<bool>(type: "bit", nullable: false),
-                    FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    RetryCount = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Message = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<string>(type: "text", nullable: false),
+                    ActionUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    RelatedEntityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RelatedEntityType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
+                    ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsSent = table.Column<bool>(type: "boolean", nullable: false),
+                    FailureReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    RetryCount = table.Column<int>(type: "integer", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -187,17 +187,17 @@ namespace HorseRacing.Migrations
                 name: "Owners",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OwnerCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    OrganizationName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    BusinessLicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    OwnerType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    JoinDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OwnerCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    OrganizationName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    BusinessLicenseNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    OwnerType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    JoinDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Notes = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,18 +214,18 @@ namespace HorseRacing.Migrations
                 name: "Referees",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LicenseNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Certifications = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    Rating = table.Column<decimal>(type: "decimal(3,2)", nullable: false),
-                    TotalOfficiated = table.Column<int>(type: "int", nullable: false),
-                    Specialization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LicenseNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Certifications = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    LicenseExpiryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Rating = table.Column<decimal>(type: "numeric(3,2)", nullable: false),
+                    TotalOfficiated = table.Column<int>(type: "integer", nullable: false),
+                    Specialization = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Nationality = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -242,19 +242,19 @@ namespace HorseRacing.Migrations
                 name: "UserRegistrations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    RequestedRole = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    DocumentUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ReviewedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RejectionReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ApprovedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AdminNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    RequestedRole = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    DocumentUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ReviewedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReviewedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RejectionReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ApprovedUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AdminNotes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -271,20 +271,20 @@ namespace HorseRacing.Migrations
                 name: "Races",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoundId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ScheduledAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ActualStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ActualEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    MaxParticipants = table.Column<int>(type: "int", nullable: false),
-                    Distance = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    TournamentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoundId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ScheduledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ActualStartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ActualEndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Location = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    MaxParticipants = table.Column<int>(type: "integer", nullable: false),
+                    Distance = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -307,21 +307,21 @@ namespace HorseRacing.Migrations
                 name: "Horses",
                 columns: table => new
                 {
-                    HorseID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Breed = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Age = table.Column<int>(type: "int", nullable: false),
-                    Weight = table.Column<decimal>(type: "decimal(6,2)", nullable: true),
-                    Height = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    Color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    TotalRaces = table.Column<int>(type: "int", nullable: false),
-                    TotalWins = table.Column<int>(type: "int", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ApprovalStatus = table.Column<int>(type: "int", nullable: false),
-                    ApprovalNote = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                    HorseID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Breed = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Gender = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Age = table.Column<int>(type: "integer", nullable: false),
+                    Weight = table.Column<decimal>(type: "numeric(6,2)", nullable: true),
+                    Height = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
+                    Color = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    TotalRaces = table.Column<int>(type: "integer", nullable: false),
+                    TotalWins = table.Column<int>(type: "integer", nullable: false),
+                    ImageUrl = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ApprovalStatus = table.Column<int>(type: "integer", nullable: false),
+                    ApprovalNote = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -338,19 +338,19 @@ namespace HorseRacing.Migrations
                 name: "Prizes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Position = table.Column<int>(type: "int", nullable: false),
-                    PercentageOfPool = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    SponsorName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    IsDistributed = table.Column<bool>(type: "bit", nullable: false),
-                    DistributedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TournamentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Position = table.Column<int>(type: "integer", nullable: false),
+                    PercentageOfPool = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    SponsorName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    IsDistributed = table.Column<bool>(type: "boolean", nullable: false),
+                    DistributedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -373,19 +373,19 @@ namespace HorseRacing.Migrations
                 name: "RaceReports",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RefereeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Details = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    Incidents = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    RecommendedActions = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    IsOfficialReport = table.Column<bool>(type: "bit", nullable: false),
-                    WeatherCondition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    TrackCondition = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Attendance = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RefereeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Details = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Incidents = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    RecommendedActions = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    IsOfficialReport = table.Column<bool>(type: "boolean", nullable: false),
+                    WeatherCondition = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TrackCondition = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Attendance = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -408,15 +408,15 @@ namespace HorseRacing.Migrations
                 name: "RefereeAssignments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RefereeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RefereeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ConfirmedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -439,23 +439,23 @@ namespace HorseRacing.Migrations
                 name: "Contracts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JockeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    BaseFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    WinBonusPercent = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    PerRaceFee = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    TermsAndConditions = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    TerminationReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    SignedByOwnerAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    SignedByJockeyAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JockeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BaseFee = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    WinBonusPercent = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
+                    PerRaceFee = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    TermsAndConditions = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    TerminationReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    SignedByOwnerAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    SignedByJockeyAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -484,15 +484,15 @@ namespace HorseRacing.Migrations
                 name: "HorseHealthChecks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RefereeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CheckedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Observations = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Verdict = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ApprovedToRace = table.Column<bool>(type: "bit", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RefereeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CheckedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Observations = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Verdict = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ApprovedToRace = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -521,19 +521,19 @@ namespace HorseRacing.Migrations
                 name: "HorseTransfers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FromOwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ToOwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TransferType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Reason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApprovedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AdminNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FromOwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ToOwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TransferType = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    Reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    ApprovedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AdminNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -568,26 +568,26 @@ namespace HorseRacing.Migrations
                 name: "InjuryRecords",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Severity = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    InjuryType = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    BodyPart = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Treatment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Medication = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    VeterinarianName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    DiagnosedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpectedRecoveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RecoveredAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RequiresSurgery = table.Column<bool>(type: "bit", nullable: false),
-                    ClearedToRace = table.Column<bool>(type: "bit", nullable: false),
-                    ClearedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ReportedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Severity = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    InjuryType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    BodyPart = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Treatment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Medication = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    VeterinarianName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    DiagnosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpectedRecoveryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    RecoveredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    RequiresSurgery = table.Column<bool>(type: "boolean", nullable: false),
+                    ClearedToRace = table.Column<bool>(type: "boolean", nullable: false),
+                    ClearedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReportedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -610,15 +610,15 @@ namespace HorseRacing.Migrations
                 name: "JockeyInvitations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JockeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ResponseNote = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JockeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ResponseNote = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RespondedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -647,17 +647,17 @@ namespace HorseRacing.Migrations
                 name: "Predictions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SpectatorUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PredictedHorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BetAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Odds = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    PotentialPayout = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PayoutAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SettledAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SpectatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PredictedHorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    BetAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Odds = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    PotentialPayout = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    PayoutAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SettledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -686,20 +686,20 @@ namespace HorseRacing.Migrations
                 name: "RaceEntries",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    HorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JockeyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OwnerConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    JockeyConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    GateNumber = table.Column<int>(type: "int", nullable: true),
-                    FinishPosition = table.Column<int>(type: "int", nullable: true),
-                    FinishTime = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
-                    ScratchedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ScratchReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    WeightCarried = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Equipment = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    HorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JockeyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    OwnerConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    JockeyConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    GateNumber = table.Column<int>(type: "integer", nullable: true),
+                    FinishPosition = table.Column<int>(type: "integer", nullable: true),
+                    FinishTime = table.Column<decimal>(type: "numeric(18,4)", nullable: true),
+                    ScratchedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ScratchReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    WeightCarried = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    Equipment = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -728,18 +728,18 @@ namespace HorseRacing.Migrations
                 name: "RaceResults",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WinningHorseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TotalParticipants = table.Column<int>(type: "int", nullable: false),
-                    WinnerFinishTime = table.Column<decimal>(type: "decimal(18,4)", nullable: true),
-                    RecordedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PublishedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDisputed = table.Column<bool>(type: "bit", nullable: false),
-                    IsOfficial = table.Column<bool>(type: "bit", nullable: false),
-                    WinnerPurse = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    RankingsJson = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WinningHorseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TotalParticipants = table.Column<int>(type: "integer", nullable: false),
+                    WinnerFinishTime = table.Column<decimal>(type: "numeric(18,4)", nullable: true),
+                    RecordedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PublishedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDisputed = table.Column<bool>(type: "boolean", nullable: false),
+                    IsOfficial = table.Column<bool>(type: "boolean", nullable: false),
+                    WinnerPurse = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    RankingsJson = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -762,20 +762,20 @@ namespace HorseRacing.Migrations
                 name: "Protests",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FiledByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AgainstEntryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Reason = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    Evidence = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Ruling = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    RuledByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Resolution = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    AdminNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    FiledAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RuledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ResolvedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FiledByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgainstEntryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Reason = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Evidence = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Ruling = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    RuledByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Resolution = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    AdminNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    FiledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RuledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ResolvedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -810,15 +810,15 @@ namespace HorseRacing.Migrations
                 name: "ViolationRecords",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RaceEntryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RefereeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ViolationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    RecordedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Evidence = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    Penalty = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RaceEntryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RefereeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ViolationType = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    RecordedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Evidence = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Penalty = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {

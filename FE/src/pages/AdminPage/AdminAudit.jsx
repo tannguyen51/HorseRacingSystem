@@ -30,21 +30,21 @@ export function AuditLogViewer() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h2>Audit Logs</h2>
-          <p style={{ color: "#657086", marginBottom: 16 }}>Track all system actions and changes.</p>
+          <h2>Nhật ký kiểm toán</h2>
+          <p style={{ color: "#657086", marginBottom: 16 }}>Theo dõi tất cả hành động và thay đổi hệ thống.</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ color: "#657086", fontSize: 13 }}>{total} records</span>
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
+          <span style={{ color: "#657086", fontSize: 13 }}>{total} bản ghi</span>
+          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Trước</button>
           <span style={{ color: "#e7c678" }}>{page + 1}/{maxPage + 1}</span>
-          <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Next</button>
+          <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Sau</button>
         </div>
       </div>
       {msg && <p className="admin-notice admin-notice--error">{msg}</p>}
-      {loading ? <p>Loading...</p> : (
+      {loading ? <p>Đang tải...</p> : (
         <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Time</th><th>Action</th><th>Entity</th><th>Description</th><th>IP</th></tr></thead>
+            <thead><tr><th>Thời gian</th><th>Hành động</th><th>Đối tượng</th><th>Mô tả</th><th>IP</th></tr></thead>
             <tbody>
               {pageItems.map((log) => {
                 const id = log.id ?? log.Id;
@@ -59,7 +59,7 @@ export function AuditLogViewer() {
                   </tr>
                 );
               })}
-              {pageItems.length === 0 && <tr><td colSpan={5}>No audit logs found.</td></tr>}
+              {pageItems.length === 0 && <tr><td colSpan={5}>Không tìm thấy nhật ký kiểm toán nào.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -93,21 +93,21 @@ export function NotificationManager() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h2>Notifications</h2>
-          <p style={{ color: "#657086", marginBottom: 16 }}>View and manage system notifications.</p>
+          <h2>Thông báo</h2>
+          <p style={{ color: "#657086", marginBottom: 16 }}>Xem và quản lý thông báo hệ thống.</p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ color: "#657086", fontSize: 13 }}>{items.length} records</span>
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
+          <span style={{ color: "#657086", fontSize: 13 }}>{items.length} bản ghi</span>
+          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Trước</button>
           <span style={{ color: "#e7c678" }}>{page + 1}/{maxPage + 1}</span>
-          <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Next</button>
+          <button disabled={page >= maxPage} onClick={() => setPage(page + 1)}>Sau</button>
         </div>
       </div>
       {msg && <p className="admin-notice admin-notice--error">{msg}</p>}
-      {loading ? <p>Loading...</p> : (
+      {loading ? <p>Đang tải...</p> : (
         <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Time</th><th>User</th><th>Title</th><th>Type</th><th>Category</th><th>Read</th></tr></thead>
+            <thead><tr><th>Thời gian</th><th>Người dùng</th><th>Tiêu đề</th><th>Loại</th><th>Danh mục</th><th>Đã đọc</th></tr></thead>
             <tbody>
               {pageItems.map((n) => (
                 <tr key={n.id ?? n.Id}>
@@ -116,10 +116,10 @@ export function NotificationManager() {
                   <td>{n.title ?? n.Title}</td>
                   <td><span className="badge">{n.type ?? n.Type}</span></td>
                   <td>{n.category ?? n.Category}</td>
-                  <td><span className={`status status--${(n.isRead ?? n.IsRead) ? "active" : "inactive"}`}>{(n.isRead ?? n.IsRead) ? "Read" : "Unread"}</span></td>
+                  <td><span className={`status status--${(n.isRead ?? n.IsRead) ? "active" : "inactive"}`}>{(n.isRead ?? n.IsRead) ? "Đã đọc" : "Chưa đọc"}</span></td>
                 </tr>
               ))}
-              {pageItems.length === 0 && <tr><td colSpan={6}>No notifications found.</td></tr>}
+              {pageItems.length === 0 && <tr><td colSpan={6}>Không tìm thấy thông báo nào.</td></tr>}
             </tbody>
           </table>
         </div>

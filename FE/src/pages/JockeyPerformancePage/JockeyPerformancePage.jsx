@@ -45,7 +45,7 @@ export function JockeyPerformancePage() {
       } catch (error) {
         if (!cancelled) {
           setRaces(fallbackRaces);
-          setMessage(error.message || "Unable to load performance data.");
+          setMessage(error.message || "Không thể tải dữ liệu hiệu suất.");
         }
       } finally {
         if (!cancelled) {
@@ -82,25 +82,25 @@ export function JockeyPerformancePage() {
       <div className="spectator-layout">
         <aside className="spectator-sidebar">
           <div className="spectator-sidebar__header">
-            <p className="pill">Performance</p>
-            <h3>Rider summary</h3>
-            <p className="muted">Performance view from current assignments.</p>
+            <p className="pill">Hiệu Suất</p>
+            <h3>Tổng quan kỵ sĩ</h3>
+            <p className="muted">Xem hiệu suất từ các phân công hiện tại.</p>
           </div>
           <div className="spectator-sidebar__card">
-            <p className="muted">Assigned mounts</p>
-            <h4>{loading ? "Loading..." : summary.assignedRaces}</h4>
-            <span>{summary.confirmed} confirmed</span>
+            <p className="muted">Ngựa được phân công</p>
+            <h4>{loading ? "Đang tải..." : summary.assignedRaces}</h4>
+            <span>{summary.confirmed} đã xác nhận</span>
           </div>
         </aside>
 
         <div className="spectator-content">
           <section className="jockey-performance-header">
             <div>
-              <span className="pill">Performance Summary</span>
-              <h1>Jockey Performance</h1>
+              <span className="pill">Tổng Kết Hiệu Suất</span>
+              <h1>Hiệu Suất Nài Ngựa</h1>
               <p>
-                Monitor assignment volume, mount win history, and race readiness
-                from the current schedule.
+                Theo dõi số lượng phân công, lịch sử chiến thắng của ngựa và
+                mức độ sẵn sàng đua từ lịch trình hiện tại.
               </p>
               {message ? <p className="jockey-performance-message">{message}</p> : null}
             </div>
@@ -108,34 +108,34 @@ export function JockeyPerformancePage() {
 
           <section className="jockey-performance-stats">
             <article className="jockey-performance-stat">
-              <span>Assigned races</span>
+              <span>Cuộc đua được phân công</span>
               <strong>{summary.assignedRaces}</strong>
-              <p className="muted">Current ride queue</p>
+              <p className="muted">Hàng đợi cưỡi hiện tại</p>
             </article>
             <article className="jockey-performance-stat">
-              <span>Confirmed rides</span>
+              <span>Các cuộc cưỡi đã xác nhận</span>
               <strong>{summary.confirmed}</strong>
-              <p className="muted">Jockey-confirmed entries</p>
+              <p className="muted">Các mục đã được kỵ sĩ xác nhận</p>
             </article>
             <article className="jockey-performance-stat">
-              <span>Mount win rate</span>
+              <span>Tỷ lệ thắng ngựa cưỡi</span>
               <strong>{summary.winRate}</strong>
-              <p className="muted">{summary.horseWins} wins / {summary.horseStarts} starts</p>
+              <p className="muted">{summary.horseWins} thắng / {summary.horseStarts} lần đua</p>
             </article>
           </section>
 
           <section className="jockey-performance-panel">
             <div className="section-heading">
-              <h2>Assigned Mount Performance</h2>
-              <p>Horse record summary for every race currently assigned to you.</p>
+              <h2>Hiệu Suất Ngựa Được Phân Công</h2>
+              <p>Tổng kết thành tích ngựa cho mỗi cuộc đua hiện được phân công cho bạn.</p>
             </div>
             <div className="jockey-performance-table">
               <div className="jockey-performance-row jockey-performance-row--head">
-                <span>Race</span>
-                <span>Horse</span>
-                <span>Schedule</span>
-                <span>Horse Record</span>
-                <span>Status</span>
+                <span>Cuộc đua</span>
+                <span>Ngựa</span>
+                <span>Lịch</span>
+                <span>Thành Tích Ngựa</span>
+                <span>Trạng thái</span>
               </div>
               {races.map((race) => (
                 <div key={race.id} className="jockey-performance-row">
@@ -146,13 +146,13 @@ export function JockeyPerformancePage() {
                   <span>{race.horseName}</span>
                   <span>{formatJockeyDate(race.scheduledAt)}</span>
                   <span>
-                    {race.horseTotalWins || 0} wins / {race.horseTotalRaces || 0} races
+                    {race.horseTotalWins || 0} thắng / {race.horseTotalRaces || 0} lần đua
                   </span>
                   <span className="badge">{race.status}</span>
                 </div>
               ))}
               {!loading && races.length === 0 ? (
-                <p className="muted">No performance data available yet.</p>
+                <p className="muted">Chưa có dữ liệu hiệu suất.</p>
               ) : null}
             </div>
           </section>

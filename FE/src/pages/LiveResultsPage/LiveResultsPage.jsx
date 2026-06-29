@@ -33,19 +33,19 @@ function LiveResultsPage() {
   return (
     <div className="live-results-page">
       <section className="page-header results-hero">
-        <span className="pill">Live Results</span>
-        <h1>Live Results</h1>
-        <p>Review finished race rankings, winners, jockeys, and recorded times.</p>
+        <span className="pill">Kết Quả Trực Tiếp</span>
+        <h1>Kết Quả Trực Tiếp</h1>
+        <p>Xem lại bảng xếp hạng cuộc đua đã hoàn thành, người chiến thắng, kỵ sĩ và thời gian ghi nhận.</p>
       </section>
 
       <div className="results-toolbar">
-        <label htmlFor="race-result-select">Race</label>
+        <label htmlFor="race-result-select">Cuộc đua</label>
         <select
           id="race-result-select"
           value={selectedId}
           onChange={(e) => setSelectedId(e.target.value)}
         >
-          <option value="">Select race</option>
+          <option value="">Chọn cuộc đua</option>
           {races.map((r) => (
             <option key={r.id ?? r.Id} value={r.id ?? r.Id}>
               {r.name ?? r.Name} ({r.status ?? r.Status})
@@ -55,18 +55,18 @@ function LiveResultsPage() {
       </div>
 
       {!ranking ? (
-        <p className="empty-state">Select a finished race to view results.</p>
+        <p className="empty-state">Chọn một cuộc đua đã hoàn thành để xem kết quả.</p>
       ) : (
         <div className="result-panel">
-          <h2>{ranking.raceName ?? ranking.race?.name ?? "Race Results"}</h2>
+          <h2>{ranking.raceName ?? ranking.race?.name ?? "Kết Quả Cuộc Đua"}</h2>
           {rankings.length > 0 ? (
             <table className="results-table">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Horse</th>
-                  <th>Jockey</th>
-                  <th>Time</th>
+                  <th>Ngựa</th>
+                  <th>Kỵ sĩ</th>
+                  <th>Thời gian</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,7 +82,7 @@ function LiveResultsPage() {
             </table>
           ) : (
             <p className="winner-card">
-              Winner: <strong>{ranking.winningHorseName ?? ranking.winningHorse?.name ?? "TBD"}</strong>
+              Người chiến thắng: <strong>{ranking.winningHorseName ?? ranking.winningHorse?.name ?? "Chưa xác định"}</strong>
             </p>
           )}
         </div>

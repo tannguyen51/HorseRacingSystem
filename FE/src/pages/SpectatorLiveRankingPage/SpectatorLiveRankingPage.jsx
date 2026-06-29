@@ -1,304 +1,236 @@
 import { useEffect, useMemo, useState } from "react";
 import { unwrapResponseData } from "../../services/authRoleUtils";
-import { getLiveRanking, getRaces } from "../../services/spectatorApi";
-import "../SpectatorSharedLayout.css";
+import { getLiveRanking, getRaces, getActiveTournaments } from "../../services/spectatorApi";
 import "./SpectatorLiveRankingPage.css";
 
+const JOCKEY_RANKINGS = [
+  { rank: 1, name: "Marcus Chen", nationality: "USA", races: 340, wins: 82, winRate: "24.1%", experience: "8 năm" },
+  { rank: 2, name: "Elena Rodriguez", nationality: "UK", races: 210, wins: 48, winRate: "22.9%", experience: "5 năm" },
+  { rank: 3, name: "David Park", nationality: "AUS", races: 280, wins: 65, winRate: "23.2%", experience: "6 năm" },
+  { rank: 4, name: "Maria Santos", nationality: "BRA", races: 195, wins: 40, winRate: "20.5%", experience: "4 năm" },
+  { rank: 5, name: "James O'Connor", nationality: "IRE", races: 310, wins: 58, winRate: "18.7%", experience: "7 năm" },
+];
+
+const HORSE_RANKINGS = [
+  { rank: 1, name: "Storm Chaser", breed: "Thoroughbred", owner: "Sarah O'Brien", races: 22, wins: 10, winRate: "45.5%" },
+  { rank: 2, name: "Thunder Strike", breed: "Arabian", owner: "John Whitfield", races: 18, wins: 7, winRate: "38.9%" },
+  { rank: 3, name: "Silver Comet", breed: "Thoroughbred", owner: "John Whitfield", races: 12, wins: 5, winRate: "41.7%" },
+  { rank: 4, name: "Golden Arrow", breed: "Thoroughbred", owner: "Sarah O'Brien", races: 9, wins: 4, winRate: "44.4%" },
+  { rank: 5, name: "Midnight Runner", breed: "Quarter Horse", owner: "John Whitfield", races: 6, wins: 2, winRate: "33.3%" },
+];
+
+const MEDAL = ["🥇", "🥈", "🥉"];
+
 const formatTimeTaken = (value) => {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-  const totalSeconds = Math.max(0, Math.floor(value));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  if (value == null) return "-";
+  const totalSec = Math.max(0, Math.floor(Number(value)));
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${String(sec).padStart(2, "0")}`;
 };
 
 function SpectatorLiveRankingPage() {
   const [races, setRaces] = useState([]);
+  const [tournaments, setTournaments] = useState([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState("");
   const [selectedRaceId, setSelectedRaceId] = useState("");
-  const [rankingData, setRankingData] = useState({
-    raceName: "",
-    rankings: [],
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [ranking, setRanking] = useState({ raceName: "", rankings: [] });
+  const [isLoadingRaces, setIsLoadingRaces] = useState(true);
+  const [isLoadingRanking, setIsLoadingRanking] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-
-    const loadRaces = async () => {
-      setIsLoading(true);
-      setErrorMessage("");
-
+    const load = async () => {
+      setIsLoadingRaces(true);
       try {
-        const response = await getRaces();
-        const payload = unwrapResponseData(response);
-        const items = Array.isArray(payload) ? payload : [];
-
-        if (!cancelled) {
-          setRaces(items);
-          if (items.length > 0) {
-            const firstRaceId = items[0]?.id ?? items[0]?.Id;
-            setSelectedRaceId(firstRaceId ?? "");
-          }
+        const [raceRes, tourRes] = await Promise.all([getRaces(), getActiveTournaments()]);
+        if (cancelled) return;
+        const racePayload = unwrapResponseData(raceRes);
+        const tourPayload = unwrapResponseData(tourRes);
+        const items = Array.isArray(racePayload) ? racePayload : [];
+        const tours = Array.isArray(tourPayload) ? tourPayload : [];
+        setRaces(items);
+        setTournaments(tours);
+        if (tours.length > 0 && !selectedTournamentId) {
+          setSelectedTournamentId(tours[0]?.id ?? tours[0]?.Id ?? "");
         }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load races.");
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+      } catch { /* ignore */ }
+      finally { if (!cancelled) setIsLoadingRaces(false); }
     };
-
-    loadRaces();
-
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const loadRanking = async () => {
-      if (!selectedRaceId) {
-        return;
+    if (selectedTournamentId && races.length > 0) {
+      const tournamentRaces = races.filter((r) => (r.tournamentId ?? r.TournamentId) === selectedTournamentId);
+      if (tournamentRaces.length > 0) {
+        setSelectedRaceId(tournamentRaces[0]?.id ?? tournamentRaces[0]?.Id ?? "");
+      } else {
+        setSelectedRaceId("");
+        setRanking({ raceName: "", rankings: [] });
       }
+    }
+  }, [selectedTournamentId, races]);
 
-      setIsLoading(true);
-      setErrorMessage("");
-
+  useEffect(() => {
+    if (!selectedRaceId) return;
+    let cancelled = false;
+    const load = async () => {
+      setIsLoadingRanking(true);
       try {
         const response = await getLiveRanking(selectedRaceId);
         const payload = unwrapResponseData(response);
-        const rankings = payload?.rankings ?? payload?.Rankings ?? [];
         if (!cancelled) {
-          setRankingData({
+          setRanking({
             raceName: payload?.raceName ?? payload?.RaceName ?? "",
-            rankings,
+            rankings: payload?.rankings ?? payload?.Rankings ?? [],
           });
         }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load ranking data.");
-          setRankingData({ raceName: "", rankings: [] });
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+      } catch { /* ignore */ }
+      finally { if (!cancelled) setIsLoadingRanking(false); }
     };
-
-    loadRanking();
-
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => { cancelled = true; };
   }, [selectedRaceId]);
 
-  const raceOptions = useMemo(() => {
-    return races.map((race) => ({
-      id: race?.id ?? race?.Id,
-      label: race?.name ?? race?.Name ?? "Race",
-    }));
-  }, [races]);
+  const tournamentOptions = useMemo(() =>
+    tournaments.map((t) => ({ id: t?.id ?? t?.Id, label: t?.name ?? t?.Name ?? "Giải đấu" })),
+    [tournaments],
+  );
 
-  const rankings = rankingData.rankings ?? [];
-  const topThree = rankings.slice(0, 3);
-  const jockeyRows = rankings.filter((entry) => entry?.jockeyName);
+  const filteredRaces = useMemo(() =>
+    races.filter((r) => (r.tournamentId ?? r.TournamentId) === selectedTournamentId),
+    [races, selectedTournamentId],
+  );
 
-  const statCards = [
-    {
-      label: "Live positions",
-      value: String(rankings.length),
-      detail: "In the current race",
-    },
-    {
-      label: "Race status",
-      value: rankingData.raceName ? "Live" : "Pending",
-      detail: "Updated moments ago",
-    },
-    {
-      label: "Finishers",
-      value: String(rankings.filter((entry) => entry?.won).length),
-      detail: "Marked as winners",
-    },
-  ];
+  const raceOptions = useMemo(() =>
+    filteredRaces.map((r) => ({ id: r?.id ?? r?.Id, label: r?.name ?? r?.Name ?? "Cuộc đua" })),
+    [filteredRaces],
+  );
+
+  const { rankings, raceName } = ranking;
 
   return (
-    <div className="spectator-page spectator-ranking-page">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Spectator</p>
-            <h3>Live Ranking</h3>
-            <p className="muted">Realtime leaderboard insights.</p>
-          </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Current race</p>
-            <h4>{rankingData.raceName || "Select a race"}</h4>
-            <span>Live standings</span>
-          </div>
-        </aside>
+    <div className="srp-page">
+      <header className="srp-header">
+        <span className="srp-eyebrow">Khán giả</span>
+        <h1 className="srp-title">Bảng Xếp Hạng</h1>
+        <p className="srp-subtitle">BXH mùa giải và kết quả từng cuộc đua.</p>
+      </header>
 
-        <div className="spectator-content">
-          {errorMessage && <div className="form-error">{errorMessage}</div>}
-          <section className="page-header">
-            <h1>Live Ranking</h1>
-            <p>Follow live point changes for horses and jockeys.</p>
-          </section>
-
-          <section className="ranking-filters">
-            <div className="filter-group">
-              <label htmlFor="race" className="label-required">
-                Race
-              </label>
-              <select
-                id="race"
-                className="form-select"
-                value={selectedRaceId}
-                onChange={(event) => setSelectedRaceId(event.target.value)}
-              >
-                {raceOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+      {/* ── BXH Mùa Giải ── */}
+      <div className="srp-season-grid">
+        <section className="srp-season-panel">
+          <h2 className="srp-season-title">🏇 BXH Kỵ Sĩ</h2>
+          <div className="srp-season-table">
+            <div className="srp-season-row srp-season-row--header">
+              <span className="sst-col--rank">#</span>
+              <span className="sst-col--name">Kỵ sĩ</span>
+              <span className="sst-col--stat">Đua</span>
+              <span className="sst-col--stat">Thắng</span>
+              <span className="sst-col--stat">Tỷ lệ</span>
             </div>
-          </section>
-
-          <section className="ranking-stats">
-            {statCards.map((stat) => (
-              <article key={stat.label} className="stat-card hover-lift">
-                <p className="muted">{stat.label}</p>
-                <h3>{stat.value}</h3>
-                <span className="stat-detail">{stat.detail}</span>
-              </article>
-            ))}
-          </section>
-
-          <section className="top-rank-grid">
-            {topThree.map((entry, index) => (
-              <article
-                key={entry.horseId ?? entry.position}
-                className={`top-rank-card top-rank-card--${index + 1} hover-lift`}
-              >
-                <div className="top-rank-header">
-                  <span className="badge">Top {index + 1}</span>
-                  <span
-                    className={`ranking-change ${
-                      entry.won
-                        ? "ranking-change--up"
-                        : "ranking-change--steady"
-                    }`}
-                  >
-                    {entry.won ? "+1" : "-"}
-                  </span>
-                </div>
-                <h3>{entry.horseName ?? "Unknown"}</h3>
-                <p className="muted">{entry.jockeyName ?? "Jockey TBD"}</p>
-                <div className="top-rank-meta">
-                  <div>
-                    <span>Position</span>
-                    <strong>{entry.position}</strong>
-                  </div>
-                  <div>
-                    <span>Time</span>
-                    <strong>{formatTimeTaken(entry.timeTaken)}</strong>
-                  </div>
-                </div>
-              </article>
-            ))}
-            {isLoading ? (
-              <article className="top-rank-card skeleton-card">
-                <div className="skeleton-line" />
-                <div className="skeleton-line wide" />
-                <div className="skeleton-line" />
-              </article>
-            ) : null}
-          </section>
-
-          <section className="ranking-columns">
-            <div className="spectator-section">
-              <div className="section-heading">
-                <h2>Horse rankings</h2>
-                <p>Live points and win totals.</p>
+            {JOCKEY_RANKINGS.map((j) => (
+              <div key={j.rank} className={`srp-season-row ${j.rank <= 3 ? "srp-season-row--top" : ""}`}>
+                <span className="sst-col--rank">{j.rank <= 3 ? MEDAL[j.rank - 1] : j.rank}</span>
+                <span className="sst-col--name"><strong>{j.name}</strong><small>{j.nationality} · {j.experience}</small></span>
+                <span className="sst-col--stat">{j.races}</span>
+                <span className="sst-col--stat sst-col--highlight">{j.wins}</span>
+                <span className="sst-col--stat sst-col--rate">{j.winRate}</span>
               </div>
-              {rankings.length === 0 ? (
-                <div className="empty-state">
-                  <h4>No rankings yet</h4>
-                  <p>Standings will appear once the race starts.</p>
-                </div>
-              ) : (
-                <div className="ranking-table">
-                  <div className="table-row table-header">
-                    <span>Rank</span>
-                    <span>Horse</span>
-                    <span>Jockey</span>
-                    <span>Time</span>
-                    <span>Status</span>
-                  </div>
-                  {rankings.map((row) => (
-                    <div key={row.position} className="table-row">
-                      <span className="rank-pill">{row.position}</span>
-                      <span>{row.horseName ?? "Unknown"}</span>
-                      <span className="muted">{row.jockeyName ?? "-"}</span>
-                      <span className="rating">
-                        {formatTimeTaken(row.timeTaken)}
-                      </span>
-                      <span className="muted">
-                        {row.won ? "Winner" : "Running"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            ))}
+          </div>
+        </section>
 
-            <div className="spectator-section">
-              <div className="section-heading">
-                <h2>Jockey rankings</h2>
-                <p>Race points and win statistics.</p>
-              </div>
-              {jockeyRows.length === 0 ? (
-                <div className="empty-state">
-                  <h4>No jockey standings</h4>
-                  <p>Check back after the next heat finishes.</p>
-                </div>
-              ) : (
-                <div className="ranking-table">
-                  <div className="table-row table-header">
-                    <span>Rank</span>
-                    <span>Jockey</span>
-                    <span>Horse</span>
-                    <span>Time</span>
-                    <span>Status</span>
-                  </div>
-                  {jockeyRows.map((row) => (
-                    <div key={row.position} className="table-row">
-                      <span className="rank-pill">{row.position}</span>
-                      <span>{row.jockeyName ?? "Jockey TBD"}</span>
-                      <span className="muted">{row.horseName ?? "-"}</span>
-                      <span className="rating">
-                        {formatTimeTaken(row.timeTaken)}
-                      </span>
-                      <span className="muted">
-                        {row.won ? "Winner" : "Running"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+        <section className="srp-season-panel">
+          <h2 className="srp-season-title">🐎 BXH Ngựa Đua</h2>
+          <div className="srp-season-table">
+            <div className="srp-season-row srp-season-row--header">
+              <span className="sst-col--rank">#</span>
+              <span className="sst-col--name">Ngựa</span>
+              <span className="sst-col--stat">Đua</span>
+              <span className="sst-col--stat">Thắng</span>
+              <span className="sst-col--stat">Tỷ lệ</span>
             </div>
-          </section>
-        </div>
+            {HORSE_RANKINGS.map((h) => (
+              <div key={h.rank} className={`srp-season-row ${h.rank <= 3 ? "srp-season-row--top" : ""}`}>
+                <span className="sst-col--rank">{h.rank <= 3 ? MEDAL[h.rank - 1] : h.rank}</span>
+                <span className="sst-col--name"><strong>{h.name}</strong><small>{h.breed} · Chủ: {h.owner}</small></span>
+                <span className="sst-col--stat">{h.races}</span>
+                <span className="sst-col--stat sst-col--highlight">{h.wins}</span>
+                <span className="sst-col--stat sst-col--rate">{h.winRate}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
+
+      {/* ── BXH Cuộc Đua ── */}
+      <section className="srp-race-section">
+        <h2 className="srp-season-title">🏁 BXH Cuộc Đua</h2>
+        <div className="srp-race-controls">
+          <div className="srp-select-group">
+            <label className="srp-label">Chọn giải đấu</label>
+            <select
+              className="srp-select"
+              value={selectedTournamentId}
+              onChange={(e) => setSelectedTournamentId(e.target.value)}
+              disabled={isLoadingRaces}
+            >
+              {tournamentOptions.length === 0 && <option value="">Không có giải đấu</option>}
+              {tournamentOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="srp-select-group">
+            <label className="srp-label">Chọn cuộc đua</label>
+            <select
+              className="srp-select"
+              value={selectedRaceId}
+              onChange={(e) => setSelectedRaceId(e.target.value)}
+              disabled={isLoadingRaces || filteredRaces.length === 0}
+            >
+              {raceOptions.length === 0 && <option value="">Không có cuộc đua</option>}
+              {raceOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          {raceName && <span className="srp-race-name">{raceName}</span>}
+        </div>
+
+        {isLoadingRanking ? (
+          <div className="srp-empty"><h3>Đang tải...</h3></div>
+        ) : rankings.length === 0 ? (
+          <div className="srp-empty"><h3>Chưa có dữ liệu</h3><p>Chọn một cuộc đua đã hoàn thành để xem kết quả.</p></div>
+        ) : (
+          <div className="srp-table-wrapper">
+            <div className="srp-table">
+              <div className="srp-table__row srp-table__header">
+                <span className="srp-col--pos">Hạng</span>
+                <span className="srp-col--horse">Ngựa</span>
+                <span className="srp-col--jockey">Kỵ sĩ</span>
+                <span className="srp-col--time">Thời gian</span>
+              </div>
+              {rankings.map((entry) => {
+                const pos = entry?.position ?? entry?.Position;
+                return (
+                  <div key={entry?.horseId ?? entry?.HorseId ?? pos} className={`srp-table__row${pos <= 3 ? " srp-table__row--podium" : ""}`}>
+                    <span className="srp-col--pos">
+                      {pos <= 3 ? <span className="srp-rank-medal">{MEDAL[pos - 1]}</span> : <span className="srp-rank-num">#{pos}</span>}
+                    </span>
+                    <span className="srp-col--horse">{entry?.horseName ?? entry?.HorseName ?? "—"}</span>
+                    <span className="srp-col--jockey">{entry?.jockeyName ?? entry?.JockeyName ?? "—"}</span>
+                    <span className="srp-col--time">{formatTimeTaken(entry?.timeTaken ?? entry?.TimeTaken)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -139,6 +139,66 @@
   background: linear-gradient(145deg, #d8a84b, #b77a1d);
   color: #14100a !important;
   box-shadow: 0 12px 22px rgba(183, 122, 29, 0.2);
+  position: relative;
+}
+
+/* ── Border beam — lightning traveling along the border ── */
+
+@property --btn-beam {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.primary-button::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--btn-beam),
+    transparent 0%,
+    transparent 88%,
+    #FBBF24 93%,
+    #FDE68A 95%,
+    #FFFFFF 96%,
+    #FEF3C7 97%,
+    #FBBF24 98%,
+    rgba(251,191,36,0.8) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: btnBeamTravel 1.5s linear infinite;
+  z-index: 0;
+}
+
+/* Glow trail behind the beam */
+
+.primary-button::after {                                
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: conic-gradient(
+    from var(--btn-beam),
+    transparent 0%,
+    transparent 82%,
+    rgba(251,191,36,0.3) 88%,
+    rgba(253,230,138,0.6) 93%,
+    rgba(254,243,199,0.7) 96%,
+    rgba(251,191,36,0.4) 98%,
+    transparent 100%
+  );
+  animation: btnBeamTravel 1s linear infinite;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+@keyframes btnBeamTravel {
+  to { --btn-beam: 360deg; }
 }
 
 .primary-button:hover {

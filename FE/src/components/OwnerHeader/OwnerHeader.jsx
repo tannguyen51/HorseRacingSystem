@@ -8,7 +8,7 @@ function OwnerHeader() {
     <header className="owner-header">
       <Link className="owner-header__brand" to="/owner">
         <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Owner Suite</p></div>
+        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Khu vực Chủ Ngựa</p></div>
       </Link>
       <nav className="owner-header__nav" aria-label="Horse Owner">
         {ownerNavItems.map((item) => (

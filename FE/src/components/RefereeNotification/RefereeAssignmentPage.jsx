@@ -11,90 +11,90 @@ export function RefereeAssignmentPage() {
       <div className="referee-layout">
         <aside className="referee-sidebar">
           <div className="referee-sidebar__header">
-            <p className="pill">Referee Panel</p>
-            <h3>Match Assignments</h3>
-            <p className="muted">Review upcoming duties.</p>
+            <p className="pill">Bảng trọng tài</p>
+            <h3>Phân công trận đấu</h3>
+            <p className="muted">Xem xét nhiệm vụ sắp tới.</p>
           </div>
           <div className="referee-sidebar__card">
-            <p className="muted">Pending Response</p>
-            <h4>Active Assignments</h4>
-            <span>Check assignments below</span>
+            <p className="muted">Đang chờ phản hồi</p>
+            <h4>Phân công đang hoạt động</h4>
+            <span>Kiểm tra phân công bên dưới</span>
           </div>
         </aside>
 
         <div className="referee-content">
           <section className="referee-hero">
             <div>
-              <span className="pill">Action Required</span>
-              <h1>Match Assignments</h1>
+              <span className="pill">Cần hành động</span>
+              <h1>Phân công trận đấu</h1>
               <p>
-                Review and respond to referee assignments from tournament organizers.
-                Accept or decline duties based on your availability and schedule.
+                Xem xét và phản hồi phân công trọng tài từ ban tổ chức giải đấu.
+                Chấp nhận hoặc từ chối nhiệm vụ dựa trên lịch trình của bạn.
               </p>
               <div className="referee-hero__actions">
-                <button 
-                  className="primary-button" 
+                <button
+                  className="primary-button"
                   onClick={() => setExpandDetails(!expandDetails)}
                 >
-                  {expandDetails ? "Hide" : "Show"} Guidelines
+                  {expandDetails ? "Ẩn" : "Hiện"} Hướng dẫn
                 </button>
               </div>
             </div>
             <div className="referee-hero__panel">
-              <span>Your Role</span>
-              <strong>Match Official</strong>
+              <span>Vai trò của bạn</span>
+              <strong>Trọng tài</strong>
             </div>
           </section>
 
           <section className="referee-section">
             <div className="section-heading">
-              <h2>Pending Assignments</h2>
-              <p>Respond to your designated matches and tournaments below.</p>
+              <h2>Phân công đang chờ</h2>
+              <p>Phản hồi các trận đấu và giải đấu được chỉ định bên dưới.</p>
             </div>
             <RefereeNotificationsPanel />
           </section>
 
           {expandDetails && (
             <section className="referee-section guidelines-section">
-              <h2>Referee Guidelines</h2>
+              <h2>Hướng dẫn trọng tài</h2>
               <div className="guidelines-grid">
                 <div className="guideline-card">
-                  <h4>Responsibilities</h4>
+                  <h4>Trách nhiệm</h4>
                   <ul>
-                    <li>Monitor the race for rule violations</li>
-                    <li>Record time and placement data</li>
-                    <li>Document any incidents or protests</li>
-                    <li>Submit official race report</li>
+                    <li>Giám sát cuộc đua về vi phạm quy tắc</li>
+                    <li>Ghi nhận dữ liệu thời gian và vị trí</li>
+                    <li>Ghi nhận mọi sự cố hoặc khiếu nại</li>
+                    <li>Nộp báo cáo cuộc đua chính thức</li>
                   </ul>
                 </div>
 
                 <div className="guideline-card">
-                  <h4>Before the Match</h4>
+                  <h4>Trước trận đấu</h4>
                   <ul>
-                    <li>Arrive 30 minutes early</li>
-                    <li>Review horse and jockey profiles</li>
-                    <li>Inspect track conditions</li>
-                    <li>Attend mandatory referee briefing</li>
+                    <li>Đến sớm 30 phút</li>
+                    <li>Xem xét hồ sơ ngựa và nài</li>
+                    <li>Kiểm tra điều kiện đường đua</li>
+                    <li>Tham dự họp tóm tắt bắt buộc</li>
                   </ul>
                 </div>
 
                 <div className="guideline-card">
-                  <h4>During the Match</h4>
+                  <h4>Trong trận đấu</h4>
                   <ul>
-                    <li>Position for optimal visibility</li>
-                    <li>Monitor for rule violations</li>
-                    <li>Record results in real-time</li>
-                    <li>Be available for clarifications</li>
+                    <li>Đứng vị trí quan sát tối ưu</li>
+                    <li>Giám sát vi phạm quy tắc</li>
+                    <li>Ghi nhận kết quả theo thời gian thực</li>
+                    <li>Sẵn sàng giải đáp</li>
                   </ul>
                 </div>
 
                 <div className="guideline-card">
-                  <h4>After the Match</h4>
+                  <h4>Sau trận đấu</h4>
                   <ul>
-                    <li>Document any incidents</li>
-                    <li>Submit official report</li>
-                    <li>Notify organizers of issues</li>
-                    <li>Archive all documentation</li>
+                    <li>Ghi nhận mọi sự cố</li>
+                    <li>Nộp báo cáo chính thức</li>
+                    <li>Thông báo vấn đề cho ban tổ chức</li>
+                    <li>Lưu trữ tất cả tài liệu</li>
                   </ul>
                 </div>
               </div>

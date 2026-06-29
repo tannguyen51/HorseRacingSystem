@@ -1,567 +1,464 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { unwrapResponseData } from "../../services/authRoleUtils";
 import { getRace, getRaces } from "../../services/spectatorApi";
-import "../SpectatorSharedLayout.css";
 import "./SpectatorRaceSchedulePage.css";
 
+/* ── Helpers ── */
 const formatDate = (value) => {
-  if (!value) {
-    return "TBD";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "TBD";
-  }
-  return new Intl.DateTimeFormat("en-US", {
+  if (!value) return "Chưa xác định";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "Chưa xác định";
+  return new Intl.DateTimeFormat("vi-VN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(d);
+};
+
+const formatShortDate = (value) => {
+  if (!value) return "Chưa xác định";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "Chưa xác định";
+  return new Intl.DateTimeFormat("vi-VN", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(date);
+  }).format(d);
 };
 
 const formatTime = (value) => {
-  if (!value) {
-    return "TBD";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "TBD";
-  }
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
+  }).format(d);
 };
 
-const formatCountdown = (value) => {
-  if (!value) {
-    return "TBD";
-  }
-  const target = new Date(value);
-  if (Number.isNaN(target.getTime())) {
-    return "TBD";
-  }
-  const diff = target.getTime() - Date.now();
-  if (diff <= 0) {
-    return "Started";
-  }
-
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (days > 0) {
-    return `${days}d ${hours}h`;
-  }
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-    2,
-    "0",
-  )}:${String(seconds).padStart(2, "0")}`;
+const formatCountdown = (target) => {
+  if (!target) return "";
+  const t = new Date(target);
+  if (Number.isNaN(t.getTime())) return "";
+  const diff = t.getTime() - Date.now();
+  if (diff <= 0) return "Đã bắt đầu";
+  const totalSec = Math.floor(diff / 1000);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (d > 0) return `${d} ngày ${h} giờ`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-const mapRaceSummary = (race) => {
-  const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
+const STATUS_META = {
+  Scheduled: { label: "Đã lên lịch", className: "srs-badge--scheduled" },
+  InProgress: { label: "Đang diễn ra", className: "srs-badge--live" },
+  Finished: { label: "Đã kết thúc", className: "srs-badge--completed" },
+  Canceled: { label: "Đã hủy", className: "srs-badge--canceled" },
+};
+
+const getStatusMeta = (status) => {
+  const s = String(status || "");
+  for (const [key, meta] of Object.entries(STATUS_META)) {
+    if (s.toLowerCase() === key.toLowerCase()) return meta;
+  }
+  return STATUS_META.Scheduled;
+};
+
+/* ── Map race ── */
+const mapRace = (r) => {
+  const scheduledAt = r?.scheduledAt ?? r?.ScheduledAt;
+  const status = r?.status ?? r?.Status ?? "Scheduled";
   return {
-    id: race?.id ?? race?.Id,
-    title: race?.name ?? race?.Name ?? "Race",
+    id: r?.id ?? r?.Id,
+    name: r?.name ?? r?.Name ?? "Cuộc đua",
+    location: r?.location ?? r?.Location ?? "Địa điểm chưa xác định",
+    distance: r?.distance ?? r?.Distance ?? 0,
     scheduledAt,
-    timeLabel: formatTime(scheduledAt),
-    dateLabel: formatDate(scheduledAt),
-    status: race?.status ?? race?.Status ?? "Scheduled",
-    track: race?.location ?? race?.Location ?? "Track TBD",
+    status,
+    entriesCount: r?.entriesCount ?? r?.EntriesCount ?? 0,
+    countdown: formatCountdown(scheduledAt),
+    time: formatTime(scheduledAt),
+    date: formatShortDate(scheduledAt),
+    fullDate: formatDate(scheduledAt),
   };
 };
 
+/* ── Component ── */
 function SpectatorRaceSchedulePage() {
-  const [activeRace, setActiveRace] = useState(null);
   const [races, setRaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [detailRace, setDetailRace] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  const intervalRef = useRef(null);
+
+  /* Tick every second for countdowns */
+  useEffect(() => {
+    intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  /* Recompute countdowns */
+  const racesWithCountdown = useMemo(() => {
+    return races.map((r) => ({
+      ...r,
+      countdown: formatCountdown(r.scheduledAt),
+    }));
+  }, [races, now]);
 
   useEffect(() => {
     let cancelled = false;
-
-    const loadRaces = async () => {
+    const load = async () => {
       setIsLoading(true);
       setErrorMessage("");
-
       try {
         const response = await getRaces();
         const payload = unwrapResponseData(response);
-        const items = Array.isArray(payload) ? payload.map(mapRaceSummary) : [];
-
+        const items = Array.isArray(payload) ? payload.map(mapRace) : [];
+        if (!cancelled) setRaces(items);
+      } catch (err) {
         if (!cancelled) {
-          setRaces(items);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(error.message || "Unable to load race schedule.");
+          setErrorMessage(err.message || "Không thể tải lịch đua.");
           setRaces([]);
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     };
-
-    loadRaces();
-
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const scheduleDays = useMemo(() => {
-    const grouped = races.reduce((acc, race) => {
-      const dateKey = race.dateLabel;
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
-      }
-      acc[dateKey].push({
-        ...race,
-        countdown: formatCountdown(race.scheduledAt),
-      });
-      return acc;
-    }, {});
-
-    return Object.entries(grouped)
-      .map(([date, dayRaces]) => ({
-        date,
-        races: dayRaces.sort(
-          (a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt),
-        ),
-      }))
-      .sort(
-        (a, b) =>
-          new Date(a.races[0]?.scheduledAt) - new Date(b.races[0]?.scheduledAt),
-      );
-  }, [races]);
-
-  const upcomingRaces = useMemo(() => {
-    return races
-      .filter((race) => new Date(race.scheduledAt) > new Date())
-      .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))
-      .slice(0, 3)
-      .map((race) => ({
-        ...race,
-        time: `${race.dateLabel} · ${race.timeLabel}`,
-        countdown: formatCountdown(race.scheduledAt),
-        status: race.status,
-      }));
-  }, [races]);
-
-  const scheduleHighlights = useMemo(() => {
-    const liveCount = races.filter(
-      (race) => race.status?.toLowerCase() === "inprogress",
-    ).length;
-    const upcomingCount = races.filter(
-      (race) => new Date(race.scheduledAt) > new Date(),
-    ).length;
-    const nextRace = upcomingRaces[0]?.countdown ?? "TBD";
-
-    return [
-      { label: "Live races", value: String(liveCount), detail: "On track" },
-      {
-        label: "Upcoming races",
-        value: String(upcomingCount),
-        detail: "Next 48 hours",
-      },
-      { label: "Next countdown", value: nextRace, detail: "Until start" },
-    ];
-  }, [races, upcomingRaces]);
-
-  const scheduleOverview = useMemo(() => {
-    const statusCounts = races.reduce(
-      (counts, race) => {
-        const status = String(race.status || "").toLowerCase();
-
-        if (status === "inprogress" || status === "started") {
-          counts.live += 1;
-        } else if (status === "finished" || status === "completed") {
-          counts.finished += 1;
-        } else {
-          counts.scheduled += 1;
-        }
-
-        return counts;
-      },
-      { scheduled: 0, live: 0, finished: 0 },
+  /* Group races by date */
+  const groupedDays = useMemo(() => {
+    const map = new Map();
+    for (const r of racesWithCountdown) {
+      const key = r.date;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(r);
+    }
+    const entries = Array.from(map.entries());
+    entries.sort(
+      (a, b) => new Date(a[1][0].scheduledAt) - new Date(b[1][0].scheduledAt),
     );
+    return entries;
+  }, [racesWithCountdown]);
 
-    return [
-      { label: "Scheduled", value: statusCounts.scheduled, tone: "scheduled" },
-      { label: "Live now", value: statusCounts.live, tone: "live" },
-      { label: "Finished", value: statusCounts.finished, tone: "finished" },
-    ];
-  }, [races]);
+  /* Stats */
+  const stats = useMemo(() => {
+    const live = races.filter(
+      (r) => r.status.toLowerCase() === "inprogress",
+    ).length;
+    const upcoming = races.filter(
+      (r) => new Date(r.scheduledAt) > new Date(),
+    );
+    const nextRace = upcoming.sort(
+      (a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt),
+    )[0];
+    return {
+      liveCount: live,
+      upcomingCount: upcoming.length,
+      totalCount: races.length,
+      nextRaceName: nextRace?.name ?? "Không có",
+      nextCountdown: nextRace ? formatCountdown(nextRace.scheduledAt) : "—",
+    };
+  }, [racesWithCountdown, now]);
 
-  const handleOpenRace = async (race) => {
-    setActiveRace({ ...race, isLoading: true, horses: [] });
-
+  /* Open race detail */
+  const handleOpenDetail = useCallback(async (race) => {
+    setDetailRace({ ...race, loading: true, horses: [], error: "" });
     try {
       const response = await getRace(race.id);
       const detail = unwrapResponseData(response);
       const entries = detail?.entries ?? detail?.Entries ?? [];
-      const horses = entries.map((entry) => ({
-        id: entry?.horseId ?? entry?.HorseId,
-        name: entry?.horse?.name ?? entry?.Horse?.Name ?? "Unknown",
-        jockey:
-          entry?.jockey?.user?.fullName ??
-          entry?.Jockey?.User?.FullName ??
-          "Jockey TBD",
-        gate: entry?.status ?? entry?.Status ?? "Pending",
-        odds: "TBD",
+      const horses = entries.map((e) => ({
+        id: e?.horseId ?? e?.HorseId,
+        name: e?.horse?.name ?? e?.Horse?.Name ?? "Không xác định",
+        jockeyName:
+          e?.jockey?.user?.fullName ??
+          e?.Jockey?.User?.FullName ??
+          "Chưa xác định",
+        gate: e?.gate ?? e?.Gate ?? e?.status ?? e?.Status ?? "—",
       }));
-
-      setActiveRace({
+      setDetailRace({
         ...race,
-        title: detail?.name ?? detail?.Name ?? race.title,
-        track: detail?.location ?? detail?.Location ?? race.track,
-        scheduledAt:
-          detail?.scheduledAt ?? detail?.ScheduledAt ?? race.scheduledAt,
-        timeLabel: formatTime(detail?.scheduledAt ?? detail?.ScheduledAt),
-        dateLabel: formatDate(detail?.scheduledAt ?? detail?.ScheduledAt),
+        name: detail?.name ?? detail?.Name ?? race.name,
+        location: detail?.location ?? detail?.Location ?? race.location,
+        distance: detail?.distance ?? detail?.Distance ?? race.distance,
         status: detail?.status ?? detail?.Status ?? race.status,
         horses,
-        isLoading: false,
+        loading: false,
+        error: "",
       });
-    } catch (error) {
-      setActiveRace({
+    } catch (err) {
+      setDetailRace({
         ...race,
-        error: error.message || "Unable to load race details.",
+        loading: false,
+        error: err.message || "Không thể tải chi tiết cuộc đua.",
         horses: [],
-        isLoading: false,
       });
     }
-  };
-
-  const hasSchedule = scheduleDays.length > 0;
+  }, []);
 
   return (
-    <div className="spectator-page spectator-schedule-page">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Spectator</p>
-            <h3>Race Schedule</h3>
-            <p className="muted">Track upcoming heats and live starts.</p>
+    <div className="srs-page">
+      {/* ── Header ── */}
+      <header className="srs-header">
+        <span className="srs-eyebrow">Khán giả</span>
+        <h1 className="srs-title">Lịch đua</h1>
+        <p className="srs-subtitle">
+          Theo dõi dòng thời gian các cuộc đua, đếm ngược đến giờ xuất phát.
+        </p>
+      </header>
+
+      {/* ── Highlight stats ── */}
+      <section className="srs-highlights">
+        <div className="srs-highlight srs-highlight--live">
+          <span className="srs-highlight__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="4" fill="currentColor" />
+            </svg>
+          </span>
+          <div>
+            <span className="srs-highlight__value">{stats.liveCount}</span>
+            <span className="srs-highlight__label">Đang trực tiếp</span>
           </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Next start</p>
-            <h4>{upcomingRaces[0]?.title || "No upcoming race"}</h4>
-            <span>
-              {upcomingRaces[0]
-                ? `Countdown ${upcomingRaces[0].countdown}`
-                : "Schedule is up to date"}
-            </span>
+        </div>
+        <div className="srs-highlight srs-highlight--upcoming">
+          <span className="srs-highlight__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </span>
+          <div>
+            <span className="srs-highlight__value">{stats.upcomingCount}</span>
+            <span className="srs-highlight__label">Sắp diễn ra</span>
           </div>
-        </aside>
+        </div>
+        <div className="srs-highlight srs-highlight--countdown">
+          <div>
+            <span className="srs-highlight__label">Đếm ngược cuộc đua tiếp theo</span>
+            <span className="srs-highlight__countdown">{stats.nextCountdown}</span>
+            <span className="srs-highlight__racename">{stats.nextRaceName}</span>
+          </div>
+        </div>
+      </section>
 
-        <div className="spectator-content">
-          <section className="page-header">
-            <h1>Spectator Race Schedule</h1>
-            <p>Timelines, tracks, and live countdowns for every heat.</p>
-          </section>
-
-          <section className="schedule-highlights">
-            {scheduleHighlights.map((item) => (
-              <article key={item.label} className="stat-card hover-lift">
-                <p className="muted">{item.label}</p>
-                <h3>{item.value}</h3>
-                <span className="stat-detail">{item.detail}</span>
-              </article>
-            ))}
-          </section>
-
-          <section className="schedule-layout">
-            <div className="schedule-timeline">
-              <div className="section-heading">
-                <h2>Schedule timeline</h2>
-                <p>Stay ahead of the next race window.</p>
-              </div>
-
-              {!hasSchedule ? (
-                <div className="empty-state">
-                  <h4>
-                    {isLoading
-                      ? "Loading schedule"
-                      : errorMessage
-                        ? "Unable to load schedule"
-                        : "No schedule available"}
-                  </h4>
-                  <p>
-                    {errorMessage || "Check back later for updated race times."}
-                  </p>
-                  <button
-                    className="ghost-button"
-                    onClick={() => location.reload()}
-                  >
-                    Refresh schedule
-                  </button>
+      {/* ── Content ── */}
+      <section className="srs-content">
+        {isLoading ? (
+          <div className="srs-empty">
+            <h3>Đang tải lịch đua</h3>
+            <p>Vui lòng đợi trong giây lát...</p>
+          </div>
+        ) : errorMessage ? (
+          <div className="srs-empty srs-empty--error">
+            <h3>Không thể tải lịch đua</h3>
+            <p>{errorMessage}</p>
+            <button
+              className="srs-btn srs-btn--primary"
+              onClick={() => window.location.reload()}
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : groupedDays.length === 0 ? (
+          <div className="srs-empty">
+            <h3>Chưa có cuộc đua nào</h3>
+            <p>Lịch đua sẽ được cập nhật khi có cuộc đua mới.</p>
+          </div>
+        ) : (
+          <div className="srs-timeline">
+            {groupedDays.map(([date, dayRaces]) => (
+              <div key={date} className="srs-day">
+                <div className="srs-day__marker">
+                  <div className="srs-day__dot" />
+                  <div className="srs-day__line" />
                 </div>
-              ) : (
-                scheduleDays.map((day) => (
-                  <div key={day.date} className="schedule-day">
-                    <div className="schedule-day__header">
-                      <h3>{day.date}</h3>
-                      <span className="muted">
-                        {day.races.length} races scheduled
-                      </span>
-                    </div>
-                    <div className="schedule-day__list">
-                      {day.races.map((race) => (
+                <div className="srs-day__content">
+                  <div className="srs-day__header">
+                    <h2 className="srs-day__date">{date}</h2>
+                    <span className="srs-day__count">
+                      {dayRaces.length} cuộc đua
+                    </span>
+                  </div>
+                  <div className="srs-day__cards">
+                    {dayRaces.map((race) => {
+                      const meta = getStatusMeta(race.status);
+                      const isLive =
+                        race.status.toLowerCase() === "inprogress";
+                      return (
                         <article
                           key={race.id}
-                          className="schedule-entry hover-lift"
+                          className={`srs-race-card${
+                            isLive ? " srs-race-card--live" : ""
+                          }`}
                         >
-                          <div className="schedule-entry__header">
-                            <div>
-                              <p className="schedule-time">{race.time}</p>
-                              <h3>{race.title}</h3>
-                              <p className="muted">{race.track}</p>
+                          <div className="srs-race-card__top">
+                            <div className="srs-race-card__info">
+                              <span className="srs-race-card__time">
+                                {formatTime(race.scheduledAt)}
+                              </span>
+                              <h3 className="srs-race-card__name">
+                                {race.name}
+                              </h3>
+                              <div className="srs-race-card__meta">
+                                <span>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                  </svg>
+                                  {race.location}
+                                </span>
+                                {race.distance > 0 && (
+                                  <span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M2 12h2M20 12h2M12 2v2M12 20v2" />
+                                      <circle cx="12" cy="12" r="2" />
+                                      <path d="M12 4a8 8 0 0 1 8 8" />
+                                    </svg>
+                                    {race.distance}m
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="schedule-entry__status">
-                              <span className="badge">{race.status}</span>
-                              <span className="countdown-pill">
+                            <div className="srs-race-card__badges">
+                              <span className={`srs-badge ${meta.className}`}>
+                                {isLive && (
+                                  <span className="srs-live-dot" aria-hidden="true" />
+                                )}
+                                {meta.label}
+                              </span>
+                              <span className="srs-countdown">
                                 {race.countdown}
                               </span>
                             </div>
                           </div>
-                          <div className="schedule-entry__meta">
-                            <div>
-                              <span>Race time</span>
-                              <strong>
-                                {day.date} · {race.time}
-                              </strong>
-                            </div>
-                            <div>
-                              <span>Horse count</span>
-                              <strong>{race.horses?.length ?? "-"}</strong>
-                            </div>
-                          </div>
-                          <div className="schedule-entry__horses">
-                            <span className="muted">
-                              Open details to view participants.
-                            </span>
-                          </div>
-                          <div className="schedule-entry__actions">
+                          <div className="srs-race-card__action">
                             <button
-                              className="ghost-button"
-                              onClick={() =>
-                                handleOpenRace({
-                                  ...race,
-                                  dateLabel: day.date,
-                                  timeLabel: race.timeLabel,
-                                })
-                              }
+                              className="srs-btn srs-btn--ghost"
+                              onClick={() => handleOpenDetail(race)}
                             >
-                              View details
-                            </button>
-                            <button className="primary-button" type="button">
-                              Set reminder
+                              Xem chi tiết
                             </button>
                           </div>
                         </article>
-                      ))}
-                      {isLoading ? (
-                        <article className="schedule-entry skeleton-card">
-                          <div className="skeleton-line" />
-                          <div className="skeleton-line wide" />
-                          <div className="skeleton-line" />
-                        </article>
-                      ) : null}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))
-              )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Detail Modal ── */}
+      {detailRace && (
+        <div
+          className="srs-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDetailRace(null);
+          }}
+        >
+          <div className="srs-modal">
+            <div className="srs-modal__header">
+              <div>
+                <span
+                  className={`srs-badge ${
+                    getStatusMeta(detailRace.status).className
+                  }`}
+                >
+                  {getStatusMeta(detailRace.status).label}
+                </span>
+                <h2>{detailRace.name}</h2>
+              </div>
+              <button
+                className="srs-modal__close"
+                onClick={() => setDetailRace(null)}
+                aria-label="Đóng"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="srs-modal__grid">
+              <div className="srs-modal__field">
+                <span className="srs-modal__label">Địa điểm</span>
+                <span className="srs-modal__value">{detailRace.location}</span>
+              </div>
+              <div className="srs-modal__field">
+                <span className="srs-modal__label">Cự ly</span>
+                <span className="srs-modal__value">
+                  {detailRace.distance > 0
+                    ? `${detailRace.distance.toLocaleString("vi-VN")}m`
+                    : "Chưa xác định"}
+                </span>
+              </div>
+              <div className="srs-modal__field">
+                <span className="srs-modal__label">Giờ đua</span>
+                <span className="srs-modal__value">
+                  {formatTime(detailRace.scheduledAt)} —{" "}
+                  {formatShortDate(detailRace.scheduledAt)}
+                </span>
+              </div>
+              <div className="srs-modal__field">
+                <span className="srs-modal__label">Đếm ngược</span>
+                <span className="srs-modal__value">
+                  {detailRace.countdown || "Đang cập nhật"}
+                </span>
+              </div>
             </div>
 
-            <aside className="schedule-sidepanel">
-              <div className="section-heading">
-                <h2>Upcoming races</h2>
-                <p>Your race-day overview.</p>
-              </div>
-              <div className="upcoming-list">
-                {upcomingRaces.map((race) => (
-                  <article key={race.id} className="upcoming-card hover-lift">
-                    <div>
-                      <span className="badge">{race.status}</span>
-                      <h4>{race.title}</h4>
-                      <p className="muted">{race.time}</p>
-                      <span>{race.track}</span>
-                    </div>
-                    <div className="upcoming-card__countdown">
-                      <p className="muted">Countdown</p>
-                      <strong>{race.countdown}</strong>
-                      <button
-                        className="ghost-button"
-                        onClick={() => handleOpenRace(race)}
-                      >
-                        View details
-                      </button>
-                    </div>
-                  </article>
-                ))}
-                {!isLoading && upcomingRaces.length === 0 ? (
-                  <div className="upcoming-empty">
-                    <span className="upcoming-empty__icon" aria-hidden="true">
-                      ✓
-                    </span>
-                    <div>
-                      <h4>You're all caught up</h4>
-                      <p>
-                        There are no future races on the calendar yet. New
-                        starts will appear here automatically.
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-                {isLoading ? (
-                  <article className="upcoming-card skeleton-card">
-                    <div className="skeleton-line" />
-                    <div className="skeleton-line wide" />
-                    <div className="skeleton-line" />
-                  </article>
-                ) : null}
-              </div>
-
-              <div className="schedule-overview-card">
-                <div className="sidepanel-card__heading">
-                  <div>
-                    <span className="sidepanel-eyebrow">Schedule overview</span>
-                    <h3>Race status</h3>
-                  </div>
-                  <span className="overview-total">{races.length} total</span>
-                </div>
-                <div className="schedule-overview-list">
-                  {scheduleOverview.map((item) => (
-                    <div key={item.label} className="schedule-overview-row">
-                      <span
-                        className={`status-indicator status-indicator--${item.tone}`}
-                        aria-hidden="true"
-                      />
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
+            {/* Participants */}
+            <div className="srs-modal__section">
+              <h3 className="srs-modal__subtitle">Ngựa tham gia</h3>
+              {detailRace.loading ? (
+                <p className="srs-modal__note">Đang tải danh sách...</p>
+              ) : detailRace.error ? (
+                <p className="srs-modal__note srs-modal__note--error">
+                  {detailRace.error}
+                </p>
+              ) : detailRace.horses && detailRace.horses.length > 0 ? (
+                <div className="srs-participant-grid">
+                  {detailRace.horses.map((h) => (
+                    <div key={h.id} className="srs-participant">
+                      <strong>{h.name}</strong>
+                      <span className="srs-participant__jockey">
+                        {h.jockeyName}
+                      </span>
+                      <span className="srs-participant__gate">
+                        Cổng {h.gate}
+                      </span>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="race-day-guide">
-                <span className="sidepanel-eyebrow">Race day guide</span>
-                <h3>Never miss the start</h3>
-                <div className="race-day-guide__steps">
-                  <div>
-                    <span>01</span>
-                    <p>Open race details to review the track and runners.</p>
-                  </div>
-                  <div>
-                    <span>02</span>
-                    <p>Set a reminder before the countdown reaches zero.</p>
-                  </div>
-                  <div>
-                    <span>03</span>
-                    <p>Follow Live Ranking once the race is underway.</p>
-                  </div>
-                </div>
-              </div>
-            </aside>
-          </section>
-        </div>
-      </div>
-
-      {activeRace ? (
-        <div
-          className="modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="race-detail-title"
-        >
-          <div className="spectator-modal schedule-modal">
-            <div className="modal-header">
-              <div>
-                <span className="badge">{activeRace.status}</span>
-                <h3 id="race-detail-title">{activeRace.title}</h3>
-                <p className="muted">
-                  {activeRace.track || "Track info pending"}
+              ) : (
+                <p className="srs-modal__note">
+                  Danh sách ngựa sẽ hiển thị gần giờ xuất phát.
                 </p>
-              </div>
-              <button
-                className="ghost-button"
-                onClick={() => setActiveRace(null)}
-              >
-                Close
-              </button>
+              )}
             </div>
-            <div className="modal-body">
-              <div>
-                <h4>Race time</h4>
-                <p>
-                  {activeRace.dateLabel ? `${activeRace.dateLabel} · ` : ""}
-                  {activeRace.timeLabel || "TBD"}
-                </p>
-              </div>
-              <div>
-                <h4>Countdown</h4>
-                <p>{activeRace.countdown || "Updating"}</p>
-              </div>
-              <div>
-                <h4>Status</h4>
-                <p>{activeRace.status}</p>
-              </div>
-              <div>
-                <h4>Track</h4>
-                <p>{activeRace.track}</p>
-              </div>
-            </div>
-            {activeRace.isLoading ? (
-              <div className="empty-state">
-                <h4>Loading participants</h4>
-                <p>Fetching race entries.</p>
-              </div>
-            ) : activeRace.error ? (
-              <div className="empty-state">
-                <h4>Unable to load participants</h4>
-                <p>{activeRace.error}</p>
-              </div>
-            ) : activeRace.horses && activeRace.horses.length > 0 ? (
-              <div className="participant-grid">
-                {activeRace.horses.map((horse) => (
-                  <div
-                    key={horse.id || horse.name}
-                    className="participant-card"
-                  >
-                    <h5>{horse.name}</h5>
-                    <p className="muted">{horse.jockey}</p>
-                    <div className="participant-meta">
-                      <span>{horse.gate}</span>
-                      <span>{horse.odds} odds</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <h4>Participants loading</h4>
-                <p>Horse entries will appear closer to start time.</p>
-              </div>
-            )}
-            <div className="modal-actions">
-              <button className="primary-button">Notify me</button>
+
+            <div className="srs-modal__actions">
               <button
-                className="ghost-button"
-                onClick={() => setActiveRace(null)}
+                className="srs-btn srs-btn--primary"
+                onClick={() => setDetailRace(null)}
               >
-                Done
+                Đóng
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

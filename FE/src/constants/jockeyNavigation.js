@@ -1,6 +1,6 @@
 export const jockeyNavItems = [
-  { to: "/jockey", label: "Dashboard", end: true },
-  { to: "/jockey/invitations", label: "Invitations" },
-  { to: "/jockey/schedule", label: "Race Schedule" },
-  { to: "/jockey/performance", label: "Performance" },
+  { to: "/jockey", label: "Tổng quan", end: true },
+  { to: "/jockey/invitations", label: "Lời mời" },
+  { to: "/jockey/schedule", label: "Lịch đua" },
+  { to: "/jockey/performance", label: "Thành tích" },
 ];
