@@ -58,12 +58,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.MultipleCollectionIncludeWarning)));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-var frontendOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
-    ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173" };
+var configuredOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
+var origins = new List<string>(configuredOrigins);
+origins.Add("http://localhost:5173");
+origins.Add("http://127.0.0.1:5173");
+origins.Add("https://horse-racing-system.vercel.app");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins(frontendOrigins)
+        policy.WithOrigins(origins.ToArray())
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
