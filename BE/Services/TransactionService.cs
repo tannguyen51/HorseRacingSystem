@@ -171,8 +171,8 @@ public class TransactionService : ITransactionService
 
     private static string GenerateReference()
     {
-        var bytes = RandomNumberGenerator.GetBytes(4);
-        var hex = Convert.ToHexString(bytes); // 8 hex chars
+        var bytes = RandomNumberGenerator.GetBytes(3);
+        var hex = Convert.ToHexString(bytes); // 6 hex chars
         return $"{ReferencePrefix}{hex}";
     }
 
@@ -191,6 +191,6 @@ public class TransactionService : ITransactionService
         }
 
         var extracted = text[start..end];
-        return extracted.Length >= 10 ? extracted.ToUpperInvariant() : null;
+        return extracted.Length >= 7 ? extracted.ToUpperInvariant() : null; // "DH" + 5+ chars
     }
 }
