@@ -58,15 +58,36 @@ public class SepayController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpGet("webhook/test")]
+    public ActionResult WebhookTest()
+    {
+        var apiKey = _config["Sepay:ApiKey"];
+        return Ok(new
+        {
+            status = "ok",
+            configured = !string.IsNullOrEmpty(apiKey),
+            apiKeyMasked = string.IsNullOrEmpty(apiKey) ? "NOT SET" : apiKey[..Math.Min(8, apiKey.Length)] + "...",
+            timestamp = DateTime.UtcNow.ToString("o")
+        });
+    }
+
     [HttpPost("webhook")]
     public async Task<ActionResult> Webhook()
     {
+        _logger.LogInformation("Sepay webhook received from {IP}", HttpContext.Connection.RemoteIpAddress);
+
         // ── Read raw body ──
         string rawBody;
         using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
         {
             rawBody = await reader.ReadToEndAsync();
         }
+
+        _logger.LogInformation("Sepay webhook headers: Auth={Auth}, Signature={Sig}, Timestamp={Ts}",
+            Request.Headers["Authorization"].ToString(),
+            Request.Headers[SignatureHeader].ToString(),
+            Request.Headers[TimestampHeader].ToString());
+        _logger.LogInformation("Sepay webhook body: {Body}", rawBody[..Math.Min(rawBody.Length, 500)]);
 
         // ── Verify request authenticity ──
         var apiKey = _config["Sepay:ApiKey"];
