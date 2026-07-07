@@ -51,7 +51,10 @@ public class SepayController : ControllerBase
     {
         var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(uid, out var userId)) return Unauthorized();
-        var result = await _transactionService.CheckTransactionAsync(userId, since);
+        // Ensure UTC and add 5-min buffer to account for clock skew
+        var sinceUtc = since.Kind == DateTimeKind.Local ? since.ToUniversalTime() : since;
+        sinceUtc = sinceUtc.AddMinutes(-5);
+        var result = await _transactionService.CheckTransactionAsync(userId, sinceUtc);
         return StatusCode(result.StatusCode, result.Result);
     }
 

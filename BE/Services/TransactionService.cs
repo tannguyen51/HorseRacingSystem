@@ -161,10 +161,10 @@ public class TransactionService : ITransactionService
 
     public async Task<ServiceResult<object>> CheckTransactionAsync(Guid userId, DateTime since)
     {
-        var tx = await _transactionRepo.GetLatestByUserAsync(userId);
-        if (tx != null && tx.Status == "completed" && tx.CompletedAt >= since)
+        var found = await _transactionRepo.HasCompletedSinceAsync(userId, since);
+        if (found)
         {
-            return ServiceResult<object>.Ok(new { completed = true, amount = tx.Amount });
+            return ServiceResult<object>.Ok(new { completed = true, amount = 0 });
         }
         return ServiceResult<object>.Ok(new { completed = false });
     }

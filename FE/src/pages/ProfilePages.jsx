@@ -94,7 +94,7 @@ export function SpectatorProfilePage() {
                 setWalletBalance(b?.balance ?? b?.Balance ?? 0);
               } catch { /* ignore */ }
             }
-          } catch { /* empty */ }
+          } catch (err) { console.error("Deposit check failed:", err); }
         }, 5000);
       }, 5000);
     } catch (e) {
@@ -481,6 +481,24 @@ export function SpectatorProfilePage() {
                         <span style={{ display: "inline-block", width: 14, height: 14, borderRadius: "50%", border: "2px solid #8f6420", borderTopColor: "transparent", animation: "sp-spin 0.8s linear infinite" }} />
                         <span style={{ fontSize: 13, color: "#856404" }}>Đang kiểm tra thanh toán...</span>
                       </div>
+                      <button style={{ ...btnPrimary, marginTop: 4, fontSize: 12, padding: "6px 16px" }} onClick={async () => {
+                        try {
+                          const checkRes = await checkDeposit(depositSince.current);
+                          const cd = checkRes?.data ?? checkRes;
+                          if (cd?.completed) {
+                            clearInterval(pollRef.current);
+                            pollRef.current = null;
+                            setDepositStatus("success");
+                            try {
+                              const bal = await getBalance();
+                              const b = bal?.data ?? bal;
+                              setWalletBalance(b?.balance ?? b?.Balance ?? 0);
+                            } catch { /* ignore */ }
+                          }
+                        } catch (err) { console.error("Manual check failed:", err); }
+                      }}>
+                        Kiểm tra ngay
+                      </button>
                       <button style={{ ...btnSecondary, marginTop: 4 }} onClick={() => { setDepositStatus("idle"); setDepositTx(null); }}>
                         Nhập số tiền khác
                       </button>
