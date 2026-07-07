@@ -39,6 +39,20 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    [MaxLength(256)]
+    [JsonIgnore]
+    public string? RefreshToken { get; set; }
+
+    [JsonIgnore]
+    public DateTime? RefreshTokenExpiry { get; set; }
+
+    [MaxLength(256)]
+    [JsonIgnore]
+    public string? ResetToken { get; set; }
+
+    [JsonIgnore]
+    public DateTime? ResetTokenExpiry { get; set; }
+
     [JsonIgnore]
     public Owner? OwnerProfile { get; set; }
 

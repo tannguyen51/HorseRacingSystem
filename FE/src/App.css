@@ -94,3 +94,30 @@
     padding: 40px 24px 64px;
   }
 }
+
+/* Logo trong tất cả header — không làm navbar bị kéo */
+[class$="__brand"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+}
+.header-logo {
+  position: absolute;
+  bottom: -27px;
+  left: 0;
+  height: 130px;
+  width: auto;
+  border-radius: 8px;
+  background: transparent;
+  padding: 4px 10px;
+  z-index: 1;
+}
+
+.page-loading {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  font-size: 16px;
+  color: #94a3b8;
+}

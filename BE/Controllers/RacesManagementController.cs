@@ -9,6 +9,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/races/management")]
+[Authorize(Roles = "Admin")]
 public class RacesManagementController : ControllerBase
 {
     private readonly IRaceManagementService _raceService;

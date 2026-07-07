@@ -314,6 +314,11 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Race not found");
             }
 
+            if (race.Status != RaceStatus.Scheduled)
+            {
+                return ServiceResult<bool>.Fail(400, $"Cannot start race with status '{race.Status}'. Race must be Scheduled.");
+            }
+
             race.Status = RaceStatus.InProgress;
             race.ActualStartTime = DateTime.UtcNow;
             race.UpdatedAt = DateTime.UtcNow;
@@ -338,6 +343,11 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Race not found");
             }
 
+            if (race.Status != RaceStatus.InProgress)
+            {
+                return ServiceResult<bool>.Fail(400, $"Cannot end race with status '{race.Status}'. Race must be InProgress.");
+            }
+
             race.Status = RaceStatus.Finished;
             race.ActualEndTime = DateTime.UtcNow;
             race.UpdatedAt = DateTime.UtcNow;
@@ -360,6 +370,11 @@ public class RaceManagementService : IRaceManagementService
             if (race == null)
             {
                 return ServiceResult<bool>.Fail(404, "Race not found");
+            }
+
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.InProgress)
+            {
+                return ServiceResult<bool>.Fail(400, $"Cannot cancel race with status '{race.Status}'.");
             }
 
             race.Status = RaceStatus.Cancelled;

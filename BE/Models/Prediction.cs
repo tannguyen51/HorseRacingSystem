@@ -25,6 +25,9 @@ public class Prediction
 
     public Horse? PredictedHorse { get; set; }
 
+    [MaxLength(200)]
+    public string? HorseNameSnapshot { get; set; }
+
     public PredictionStatus Status { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]

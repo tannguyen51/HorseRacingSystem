@@ -22,3 +22,39 @@ export function uploadDocument(file) {
     body: formData,
   });
 }
+
+export function updateProfile(payload) {
+  return request("/api/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload) {
+  return request("/api/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getProfile() {
+  return request("/api/auth/profile");
+}
+
+export function createDeposit(amount) {
+  return request("/api/sepay/deposit", {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
+export function checkDeposit(since) {
+  return request(`/api/sepay/check?since=${since.toISOString()}`);
+}
+
+export function forgotPassword(email) {
+  return request("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}

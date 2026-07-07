@@ -1,14 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
 import { jockeyNavItems } from "../../constants/jockeyNavigation";
 import ProfileDropdown from "../ProfileDropdown";
+import NotificationBell from "../NotificationBell/NotificationBell";
 import "./JockeyHeader.css";
 
 function JockeyHeader() {
   return (
     <header className="jockey-header">
       <Link className="jockey-header__brand" to="/jockey/invitations">
-        <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Khu vực Kỵ Sĩ</p></div>
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
       <nav className="jockey-header__nav" aria-label="Jockey">
         {jockeyNavItems.map((item) => (
@@ -16,6 +16,7 @@ function JockeyHeader() {
         ))}
       </nav>
       <div className="jockey-header__actions">
+        <NotificationBell />
         <ProfileDropdown profileUrl="/jockey/profile" />
       </div>
     </header>

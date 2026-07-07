@@ -6,8 +6,10 @@ using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
+using HorseRacing.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace HorseRacing.Controllers;
@@ -20,16 +22,21 @@ public class AuthController : ControllerBase
     private readonly IUserRepository _userRepo;
     private readonly IJockeyRepository _jockeyRepo;
     private readonly IRefereeRepository _refereeRepo;
+    private readonly ICloudStorageService _cloudStorage;
+    private readonly IEmailService _emailService;
 
-    public AuthController(IAuthService authService, IUserRepository userRepo, IJockeyRepository jockeyRepo, IRefereeRepository refereeRepo)
+    public AuthController(IAuthService authService, IUserRepository userRepo, IJockeyRepository jockeyRepo, IRefereeRepository refereeRepo, ICloudStorageService cloudStorage, IEmailService emailService)
     {
         _authService = authService;
         _userRepo = userRepo;
         _jockeyRepo = jockeyRepo;
         _refereeRepo = refereeRepo;
+        _cloudStorage = cloudStorage;
+        _emailService = emailService;
     }
 
     // Authentication
+    [EnableRateLimiting("auth")]
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
@@ -37,10 +44,18 @@ public class AuthController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         var result = await _authService.LoginAsync(request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request)
+    {
+        var result = await _authService.RefreshTokenAsync(request.RefreshToken);
         return StatusCode(result.StatusCode, result.Result);
     }
 
@@ -67,6 +82,7 @@ public class AuthController : ControllerBase
 
         var user = await _userRepo.GetByIdAsync(userId);
         if (user is null) return NotFound();
+        if (!user.IsActive) return StatusCode(403, new { message = "User is deactivated." });
 
         return Ok(user.Role switch
         {
@@ -119,28 +135,88 @@ public class AuthController : ControllerBase
         return Ok(roles);
     }
 
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult> UpdateProfile(UpdateProfileRequest request)
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(uid, out var userId)) return Unauthorized();
+        var result = await _authService.UpdateProfileAsync(userId, request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(ChangePasswordRequest request)
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(uid, out var userId)) return Unauthorized();
+        var result = await _authService.ChangePasswordAsync(userId, request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [EnableRateLimiting("auth")]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await _authService.ForgotPasswordAsync(request.Email);
+        var data = result.Result?.Data;
+        var resetToken = data?.GetType().GetProperty("resetToken")?.GetValue(data) as string;
+
+        if (!string.IsNullOrEmpty(resetToken))
+        {
+            var safeToken = System.Net.WebUtility.HtmlEncode(resetToken);
+            var body = $@"
+<h2>RaceMaster - Đặt lại mật khẩu</h2>
+<p>Bạn đã yêu cầu đặt lại mật khẩu. Sử dụng mã sau để tạo mật khẩu mới:</p>
+<h1 style='color:#8f6420;font-size:32px'>{safeToken}</h1>
+<p>Mã này có hiệu lực trong 1 giờ.</p>
+<p>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+<p>— RaceMaster Team</p>";
+
+            try
+            {
+                await _emailService.SendAsync(request.Email.Trim(), "RaceMaster - Đặt lại mật khẩu", body);
+            }
+            catch
+            {
+                // Email failed — still return success for security
+            }
+        }
+
+        return Ok(new { message = "If the email exists, a reset link has been sent." });
+    }
+
+    [EnableRateLimiting("auth")]
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await _authService.ResetPasswordAsync(request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [Authorize]
     [HttpPost("upload-document")]
     public async Task<ActionResult> UploadDocument(IFormFile file)
     {
         if (file is null || file.Length == 0)
             return BadRequest(new { message = "No file uploaded." });
 
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext is not ".jpg" and not ".jpeg" and not ".png" and not ".pdf")
-            return BadRequest(new { message = "Only JPG, PNG, PDF allowed." });
-
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = "Max 10MB." });
+            return BadRequest(new { message = "File size must not exceed 10MB." });
 
-        var fileName = $"{Guid.NewGuid()}{ext}";
-        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
-        Directory.CreateDirectory(uploadsDir);
-        var filePath = Path.Combine(uploadsDir, fileName);
+        var allowedTypes = new[] { "application/pdf", "image/jpeg", "image/png", "image/jpg" };
+        if (!allowedTypes.Contains(file.ContentType.ToLower()))
+            return BadRequest(new { message = "Only PDF, JPG, and PNG files are allowed." });
 
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
-
-        var url = $"/uploads/documents/{fileName}";
-        return Ok(new { url });
+        try
+        {
+            var url = await _cloudStorage.UploadAsync(file, "documents");
+            return Ok(new { url });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

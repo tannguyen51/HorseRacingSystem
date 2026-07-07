@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getHorse } from "../../services/ownerHorseApi";
+import { resolveApiUrl } from "../../services/apiClient";
 import "../OwnerSharedLayout.css";
 import "./OwnerHorseDetailPage.css";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
+const getHorseImageUrl = (imageUrl) => resolveApiUrl(imageUrl);
 
-const getHorseImageUrl = (imageUrl) => {
-  if (!imageUrl) {
-    return "";
-  }
+const invitationStatusLabels = {
+  1: "Chờ duyệt",
+  2: "Đã chấp nhận",
+  3: "Từ chối",
+};
 
-  if (/^https?:\/\//i.test(imageUrl)) {
-    return imageUrl;
-  }
-
-  return `${API_BASE_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+const registrationStatusLabels = {
+  1: "Chờ duyệt",
+  2: "Đã duyệt",
+  3: "Từ chối",
 };
 
 function OwnerHorseDetailPage() {
@@ -102,28 +102,60 @@ function OwnerHorseDetailPage() {
       ]
     : [];
 
+  // ---- Jockey Invitation helpers ----
+  const getInvitationStatusLabel = (invitation) => {
+    const status = invitation?.status ?? invitation?.Status;
+    return typeof status === "number"
+      ? invitationStatusLabels[status] ?? "Chờ duyệt"
+      : status || "Chờ duyệt";
+  };
+
+  const getJockeyName = (invitation) =>
+    invitation?.jockey?.user?.fullName ??
+    invitation?.Jockey?.User?.FullName ??
+    invitation?.jockey?.user?.FullName ??
+    invitation?.Jockey?.user?.fullName ??
+    "Kỵ sĩ đã chọn";
+
+  const getInvitationDate = (invitation) => {
+    const date = invitation?.createdAt ?? invitation?.CreatedAt;
+    return date ? new Date(date).toLocaleDateString() : "-";
+  };
+
+  const jockeyInvitations = horse
+    ? horse?.jockeyInvitations ?? horse?.JockeyInvitations ?? []
+    : [];
+
+  // ---- Race Entry helpers ----
+  const getEntryStatusLabel = (entry) => {
+    const status = entry?.status ?? entry?.Status;
+    return typeof status === "number"
+      ? registrationStatusLabels[status] ?? "Chờ duyệt"
+      : status || "Chờ duyệt";
+  };
+
+  const getRaceName = (entry) =>
+    entry?.race?.name ??
+    entry?.Race?.Name ??
+    "Cuộc đua không xác định";
+
+  const getRaceDate = (entry) => {
+    const date =
+      entry?.race?.scheduledAt ??
+      entry?.Race?.ScheduledAt;
+    return date ? new Date(date).toLocaleDateString() : "-";
+  };
+
+  const getEntryGateNumber = (entry) =>
+    entry?.gateNumber ?? entry?.GateNumber ?? "-";
+
+  const raceEntries = horse
+    ? horse?.raceEntries ?? horse?.RaceEntries ?? []
+    : [];
+
   return (
     <div className="owner-page owner-horse-detail">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header">
-            <p className="pill">Chủ Ngựa</p>
-            <h3>Hồ sơ ngựa</h3>
-            <p className="muted">Xem hiệu suất và trạng thái sức khỏe.</p>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Trạng thái hiện tại</p>
-            <h4>{statusLabel}</h4>
-            <span>{horse?.name || "Đang tải ngựa"}</span>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Tỷ lệ thắng</p>
-            <h4>{winRate}%</h4>
-            <span>{horse?.totalWins ?? 0} trận thắng</span>
-          </div>
-        </aside>
-
-        <div className="owner-content">
+      <div><div className="owner-content">
           {error ? <p className="form-error">{error}</p> : null}
 
           {isLoading || !horse ? (
@@ -242,6 +274,80 @@ function OwnerHorseDetailPage() {
               </div>
             </div>
           </section>
+
+          {/* ---- Jockey Invitations ---- */}
+          {horse ? (
+            <section className="horse-detail-stack" style={{ marginTop: "24px" }}>
+              <div className="section-heading">
+                <h2>Lời mời kỵ sĩ</h2>
+                <p>Các lời mời đã gửi đến kỵ sĩ cho ngựa này.</p>
+              </div>
+              {jockeyInvitations.length === 0 ? (
+                <p className="muted">Chưa có lời mời kỵ sĩ nào.</p>
+              ) : (
+                <div className="horse-info-list">
+                  {jockeyInvitations.map((invitation) => {
+                    const invId = invitation?.id ?? invitation?.Id;
+                    return (
+                      <article key={invId} className="horse-invitation-card">
+                        <div className="horse-invitation-card__row">
+                          <span>Kỵ sĩ</span>
+                          <strong>{getJockeyName(invitation)}</strong>
+                        </div>
+                        <div className="horse-invitation-card__row">
+                          <span>Trạng thái</span>
+                          <strong>{getInvitationStatusLabel(invitation)}</strong>
+                        </div>
+                        <div className="horse-invitation-card__row">
+                          <span>Ngày gửi</span>
+                          <strong>{getInvitationDate(invitation)}</strong>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {/* ---- Race Entries ---- */}
+          {horse ? (
+            <section className="horse-detail-stack" style={{ marginTop: "24px" }}>
+              <div className="section-heading">
+                <h2>Tham gia cuộc đua</h2>
+                <p>Danh sách các cuộc đua ngựa này đã đăng ký.</p>
+              </div>
+              {raceEntries.length === 0 ? (
+                <p className="muted">Chưa tham gia cuộc đua nào</p>
+              ) : (
+                <div className="horse-info-list">
+                  {raceEntries.map((entry) => {
+                    const entryId = entry?.id ?? entry?.Id;
+                    return (
+                      <article key={entryId} className="horse-entry-card">
+                        <div className="horse-entry-card__row">
+                          <span>Cuộc đua</span>
+                          <strong>{getRaceName(entry)}</strong>
+                        </div>
+                        <div className="horse-entry-card__row">
+                          <span>Ngày</span>
+                          <strong>{getRaceDate(entry)}</strong>
+                        </div>
+                        <div className="horse-entry-card__row">
+                          <span>Cổng</span>
+                          <strong>{getEntryGateNumber(entry)}</strong>
+                        </div>
+                        <div className="horse-entry-card__row">
+                          <span>Trạng thái</span>
+                          <strong>{getEntryStatusLabel(entry)}</strong>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

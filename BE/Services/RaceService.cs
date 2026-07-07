@@ -27,6 +27,7 @@ public class RaceService : IRaceService
         {
             Id = r.Id,
             Name = r.Name,
+            TournamentId = r.TournamentId,
             ScheduledAt = r.ScheduledAt,
             Status = r.Status.ToString()
         }).ToList();

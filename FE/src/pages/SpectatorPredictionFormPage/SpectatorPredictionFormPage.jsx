@@ -8,6 +8,7 @@ import {
   getTournaments,
 } from "../../services/spectatorApi";
 import { getRaceEntries } from "../../services/refereeApi";
+import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
 const formatCountdown = (value) => {
@@ -52,6 +53,16 @@ function SpectatorPredictionFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [walletBalance, setWalletBalance] = useState(null);
+
+  useEffect(() => {
+    getBalance()
+      .then((d) => {
+        const b = d?.data ?? d;
+        setWalletBalance(b?.balance ?? b?.Balance ?? 0);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,18 +147,23 @@ function SpectatorPredictionFormPage() {
   }, [selectedRace]);
 
   const raceOptions = useMemo(() => {
-    return races.map((race) => {
-      const id = race?.id ?? race?.Id;
-      const name = race?.name ?? race?.Name ?? "Cuộc đua";
-      const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
-      return {
-        id,
-        name,
-        time: formatDateTime(scheduledAt),
-        countdown: formatCountdown(scheduledAt),
-      };
-    });
-  }, [races]);
+    return races
+      .filter((race) => {
+        const tid = race?.tournamentId ?? race?.TournamentId;
+        return !selectedTournament || tid === selectedTournament;
+      })
+      .map((race) => {
+        const id = race?.id ?? race?.Id;
+        const name = race?.name ?? race?.Name ?? "Cuộc đua";
+        const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
+        return {
+          id,
+          name,
+          time: formatDateTime(scheduledAt),
+          countdown: formatCountdown(scheduledAt),
+        };
+      });
+  }, [races, selectedTournament]);
 
   const selectedRaceDetails = raceOptions.find((r) => r.id === selectedRace);
 
@@ -157,9 +173,9 @@ function SpectatorPredictionFormPage() {
       id: entry.horseId ?? entry.HorseId,
       name: entry.horseName ?? entry.HorseName ?? "Không xác định",
       jockey: entry.jockeyName ?? entry.JockeyName ?? "Chưa xác định",
-      winRate: entry.winRate ?? entry.WinRate ?? "Chưa xác định",
-      form: entry.form ?? entry.Form ?? entry.recentForm ?? entry.RecentForm ?? "Đang chờ phong độ",
-      odds: entry.odds ?? entry.Odds ?? "Chưa xác định",
+      winRate: entry.horseWinRate ?? entry.HorseWinRate ?? 0,
+      jockeyWinRate: entry.jockeyWinRate ?? entry.JockeyWinRate ?? 0,
+      odds: entry.odds ?? entry.Odds ?? 1.0,
     }));
   }, [raceDetail]);
 
@@ -174,6 +190,12 @@ function SpectatorPredictionFormPage() {
   const handleConfirm = async () => {
     if (!selectedRace || !selectedHorseId) return;
 
+    const bet = parseFloat(betAmount) || 0;
+    if (walletBalance !== null && bet > walletBalance) {
+      setSubmitError("Số dư không đủ để đặt cược.");
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError("");
 
@@ -181,7 +203,7 @@ function SpectatorPredictionFormPage() {
       await createPrediction({
         raceId: selectedRace,
         predictedHorseId: selectedHorseId,
-        betAmount: parseFloat(betAmount) || 0,
+        betAmount: bet,
       });
       setShowConfirmation(false);
       setBetAmount("");
@@ -266,25 +288,11 @@ function SpectatorPredictionFormPage() {
 
         {isLoading ? (
           <div className="pf-empty">
-            <div className="pf-empty__icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-            </div>
             <h4>Đang tải danh sách ngựa</h4>
             <p>Vui lòng đợi trong giây lát.</p>
           </div>
         ) : horseOptions.length === 0 ? (
           <div className="pf-empty">
-            <div className="pf-empty__icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
             <h4>Không có ngựa</h4>
             <p>Chọn cuộc đua khác để xem danh sách ngựa tham gia.</p>
           </div>
@@ -303,10 +311,6 @@ function SpectatorPredictionFormPage() {
                   <div className="pf-horse-card__body">
                     <h3>{horse.name}</h3>
                     <p className="pf-horse-card__jockey">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
                       {horse.jockey}
                     </p>
                   </div>
@@ -334,9 +338,16 @@ function SpectatorPredictionFormPage() {
       {/* ---- Bet + Submit ---- */}
       <form className="pf-action-bar" onSubmit={handleSubmit}>
         <div className="pf-field pf-field--amount">
-          <label htmlFor="pf-bet" className="pf-label">Số tiền cược ($)</label>
+          <label htmlFor="pf-bet" className="pf-label">
+            Số tiền cược
+            {walletBalance !== null && (
+              <span style={{ fontSize: 12, fontWeight: 400, color: "#657086", marginLeft: 8 }}>
+                (Số dư: <strong style={{ color: walletBalance >= (parseFloat(betAmount) || 0) ? "#1a7d1a" : "#c41e1e" }}>{Number(walletBalance).toLocaleString()}đ</strong>)
+              </span>
+            )}
+          </label>
           <div className="pf-amount-input-wrap">
-            <span className="pf-amount-currency">$</span>
+            <span className="pf-amount-currency">đ</span>
             <input
               id="pf-bet"
               className="pf-input"
@@ -363,11 +374,6 @@ function SpectatorPredictionFormPage() {
       {/* ---- Race info card ---- */}
       <div className="pf-info-card">
         <div className="pf-info-card__header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
           <span>Thông tin cuộc đua</span>
         </div>
         <div className="pf-info-card__grid">
@@ -408,10 +414,6 @@ function SpectatorPredictionFormPage() {
                 onClick={() => setShowConfirmation(false)}
                 aria-label="Đóng"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
               </button>
             </div>
             <div className="pf-modal__body">
@@ -433,7 +435,7 @@ function SpectatorPredictionFormPage() {
               </div>
               <div className="pf-modal__row">
                 <span>Số tiền cược</span>
-                <strong className="pf-modal__amount">${parseFloat(betAmount) || 0}</strong>
+                <strong className="pf-modal__amount">{parseFloat(betAmount) || 0}đ</strong>
               </div>
               {submitError && <div className="pf-modal__error">{submitError}</div>}
             </div>

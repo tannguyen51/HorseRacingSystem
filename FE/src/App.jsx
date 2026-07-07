@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -13,40 +14,46 @@ import JockeyHeader from "./components/JockeyHeader/JockeyHeader";
 import OwnerHeader from "./components/OwnerHeader/OwnerHeader";
 import RefereeHeader from "./components/RefereeHeader/RefereeHeader";
 import AdminHeader from "./components/AdminHeader/AdminHeader";
-import HomePage from "./pages/HomePage/HomePage";
-import TournamentListPage from "./pages/TournamentListPage/TournamentListPage";
-import TournamentDetailPage from "./pages/TournamentDetailPage/TournamentDetailPage";
-import RaceSchedulePage from "./pages/RaceSchedulePage/RaceSchedulePage";
-import LiveResultsPage from "./pages/LiveResultsPage/LiveResultsPage";
-import LeaderboardPage from "./pages/LeaderboardPage/LeaderboardPage";
-import SpectatorTournamentListPage from "./pages/SpectatorTournamentListPage/SpectatorTournamentListPage";
-import SpectatorRaceSchedulePage from "./pages/SpectatorRaceSchedulePage/SpectatorRaceSchedulePage";
-import SpectatorLiveRankingPage from "./pages/SpectatorLiveRankingPage/SpectatorLiveRankingPage";
-import SpectatorPredictionFormPage from "./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage";
-import SpectatorPredictionResultPage from "./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage";
-import { JockeyInvitationPage } from "./pages/JockeyInvitationPage/JockeyInvitationPage";
-import JockeyInvitationDetailPage from "./pages/JockeyInvitationPage/JockeyInvitationDetailPage";
-import JockeyDashboardPage from "./pages/JockeyDashboardPage/JockeyDashboardPage";
-import { JockeySchedulePage } from "./pages/JockeySchedulePage/JockeySchedulePage";
-import { JockeyPerformancePage } from "./pages/JockeyPerformancePage/JockeyPerformancePage";
-import OwnerDashboardPage from "./pages/OwnerDashboardPage/OwnerDashboardPage";
-import OwnerHorseListPage from "./pages/OwnerHorseListPage/OwnerHorseListPage";
-import OwnerHorseDetailPage from "./pages/OwnerHorseDetailPage/OwnerHorseDetailPage";
-import OwnerHorseCreatePage from "./pages/OwnerHorseCreatePage/OwnerHorseCreatePage";
-import OwnerHorseEditPage from "./pages/OwnerHorseEditPage/OwnerHorseEditPage";
-import OwnerTournamentListPage from "./pages/OwnerTournamentListPage/OwnerTournamentListPage";
-import OwnerTournamentRegisterPage from "./pages/OwnerTournamentRegisterPage/OwnerTournamentRegisterPage";
-import OwnerRaceConfirmationPage from "./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage";
-import RefereeDashboardPage from "./pages/RefereeDashboardPage/RefereeDashboardPage";
-import { RefereeAssignmentPage } from "./components/RefereeNotification/RefereeAssignmentPage";
-import RefereeHealthCheckPage from "./pages/RefereeHealthCheckPage/RefereeHealthCheckPage";
-import RefereeViolationPage from "./pages/RefereeViolationPage/RefereeViolationPage";
-import { OwnerProfilePage, JockeyProfilePage, RefereeProfilePage, SpectatorProfilePage } from "./pages/ProfilePages";
-import LoginPage from "./pages/LoginPage/LoginPage";
-import RegisterPage from "./pages/RegisterPage/RegisterPage";
-import RegisterHorseOwnerPage from "./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage";
-import RegisterJockeyPage from "./pages/RegisterJockeyPage/RegisterJockeyPage";
-import AdminPage from "./pages/AdminPage/AdminPage";
+
+const HomePage = lazy(() => import("./pages/HomePage/HomePage"));
+const TournamentListPage = lazy(() => import("./pages/TournamentListPage/TournamentListPage"));
+const TournamentDetailPage = lazy(() => import("./pages/TournamentDetailPage/TournamentDetailPage"));
+const RaceSchedulePage = lazy(() => import("./pages/RaceSchedulePage/RaceSchedulePage"));
+const LiveResultsPage = lazy(() => import("./pages/LiveResultsPage/LiveResultsPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage/LeaderboardPage"));
+const SpectatorTournamentListPage = lazy(() => import("./pages/SpectatorTournamentListPage/SpectatorTournamentListPage"));
+const SpectatorRaceSchedulePage = lazy(() => import("./pages/SpectatorRaceSchedulePage/SpectatorRaceSchedulePage"));
+const SpectatorLiveRankingPage = lazy(() => import("./pages/SpectatorLiveRankingPage/SpectatorLiveRankingPage"));
+const SpectatorPredictionFormPage = lazy(() => import("./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage"));
+const SpectatorPredictionResultPage = lazy(() => import("./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage"));
+const JockeyInvitationPage = lazy(() => import("./pages/JockeyInvitationPage/JockeyInvitationPage"));
+const JockeyInvitationDetailPage = lazy(() => import("./pages/JockeyInvitationPage/JockeyInvitationDetailPage"));
+const JockeyDashboardPage = lazy(() => import("./pages/JockeyDashboardPage/JockeyDashboardPage"));
+const JockeySchedulePage = lazy(() => import("./pages/JockeySchedulePage/JockeySchedulePage"));
+const JockeyPerformancePage = lazy(() => import("./pages/JockeyPerformancePage/JockeyPerformancePage"));
+const OwnerDashboardPage = lazy(() => import("./pages/OwnerDashboardPage/OwnerDashboardPage"));
+const OwnerHorseListPage = lazy(() => import("./pages/OwnerHorseListPage/OwnerHorseListPage"));
+const OwnerHorseDetailPage = lazy(() => import("./pages/OwnerHorseDetailPage/OwnerHorseDetailPage"));
+const OwnerHorseCreatePage = lazy(() => import("./pages/OwnerHorseCreatePage/OwnerHorseCreatePage"));
+const OwnerHorseEditPage = lazy(() => import("./pages/OwnerHorseEditPage/OwnerHorseEditPage"));
+const OwnerTournamentListPage = lazy(() => import("./pages/OwnerTournamentListPage/OwnerTournamentListPage"));
+const OwnerTournamentRegisterPage = lazy(() => import("./pages/OwnerTournamentRegisterPage/OwnerTournamentRegisterPage"));
+const OwnerRaceConfirmationPage = lazy(() => import("./pages/OwnerRaceConfirmationPage/OwnerRaceConfirmationPage"));
+const RefereeDashboardPage = lazy(() => import("./pages/RefereeDashboardPage/RefereeDashboardPage"));
+const RefereeAssignmentPage = lazy(() => import("./pages/RefereeAssignmentPage/RefereeAssignmentPage"));
+const RefereeHealthCheckPage = lazy(() => import("./pages/RefereeHealthCheckPage/RefereeHealthCheckPage"));
+const RefereeInjuryPage = lazy(() => import("./pages/RefereeInjuryPage/RefereeInjuryPage"));
+const RefereeViolationPage = lazy(() => import("./pages/RefereeViolationPage/RefereeViolationPage"));
+const RefereeRaceReportPage = lazy(() => import("./pages/RefereeRaceReportPage/RefereeRaceReportPage"));
+const OwnerProfilePage = lazy(() => import("./pages/OwnerProfilePage/OwnerProfilePage"));
+const JockeyProfilePage = lazy(() => import("./pages/JockeyProfilePage/JockeyProfilePage"));
+const RefereeProfilePage = lazy(() => import("./pages/RefereeProfilePage/RefereeProfilePage"));
+const SpectatorProfilePage = lazy(() => import("./pages/ProfilePages").then(m => ({ default: m.SpectatorProfilePage })));
+const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage/RegisterPage"));
+const RegisterHorseOwnerPage = lazy(() => import("./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage"));
+const RegisterJockeyPage = lazy(() => import("./pages/RegisterJockeyPage/RegisterJockeyPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
 import "./App.css";
 
 const getStoredAuthUser = () => {
@@ -62,11 +69,11 @@ const getStoredAuthUser = () => {
   }
 };
 
-function RequireAuth() {
+function RequireAuth({ roles }) {
   const hasAuthToken = Boolean(localStorage.getItem("authToken"));
-  if (!hasAuthToken) {
-    return <Navigate to="/login" replace />;
-  }
+  const user = getStoredAuthUser();
+  if (!hasAuthToken) return <Navigate to="/login" replace />;
+  if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
   return <Outlet />;
 }
 
@@ -74,39 +81,16 @@ function AppLayout() {
   const location = useLocation();
   const authUser = getStoredAuthUser();
   const hasAuthToken = Boolean(localStorage.getItem("authToken"));
-  const adminPage =
-    hasAuthToken && authUser?.role === "admin" ? (
-      <AdminPage />
-    ) : (
-      <Navigate to="/login" replace />
-    );
 
-  const isSpectator = location.pathname.startsWith("/spectator");
-  const isJockey = location.pathname.startsWith("/jockey");
-  const isOwner = location.pathname.startsWith("/owner");
-  const isReferee = location.pathname.startsWith("/referee");
   const isAdmin = location.pathname.startsWith("/admin");
 
   const renderHeader = () => {
-    if (isSpectator || authUser?.role === "spectator") {
-      return <SpectatorHeader />;
-    }
-
-    if (isJockey || authUser?.role === "jockey") {
-      return <JockeyHeader />;
-    }
-
-    if (isOwner || authUser?.role === "horse_owner") {
-      return <OwnerHeader />;
-    }
-
-    if (isReferee || authUser?.role === "referee") {
-      return <RefereeHeader />;
-    }
-    if (isAdmin || authUser?.role === "admin") {
-      return <AdminHeader />;
-    }
-
+    const role = authUser?.role;
+    if (role === "spectator") return <SpectatorHeader />;
+    if (role === "jockey") return <JockeyHeader />;
+    if (role === "horse_owner") return <OwnerHeader />;
+    if (role === "referee") return <RefereeHeader />;
+    if (role === "admin") return <AdminHeader />;
     return <Header />;
   };
 
@@ -114,70 +98,94 @@ function AppLayout() {
     <div className="app-shell">
       {renderHeader()}
       <main className="page-wrapper">
-        <Routes>
-          {/* Public — không cần đăng nhập */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/register/horse-owner" element={<RegisterHorseOwnerPage />} />
-          <Route path="/register/jockey" element={<RegisterJockeyPage />} />
+        <Suspense fallback={<div className="page-loading">Đang tải...</div>}>
+          <Routes>
+            {/* Public — không cần đăng nhập */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/horse-owner" element={<RegisterHorseOwnerPage />} />
+            <Route path="/register/jockey" element={<RegisterJockeyPage />} />
 
-          {/* Protected — cần đăng nhập */}
-          <Route element={<RequireAuth />}>
-            <Route path="/tournaments" element={<TournamentListPage />} />
-            <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
-            <Route path="/schedule" element={<RaceSchedulePage />} />
-            <Route path="/live-results" element={<LiveResultsPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/spectator" element={<Navigate to="/" replace />} />
-            <Route path="/spectator/tournaments" element={<SpectatorTournamentListPage />} />
-            <Route path="/spectator/schedule" element={<SpectatorRaceSchedulePage />} />
-            <Route path="/spectator/live-ranking" element={<SpectatorLiveRankingPage />} />
-            <Route path="/spectator/predictions" element={<SpectatorPredictionFormPage />} />
-            <Route path="/spectator/predictions/results" element={<SpectatorPredictionResultPage />} />
-            <Route path="/spectator/rewards" element={<Navigate to="/spectator/predictions/results" replace />} />
-            <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
-            <Route path="/jockey" element={<JockeyDashboardPage />} />
-            <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
-            <Route path="/jockey/invitations/:id" element={<JockeyInvitationDetailPage />} />
-            <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
-            <Route path="/jockey/performance" element={<JockeyPerformancePage />} />
-            <Route path="/jockey/profile" element={<JockeyProfilePage />} />
-            <Route path="/owner" element={<OwnerDashboardPage />} />
-            <Route path="/owner/horses" element={<OwnerHorseListPage />} />
-            <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
-            <Route path="/owner/horses/:id" element={<OwnerHorseDetailPage />} />
-            <Route path="/owner/horses/:id/edit" element={<OwnerHorseEditPage />} />
-            <Route path="/owner/tournaments" element={<OwnerTournamentListPage />} />
-            <Route path="/owner/register-tournament" element={<OwnerTournamentRegisterPage />} />
-            <Route path="/owner/race-confirmations" element={<OwnerRaceConfirmationPage />} />
-            <Route path="/owner/profile" element={<OwnerProfilePage />} />
-            <Route path="/referee" element={<RefereeDashboardPage />} />
-            <Route path="/referee/assignments" element={<RefereeAssignmentPage />} />
-            <Route path="/referee/health-checks" element={<RefereeHealthCheckPage />} />
-            <Route path="/referee/violations" element={<RefereeViolationPage />} />
-            <Route path="/referee/profile" element={<RefereeProfilePage />} />
-          </Route>
+            {/* Protected — cần đăng nhập (không giới hạn role) */}
+            <Route element={<RequireAuth />}>
+              <Route path="/tournaments" element={<TournamentListPage />} />
+              <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
+              <Route path="/schedule" element={<RaceSchedulePage />} />
+              <Route path="/live-results" element={<LiveResultsPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/spectator" element={<Navigate to="/" replace />} />
+            </Route>
 
-          {/* Admin */}
-          <Route path="/admin" element={adminPage} />
-          <Route path="/admin/users" element={adminPage} />
-          <Route path="/admin/users/:id" element={adminPage} />
-          <Route path="/admin/users/:userId/horses/:horseId" element={adminPage} />
-          <Route path="/admin/registrations" element={adminPage} />
-          <Route path="/admin/roles" element={adminPage} />
-          <Route path="/admin/tournaments" element={adminPage} />
-          <Route path="/admin/rounds" element={adminPage} />
-          <Route path="/admin/races" element={adminPage} />
-          <Route path="/admin/prizes" element={adminPage} />
-          <Route path="/admin/protests" element={adminPage} />
-          <Route path="/admin/transfers" element={adminPage} />
-          <Route path="/admin/contracts" element={adminPage} />
-          <Route path="/admin/injuries" element={adminPage} />
-          <Route path="/admin/audit" element={adminPage} />
-          <Route path="/admin/notifications" element={adminPage} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Spectator */}
+            <Route element={<RequireAuth roles={["spectator"]} />}>
+              <Route path="/spectator/tournaments" element={<SpectatorTournamentListPage />} />
+              <Route path="/spectator/schedule" element={<SpectatorRaceSchedulePage />} />
+              <Route path="/spectator/live-ranking" element={<SpectatorLiveRankingPage />} />
+              <Route path="/spectator/predictions" element={<SpectatorPredictionFormPage />} />
+              <Route path="/spectator/predictions/results" element={<SpectatorPredictionResultPage />} />
+              <Route path="/spectator/rewards" element={<Navigate to="/spectator/predictions/results" replace />} />
+              <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
+            </Route>
+
+            {/* Jockey */}
+            <Route element={<RequireAuth roles={["jockey"]} />}>
+              <Route path="/jockey" element={<JockeyDashboardPage />} />
+              <Route path="/jockey/invitations" element={<JockeyInvitationPage />} />
+              <Route path="/jockey/invitations/:id" element={<JockeyInvitationDetailPage />} />
+              <Route path="/jockey/schedule" element={<JockeySchedulePage />} />
+              <Route path="/jockey/performance" element={<JockeyPerformancePage />} />
+              <Route path="/jockey/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/jockey/profile" element={<JockeyProfilePage />} />
+            </Route>
+
+            {/* Owner */}
+            <Route element={<RequireAuth roles={["horse_owner"]} />}>
+              <Route path="/owner" element={<OwnerDashboardPage />} />
+              <Route path="/owner/horses" element={<OwnerHorseListPage />} />
+              <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />
+              <Route path="/owner/horses/:id" element={<OwnerHorseDetailPage />} />
+              <Route path="/owner/horses/:id/edit" element={<OwnerHorseEditPage />} />
+              <Route path="/owner/tournaments" element={<OwnerTournamentListPage />} />
+              <Route path="/owner/register-tournament" element={<OwnerTournamentRegisterPage />} />
+              <Route path="/owner/race-confirmations" element={<OwnerRaceConfirmationPage />} />
+              <Route path="/owner/profile" element={<OwnerProfilePage />} />
+            </Route>
+
+            {/* Referee */}
+            <Route element={<RequireAuth roles={["referee"]} />}>
+              <Route path="/referee" element={<RefereeDashboardPage />} />
+              <Route path="/referee/assignments" element={<RefereeAssignmentPage />} />
+              <Route path="/referee/health-checks" element={<RefereeHealthCheckPage />} />
+              <Route path="/referee/violations" element={<RefereeViolationPage />} />
+              <Route path="/referee/reports" element={<RefereeRaceReportPage />} />
+              <Route path="/referee/injuries" element={<RefereeInjuryPage />} />
+              <Route path="/referee/profile" element={<RefereeProfilePage />} />
+            </Route>
+
+            {/* Admin */}
+            <Route element={<RequireAuth roles={["admin"]} />}>
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/users" element={<AdminPage />} />
+              <Route path="/admin/users/:id" element={<AdminPage />} />
+              <Route path="/admin/users/:userId/horses/:horseId" element={<AdminPage />} />
+              <Route path="/admin/registrations" element={<AdminPage />} />
+              <Route path="/admin/roles" element={<AdminPage />} />
+              <Route path="/admin/tournaments" element={<AdminPage />} />
+              <Route path="/admin/rounds" element={<AdminPage />} />
+              <Route path="/admin/races" element={<AdminPage />} />
+              <Route path="/admin/prizes" element={<AdminPage />} />
+              <Route path="/admin/protests" element={<AdminPage />} />
+              <Route path="/admin/transfers" element={<AdminPage />} />
+              <Route path="/admin/contracts" element={<AdminPage />} />
+              <Route path="/admin/injuries" element={<AdminPage />} />
+              <Route path="/admin/audit" element={<AdminPage />} />
+              <Route path="/admin/notifications" element={<AdminPage />} />
+              <Route path="/admin/withdrawals" element={<AdminPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
       {!isAdmin && <Footer />}
     </div>

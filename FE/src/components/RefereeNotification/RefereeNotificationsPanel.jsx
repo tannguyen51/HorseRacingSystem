@@ -26,7 +26,6 @@ export function RefereeNotificationsPanel() {
     });
 
     // Optional: Show a toast/notification to user
-    console.log(`Assignment ${id} ${response.toLowerCase()}`);
   };
 
   /**

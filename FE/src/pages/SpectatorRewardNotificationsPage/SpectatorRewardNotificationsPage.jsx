@@ -70,24 +70,11 @@ function SpectatorRewardNotificationsPage() {
       {/* ---- Content ---- */}
       {loading ? (
         <div className="prw-empty">
-          <div className="prw-empty__icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-          </div>
           <h4>Đang tải thông báo phần thưởng</h4>
           <p>Vui lòng đợi trong giây lát.</p>
         </div>
       ) : wonPredictions.length === 0 ? (
         <div className="prw-empty">
-          <div className="prw-empty__icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-          </div>
           <h4>Chưa có phần thưởng</h4>
           <p>Tiếp tục dự đoán và giành chiến thắng để nhận thưởng.</p>
         </div>
@@ -102,23 +89,12 @@ function SpectatorRewardNotificationsPage() {
             return (
               <article key={id} className="prw-card">
                 {/* Gold badge */}
-                <div className="prw-card__badge">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
 
                 {/* Card body */}
                 <div className="prw-card__body">
                   <div className="prw-card__header">
                     <span className={`prw-card__status`}>Đã thắng</span>
                     <span className="prw-card__date">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
                       {formatDate(settledDate)}
                     </span>
                   </div>

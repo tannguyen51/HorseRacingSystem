@@ -1,363 +1,361 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOwnerProfile, getOwnerTournaments } from "../../services/ownerApi";
-import "../OwnerSharedLayout.css";
+import { getOwnerProfile, getOwnerTournaments, getOwnerEntries, getOwnerPerformance } from "../../services/ownerApi";
 import "./OwnerDashboardPage.css";
-
-const upcomingRaces = [
-  {
-    title: "Trận Derby Bờ Biển",
-    time: "22/5 · 4:20 CH",
-    track: "Công viên Gulfstream",
-    horse: "Sao Chổi Bạc",
-  },
-  {
-    title: "Giải Mời Lục Bảo",
-    time: "24/5 · 2:40 CH",
-    track: "Emerald Downs",
-    horse: "Tia Sét",
-  },
-  {
-    title: "Dặm Vàng",
-    time: "28/5 · 5:10 CH",
-    track: "Santa Anita",
-    horse: "Ngựa Nửa Đêm",
-  },
-];
-
-const notifications = [
-  {
-    title: "Đã lên lịch kiểm tra sức khỏe",
-    detail: "Tia Sét khám thú y vào 20/5.",
-    time: "2 giờ trước",
-  },
-  {
-    title: "Đăng ký đã được duyệt",
-    detail: "Sao Chổi Bạc đã vào Trận Derby Bờ Biển.",
-    time: "Hôm qua",
-  },
-  {
-    title: "Kỵ sĩ đã xác nhận",
-    detail: "Ariana Blake được chỉ định cho Ngựa Nửa Đêm.",
-    time: "16/5",
-  },
-];
-
-const activityFeed = [
-  {
-    title: "Đã đăng kết quả đua",
-    detail: "Tia Sét về nhì trong Trình Diễn Mùa Xuân.",
-    time: "14/5",
-  },
-  {
-    title: "Cập nhật hiệu suất",
-    detail: "Chỉ số tốc độ của Sao Chổi Bạc tăng lên 91.",
-    time: "12/5",
-  },
-  {
-    title: "Nhật ký huấn luyện",
-    detail: "Ngựa Nửa Đêm hoàn thành buổi tập sức bền.",
-    time: "11/5",
-  },
-];
-
-const performanceSummary = [
-  { label: "Tỷ lệ thắng", value: "38%" },
-  { label: "Về đích top 3", value: "64%" },
-  { label: "Tốc độ TB", value: "92" },
-];
-
-const quickActions = [
-  {
-    title: "Thêm ngựa mới",
-    description: "Tải lên hồ sơ và theo dõi chỉ số hiệu suất.",
-  },
-  {
-    title: "Đăng ký giải đấu",
-    description: "Kiểm tra điều kiện và đặt chỗ.",
-  },
-  {
-    title: "Xác nhận tham gia đua",
-    description: "Phê duyệt tham gia cuộc đua sắp tới.",
-  },
-];
-
-const chartData = [
-  { label: "Tốc độ", value: 92 },
-  { label: "Sức bền", value: 86 },
-  { label: "Ổn định", value: 78 },
-  { label: "Nước rút", value: 88 },
-];
 
 function OwnerDashboardPage() {
   const navigate = useNavigate();
   const [owner, setOwner] = useState(null);
   const [tournaments, setTournaments] = useState([]);
+  const [entries, setEntries] = useState([]);
+  const [performance, setPerformance] = useState(null);
   const [profileError, setProfileError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-
-    const loadDashboardData = async () => {
-      try {
-        const profile = await getOwnerProfile();
-        if (!cancelled) {
-          setOwner(profile);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setProfileError(error.message || "Không thể tải hồ sơ chủ ngựa.");
-        }
-      }
-
-      try {
-        const payload = await getOwnerTournaments();
-        if (!cancelled) {
-          setTournaments(Array.isArray(payload) ? payload.slice(0, 2) : []);
-        }
-      } catch {
-        if (!cancelled) {
-          setTournaments([]);
-        }
-      }
+    const load = async () => {
+      try { const p = await getOwnerProfile(); if (!cancelled) setOwner(p); } catch (e) { if (!cancelled) setProfileError(e.message); }
+      try { const p = await getOwnerTournaments(); if (!cancelled) setTournaments(Array.isArray(p) ? p.slice(0, 4) : []); } catch { if (!cancelled) setTournaments([]); }
+      try { const p = await getOwnerEntries(); if (!cancelled) setEntries(Array.isArray(p) ? p : []); } catch { if (!cancelled) setEntries([]); }
+      try { const p = await getOwnerPerformance(); if (!cancelled) setPerformance(p?.data ?? p); } catch { if (!cancelled) {} }
     };
-
-    loadDashboardData();
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: "Tổng số ngựa",
-        value: String(owner?.horseCount ?? 0),
-        trend: owner?.ownerCode ?? "Hồ sơ chủ ngựa",
-      },
-      { label: "Cuộc đua đang diễn ra", value: "3", trend: "2 sắp diễn ra" },
-      { label: "Tổng tiền thưởng", value: "$185,400", trend: "+12%" },
-      { label: "Chờ xác nhận", value: "2", trend: "Đến hạn tuần này" },
-    ],
-    [owner],
-  );
+  const upcomingEntries = useMemo(() => entries.filter(e => (e.finishPosition ?? e.FinishPosition) == null), [entries]);
+  const pastEntries = useMemo(() => entries.filter(e => (e.finishPosition ?? e.FinishPosition) != null), [entries]);
+  const pendingCount = useMemo(() => entries.filter(e => !(e.ownerConfirmed ?? e.OwnerConfirmed)).length, [entries]);
+  const confirmedCount = useMemo(() => entries.filter(e => e.ownerConfirmed ?? e.OwnerConfirmed).length, [entries]);
+  const wins = pastEntries.filter(e => (e.finishPosition ?? e.FinishPosition) === 1).length;
+  const winRate = entries.length > 0 ? Math.round((wins / entries.length) * 100) : 0;
 
-  const tournamentParticipation = tournaments.map((tournament) => ({
-    id: tournament?.id ?? tournament?.Id,
-    name: tournament?.name ?? tournament?.Name ?? "Giải đấu",
-    races: `${tournament?.raceCount ?? tournament?.RaceCount ?? 0} cuộc đua`,
-    status: (tournament?.isActive ?? tournament?.IsActive) ? "Mở" : "Đã đóng",
-    rounds: `${tournament?.roundCount ?? tournament?.RoundCount ?? 0} vòng`,
-  }));
+  const getEntryField = (entry, camel, pascal) => entry[camel] ?? entry[pascal];
+
+  const horseCount = owner?.horseCount ?? 0;
+  const ownerName = owner?.fullName || "Chủ ngựa";
 
   return (
-    <div className="owner-page owner-dashboard">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header">
-            <p className="pill">Chủ Ngựa</p>
-            <h3>Tổng quan chuồng ngựa</h3>
-            <p className="muted">Theo dõi ngựa, đăng ký và phần thưởng.</p>
+    <div className="od-wrap">
+      <div className="od-container">
+        {/* Topbar */}
+        <header className="od-topbar">
+          <div>
+            <h1>Chào mừng trở lại, {ownerName}</h1>
+            <p className="od-topbar-sub">{upcomingEntries.length} cuộc đua sắp diễn ra · {pendingCount} chờ xác nhận</p>
           </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Tài khoản chủ ngựa</p>
-            <h4>{owner?.ownerCode ?? "Đang tải..."}</h4>
-            <span>{owner?.email ?? "Đang tải hồ sơ"}</span>
+          <div className="od-topbar-actions">
+            <button className="od-btn od-btn--primary" onClick={() => navigate("/owner/horses/new")}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+              Thêm ngựa
+            </button>
+            <button className="od-btn od-btn--outline" onClick={() => navigate("/owner/register-tournament")}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Đăng ký giải
+            </button>
           </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Trạng thái hồ sơ</p>
-            <h4>{owner?.status ?? "-"}</h4>
-            <span>{owner?.ownerType ?? "Chủ ngựa"}</span>
-          </div>
-        </aside>
+        </header>
 
-        <div className="owner-content">
-          <section className="owner-hero">
-            <div>
-              <span className="pill">Bảng điều khiển</span>
-              <h1>Chào mừng trở lại, {owner?.fullName || owner?.email || "Chủ ngựa"}</h1>
-              <p>
-                Quản lý chuồng ngựa, theo dõi đăng ký đua và giữ mọi ngựa
-                sẵn sàng thi đấu.
-              </p>
-              {profileError ? <p className="form-error">{profileError}</p> : null}
-              <div className="owner-hero__actions">
-                <button className="primary-button" onClick={() => navigate("/owner/horses/new")}>Thêm ngựa</button>
-                <button
-                  className="ghost-button"
-                  onClick={() => navigate("/owner/register-tournament")}
-                >
-                  Đăng ký giải đấu
-                </button>
+        {profileError && <div className="od-error">{profileError}</div>}
+
+        {/* Primary — Hero Stats */}
+        <section className="od-primary-grid">
+          <div className="od-hero-card">
+            <div className="od-hero-card__content">
+              <span className="od-label">Tổng số ngựa</span>
+              <strong className="od-hero-value">{horseCount}</strong>
+              <span className="od-trend od-trend--up">{confirmedCount} đã xác nhận tham gia</span>
+            </div>
+            <div className="od-hero-card__ring">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#f2d28b" strokeWidth="6" strokeDasharray={`${(horseCount / 10) * 214} 214`} strokeLinecap="round" transform="rotate(-90 40 40)" />
+              </svg>
+              <span className="od-ring-label">{horseCount}/10</span>
+            </div>
+          </div>
+          <div className="od-hero-card">
+            <div className="od-hero-card__content">
+              <span className="od-label">Tỉ lệ thắng</span>
+              <strong className="od-hero-value">{winRate}%</strong>
+              <span className="od-trend od-trend--up">{wins} chiến thắng</span>
+            </div>
+            <div className="od-hero-card__bar">
+              <div className="od-bar-track">
+                <div className="od-bar-fill" style={{ width: `${winRate}%` }} />
               </div>
             </div>
-            <div className="owner-hero__panel">
-              <div>
-                <span>Ngựa sẵn sàng</span>
-                <strong>{owner?.horseCount ?? 0}</strong>
-              </div>
-              <div>
-                <span>Cuộc đua sắp tới</span>
-                <strong>3</strong>
-              </div>
-              <div>
-                <span>Chờ phê duyệt</span>
-                <strong>2</strong>
+          </div>
+          <div className="od-hero-card">
+            <div className="od-hero-card__content">
+              <span className="od-label">Cuộc đua sắp tới</span>
+              <strong className="od-hero-value">{upcomingEntries.length}</strong>
+              <span className="od-trend">{pendingCount} chưa xác nhận</span>
+            </div>
+          </div>
+          <div className="od-hero-card">
+            <div className="od-hero-card__content">
+              <span className="od-label">Đã hoàn thành</span>
+              <strong className="od-hero-value">{pastEntries.length}</strong>
+              <span className="od-trend od-trend--up">{Math.round((pastEntries.length / (entries.length || 1)) * 100)}% tổng số</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Dominant — Performance Chart + Horse Stats */}
+        {performance && (
+          <section className="od-dominant">
+            <div className="od-chart-card">
+              <h3>Hiệu suất theo tuần</h3>
+              <div className="od-chart">
+                {(performance.weeklyPerformance ?? []).map((w) => {
+                  const max = Math.max(...(performance.weeklyPerformance ?? []).map(w => w.races), 1);
+                  return (
+                    <div key={w.week} className="od-chart-col">
+                      <span className="od-chart-bar" style={{ height: `${(w.races / max) * 100}%` }}>
+                        <span className="od-chart-val">{w.wins}</span>
+                      </span>
+                      <span className="od-chart-label">{w.week}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </section>
-
-          <section className="owner-stats">
-            {stats.map((stat) => (
-              <article key={stat.label} className="stat-card hover-lift">
-                <p className="muted">{stat.label}</p>
-                <h3>{stat.value}</h3>
-                <span className="stat-trend">{stat.trend}</span>
-              </article>
-            ))}
-          </section>
-
-          <section className="owner-columns">
-            <div className="owner-stack">
-              <div className="section-heading">
-                <h2>Cuộc đua sắp tới</h2>
-                <p>Xác nhận đăng ký và sắp xếp đội hình kỵ sĩ.</p>
-              </div>
-              <div className="owner-card-grid">
-                {upcomingRaces.map((race) => (
-                  <article
-                    key={race.title}
-                    className="owner-upcoming-card hover-lift"
-                  >
-                    <div className="owner-upcoming-card__header">
-                      <span className="badge">Sắp diễn ra</span>
-                      <span className="muted">{race.time}</span>
+            <div className="od-horse-stats">
+              <h3>Hiệu suất ngựa</h3>
+              <div className="od-horse-list">
+                {(performance.horseStats ?? []).slice(0, 4).map(h => (
+                  <div key={h.horseId ?? h.horseName} className="od-horse-item">
+                    <div className="od-horse-info">
+                      <strong>{h.horseName}</strong>
+                      <span>{h.totalRaces} đua · {h.wins} thắng</span>
                     </div>
-                    <h3>{race.title}</h3>
-                    <p>{race.track}</p>
-                    <div className="owner-upcoming-card__meta">
-                      <span>Ngựa</span>
-                      <strong>{race.horse}</strong>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div className="section-heading">
-                <h2>Giải đấu gần đây</h2>
-                <p>Theo dõi nơi ngựa của bạn đang tham gia.</p>
-              </div>
-              <div className="tournament-stack">
-                {tournamentParticipation.map((item) => (
-                  <article key={item.id} className="owner-tournament-card">
-                    <div className="owner-tournament-card__header">
-                      <span className="badge">{item.status}</span>
-                      <span className="owner-prize">{item.rounds}</span>
-                    </div>
-                    <h3>{item.name}</h3>
-                    <p className="muted">{item.races}</p>
-                    <div className="owner-tournament-meta">
-                      <span>Trạng thái giải đấu</span>
-                      <strong>{item.status}</strong>
-                    </div>
-                  </article>
-                ))}
-                {tournamentParticipation.length === 0 ? (
-                  <p className="muted">Không có giải đấu nào.</p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="owner-stack">
-              <div className="section-heading">
-                <h2>Thông báo</h2>
-                <p>Cập nhật ưu tiên từ hoạt động chủ ngựa.</p>
-              </div>
-              <div className="notification-panel">
-                {notifications.map((note) => (
-                  <article key={note.title} className="notification-item">
-                    <div>
-                      <h4>{note.title}</h4>
-                      <p>{note.detail}</p>
-                    </div>
-                    <span className="muted">{note.time}</span>
-                  </article>
-                ))}
-              </div>
-
-              <div className="section-heading">
-                <h2>Hiệu suất ngựa</h2>
-                <p>Tóm tắt hiệu suất 30 ngày qua.</p>
-              </div>
-              <div className="performance-card">
-                <div className="performance-summary">
-                  {performanceSummary.map((item) => (
-                    <div key={item.label}>
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
-                    </div>
-                  ))}
-                </div>
-                <div className="performance-chart">
-                  {chartData.map((item) => (
-                    <div key={item.label} className="chart-row">
-                      <span>{item.label}</span>
-                      <div className="chart-track">
-                        <div
-                          className="chart-fill"
-                          style={{ width: `${item.value}%` }}
-                        />
+                    <div className="od-horse-bar-wrap">
+                      <div className="od-horse-bar">
+                        <div className="od-horse-fill" style={{ width: `${h.winRate}%` }} />
                       </div>
-                      <strong>{item.value}</strong>
+                      <span className="od-horse-rate">{h.winRate}%</span>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
+        )}
 
-          <section className="owner-section">
-            <div className="section-heading">
-              <h2>Hoạt động đua gần đây</h2>
-              <p>Cập nhật mới nhất từ bảng tin hoạt động.</p>
+        {/* Secondary — 2 Columns */}
+        <div className="od-cols">
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Cuộc đua sắp tới</h3>
+              <span className="od-count">{upcomingEntries.length}</span>
             </div>
-            <div className="activity-panel">
-              {activityFeed.map((activity) => (
-                <div key={activity.title} className="activity-item">
-                  <div>
-                    <h4>{activity.title}</h4>
-                    <p>{activity.detail}</p>
-                  </div>
-                  <span className="muted">{activity.time}</span>
+            <div className="od-card__body">
+              {upcomingEntries.length === 0 ? (
+                <p className="od-muted">Chưa có cuộc đua nào.</p>
+              ) : (
+                <div className="od-feed">
+                  {upcomingEntries.slice(0, 5).map(entry => {
+                    const hName = getEntryField(entry, "horseName", "HorseName");
+                    const rName = getEntryField(entry, "raceName", "RaceName");
+                    const confirmed = getEntryField(entry, "ownerConfirmed", "OwnerConfirmed");
+                    return (
+                      <div key={getEntryField(entry, "entryId", "EntryId")} className="od-feed-item">
+                        <div className={`od-feed-dot ${confirmed ? "od-feed-dot--green" : "od-feed-dot--amber"}`} />
+                        <div className="od-feed-content">
+                          <strong>{rName ?? "Cuộc đua"}</strong>
+                          <span>{hName ?? "Ngựa"} · {confirmed ? "Đã xác nhận" : "Chờ xác nhận"}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
             </div>
-          </section>
+          </div>
 
-          <section className="owner-section">
-            <div className="section-heading">
-              <h2>Thao tác nhanh</h2>
-              <p>Truy cập nhanh các tác vụ thường dùng.</p>
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Giải đấu</h3>
+              <span className="od-count">{tournaments.length}</span>
             </div>
-            <div className="quick-action-grid">
-              {quickActions.map((action) => (
-                <article key={action.title} className="quick-action-card">
-                  <h4>{action.title}</h4>
-                  <p className="muted">{action.description}</p>
-                  <button
-                    className="ghost-button"
-                    onClick={() => {
-                      if (action.title === "Thêm ngựa mới") navigate("/owner/horses/new");
-                      if (action.title === "Đăng ký giải đấu") navigate("/owner/register-tournament");
-                      if (action.title === "Xác nhận tham gia đua") navigate("/owner/race-confirmations");
-                    }}
-                  >
-                    Mở
-                  </button>
-                </article>
-              ))}
+            <div className="od-card__body">
+              {tournaments.length === 0 ? (
+                <p className="od-muted">Chưa tham gia giải đấu nào.</p>
+              ) : (
+                <div className="od-feed">
+                  {tournaments.map(t => (
+                    <div key={t.id ?? t.Id} className="od-feed-item">
+                      <div className={`od-feed-dot ${(t.isActive ?? t.IsActive) ? "od-feed-dot--green" : "od-feed-dot--gray"}`} />
+                      <div className="od-feed-content">
+                        <strong>{t.name ?? t.Name}</strong>
+                        <span>{t.raceCount ?? t.RaceCount ?? 0} cuộc đua</span>
+                      </div>
+                      <span className={`od-chip ${(t.isActive ?? t.IsActive) ? "od-chip--active" : "od-chip--closed"}`}>
+                        {(t.isActive ?? t.IsActive) ? "Mở" : "Đã đóng"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </section>
+          </div>
+        </div>
+
+        {/* Tertiary — Activity */}
+        <div className="od-cols">
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Kết quả gần đây</h3>
+            </div>
+            <div className="od-card__body">
+              {pastEntries.length === 0 ? (
+                <p className="od-muted">Chưa có kết quả.</p>
+              ) : (
+                <div className="od-feed">
+                  {pastEntries.slice(0, 5).map(entry => {
+                    const hName = getEntryField(entry, "horseName", "HorseName");
+                    const rName = getEntryField(entry, "raceName", "RaceName");
+                    const pos = getEntryField(entry, "finishPosition", "FinishPosition");
+                    const posLabel = pos === 1 ? "Vô địch" : pos === 2 ? "Hạng 2" : pos === 3 ? "Hạng 3" : `#${pos}`;
+                    const posClass = pos === 1 ? "win" : pos === 2 ? "place" : pos === 3 ? "show" : "";
+                    return (
+                      <div key={getEntryField(entry, "entryId", "EntryId")} className="od-feed-item">
+                        <div className={"od-pos-badge " + (posClass ? "od-pos-badge--" + posClass : "")}>
+                          {pos === 1 ? "1st" : pos === 2 ? "2nd" : pos === 3 ? "3rd" : "#" + pos}
+                        </div>
+                        <div className="od-feed-content">
+                          <strong>{hName ?? "Ngựa"}</strong>
+                          <span>{rName ?? "Cuộc đua"} · {posLabel}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Hoạt động gần đây</h3>
+            </div>
+            <div className="od-card__body">
+              {entries.length === 0 ? (
+                <p className="od-muted">Chưa có hoạt động.</p>
+              ) : (
+                <div className="od-feed">
+                  {entries.slice(0, 6).map(entry => {
+                    const hName = getEntryField(entry, "horseName", "HorseName");
+                    const confirmed = getEntryField(entry, "ownerConfirmed", "OwnerConfirmed");
+                    const pos = getEntryField(entry, "finishPosition", "FinishPosition");
+                    return (
+                      <div key={getEntryField(entry, "entryId", "EntryId")} className="od-feed-item">
+                        <div className={`od-feed-dot ${pos === 1 ? "od-feed-dot--gold" : confirmed ? "od-feed-dot--green" : "od-feed-dot--amber"}`} />
+                        <div className="od-feed-content">
+                          <strong>{hName ?? "Ngựa"}</strong>
+                          <span>{confirmed ? "Đã xác nhận" : "Chờ xác nhận"}{pos != null ? ` · #${pos}` : ""}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom — Race Calendar */}
+        <div className="od-cols">
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Lịch đua</h3>
+            </div>
+            <div className="od-card__body">
+              <div className="od-timeline">
+                <div className="od-timeline-item">
+                  <span className="od-timeline-date">Hôm nay</span>
+                  <div className="od-timeline-bar">
+                    <div className="od-timeline-dot od-timeline-dot--active" />
+                    <div className="od-timeline-line" />
+                  </div>
+                  <div className="od-timeline-content">
+                    {upcomingEntries.length > 0 ? (
+                      <strong>{upcomingEntries[0]?.raceName ?? "Cuộc đua"}</strong>
+                    ) : (
+                      <span className="od-muted" style={{textAlign:"left",padding:0}}>Không có lịch</span>
+                    )}
+                  </div>
+                </div>
+                <div className="od-timeline-item">
+                  <span className="od-timeline-date">Tuần này</span>
+                  <div className="od-timeline-bar">
+                    <div className="od-timeline-dot" />
+                    <div className="od-timeline-line" />
+                  </div>
+                  <div className="od-timeline-content">
+                    <span className="od-muted" style={{textAlign:"left",padding:0}}>{upcomingEntries.length} cuộc đua · {pendingCount} chờ xác nhận</span>
+                  </div>
+                </div>
+                <div className="od-timeline-item">
+                  <span className="od-timeline-date">Sắp tới</span>
+                  <div className="od-timeline-bar">
+                    <div className="od-timeline-dot" />
+                  </div>
+                  <div className="od-timeline-content">
+                    <span className="od-muted" style={{textAlign:"left",padding:0}}>{tournaments.length} giải đấu đang mở</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="od-card">
+            <div className="od-card__header">
+              <h3>Điều kiện ngựa</h3>
+            </div>
+            <div className="od-card__body">
+              {entries.length === 0 ? (
+                <p className="od-muted">Chưa có dữ liệu.</p>
+              ) : (
+                <div className="od-horse-list">
+                  {entries
+                    .reduce((acc, e) => {
+                      const name = getEntryField(e, "horseName", "HorseName");
+                      if (!acc.find(h => h.name === name)) acc.push({ name, entries: [] });
+                      const h = acc.find(h => h.name === name);
+                      h.entries.push(e);
+                      return acc;
+                    }, [])
+                    .slice(0, 3)
+                    .map(h => {
+                      const total = h.entries.length;
+                      const wins = h.entries.filter(e => (e.finishPosition ?? e.FinishPosition) === 1).length;
+                      const speed = Math.min(95, 50 + wins * 10);
+                      const stamina = Math.min(95, 40 + (total - wins) * 5);
+                      return (
+                        <div key={h.name} className="od-horse-item" style={{marginBottom:8}}>
+                          <div className="od-horse-info">
+                            <strong>{h.name}</strong>
+                            <span>{wins}/{total} thắng</span>
+                          </div>
+                          <div className="od-cond-row">
+                            <span className="od-cond-label">Tốc độ</span>
+                            <div className="od-horse-bar"><div className="od-horse-fill od-horse-fill--gold" style={{width:speed+"%"}} /></div>
+                            <span className="od-cond-val">{speed}%</span>
+                          </div>
+                          <div className="od-cond-row">
+                            <span className="od-cond-label">Sức bền</span>
+                            <div className="od-horse-bar"><div className="od-horse-fill" style={{width:stamina+"%"}} /></div>
+                            <span className="od-cond-val">{stamina}%</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -86,6 +86,40 @@ namespace HorseRacing.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("HorseRacing.Models.BankAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccountHolder")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BankAccounts");
+                });
+
             modelBuilder.Entity("HorseRacing.Models.Contract", b =>
                 {
                     b.Property<Guid>("Id")
@@ -684,6 +718,10 @@ namespace HorseRacing.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("HorseNameSnapshot")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<decimal>("Odds")
                         .HasColumnType("decimal(5,2)");
 
@@ -713,9 +751,10 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("PredictedHorseId");
 
-                    b.HasIndex("RaceId");
-
                     b.HasIndex("SpectatorUserId");
+
+                    b.HasIndex("RaceId", "SpectatorUserId")
+                        .IsUnique();
 
                     b.ToTable("Predictions");
                 });
@@ -864,6 +903,10 @@ namespace HorseRacing.Migrations
                     b.Property<int>("Distance")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Location")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -929,6 +972,9 @@ namespace HorseRacing.Migrations
                     b.Property<Guid?>("JockeyId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("Odds")
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<bool>("OwnerConfirmed")
                         .HasColumnType("boolean");
 
@@ -955,7 +1001,8 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("JockeyId");
 
-                    b.HasIndex("RaceId");
+                    b.HasIndex("RaceId", "HorseId")
+                        .IsUnique();
 
                     b.ToTable("RaceEntries");
                 });
@@ -1227,6 +1274,10 @@ namespace HorseRacing.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -1257,6 +1308,62 @@ namespace HorseRacing.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tournaments");
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BankCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long?>("SepayTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Reference");
+
+                    b.HasIndex("SepayTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status", "CompletedAt");
+
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("HorseRacing.Models.User", b =>
@@ -1295,6 +1402,20 @@ namespace HorseRacing.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ResetToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("ResetTokenExpiry")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -1416,6 +1537,76 @@ namespace HorseRacing.Migrations
                     b.ToTable("ViolationRecords");
                 });
 
+            modelBuilder.Entity("HorseRacing.Models.Wallet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.WithdrawalRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("BankAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("ProcessedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("ProcessedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WithdrawalRequests");
+                });
+
             modelBuilder.Entity("HorseRacing.Models.AuditLog", b =>
                 {
                     b.HasOne("HorseRacing.Models.User", "Admin")
@@ -1432,6 +1623,17 @@ namespace HorseRacing.Migrations
                     b.Navigation("Admin");
 
                     b.Navigation("AffectedUser");
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.BankAccount", b =>
+                {
+                    b.HasOne("HorseRacing.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Contract", b =>
@@ -1810,6 +2012,17 @@ namespace HorseRacing.Migrations
                     b.Navigation("Tournament");
                 });
 
+            modelBuilder.Entity("HorseRacing.Models.Transaction", b =>
+                {
+                    b.HasOne("HorseRacing.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HorseRacing.Models.UserRegistration", b =>
                 {
                     b.HasOne("HorseRacing.Models.User", "ReviewedByUser")
@@ -1845,6 +2058,42 @@ namespace HorseRacing.Migrations
                     b.Navigation("RaceEntry");
 
                     b.Navigation("Referee");
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.Wallet", b =>
+                {
+                    b.HasOne("HorseRacing.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.WithdrawalRequest", b =>
+                {
+                    b.HasOne("HorseRacing.Models.BankAccount", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HorseRacing.Models.User", "ProcessedByUser")
+                        .WithMany()
+                        .HasForeignKey("ProcessedByUserId");
+
+                    b.HasOne("HorseRacing.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("ProcessedByUser");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Horse", b =>

@@ -184,25 +184,7 @@ function OwnerTournamentRegisterPage() {
 
   return (
     <div className="owner-page owner-tournament-register">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header">
-            <p className="pill">Chủ Ngựa</p>
-            <h3>Đăng ký giải đấu</h3>
-            <p className="muted">Gửi ngựa của bạn để đăng ký giải đấu.</p>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Đăng ký đang mở</p>
-            <h4>{tournaments.length} giải đấu</h4>
-            <span>Còn chỗ trống</span>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Đăng ký đã theo dõi</p>
-            <h4>{registrations.length} yêu cầu</h4>
-            <span>Bảng trạng thái mẫu</span>
-          </div>
-        </aside>
-
+      <div>
         <div className="owner-content">
           <section className="page-header">
             <h1>Đăng ký ngựa vào giải đấu</h1>

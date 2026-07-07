@@ -9,6 +9,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/tournaments")]
+[Authorize(Roles = "Admin")]
 public class TournamentsController : ControllerBase
 {
     private readonly ITournamentService _tournamentService;
@@ -70,8 +71,9 @@ public class TournamentsController : ControllerBase
     [HttpPost("{tournamentId:guid}/rounds")]
     public async Task<ActionResult> CreateRound(Guid tournamentId, [FromBody] CreateRoundRequest request)
     {
-        if (request.TournamentId != tournamentId)
-            request.TournamentId = tournamentId;
+        if (request.TournamentId != Guid.Empty && request.TournamentId != tournamentId)
+            return BadRequest(new { message = "TournamentId in body does not match route." });
+        request.TournamentId = tournamentId;
 
         var result = await _roundService.CreateRoundAsync(request);
         return StatusCode(result.StatusCode, result.Result);

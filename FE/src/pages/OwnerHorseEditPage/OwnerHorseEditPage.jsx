@@ -1,17 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getHorse, updateHorse } from "../../services/ownerHorseApi";
-import { request } from "../../services/apiClient";
+import { request, resolveApiUrl } from "../../services/apiClient";
 import { validateHorseStats } from "../../utils/horseValidation";
 import "../OwnerSharedLayout.css";
 import "../OwnerHorseFormPage.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
-const getFullUrl = (url) => {
-  if (!url) return "";
-  if (/^https?:\/\//i.test(url)) return url;
-  return `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
-};
+const getFullUrl = (url) => resolveApiUrl(url);
 
 function OwnerHorseEditPage() {
   const navigate = useNavigate();
@@ -133,10 +128,7 @@ function OwnerHorseEditPage() {
 
   return (
     <div className="owner-page owner-horse-form-page">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header"><p className="pill">Chủ Ngựa</p><h3>Chỉnh sửa ngựa</h3></div>
-        </aside>
+      <div>
         <div className="owner-content">
           <section className="page-header"><h1>Chỉnh sửa ngựa</h1></section>
           <form className="horse-form-card" onSubmit={handleSubmit}>
@@ -162,14 +154,21 @@ function OwnerHorseEditPage() {
               </div>
               <div className="form-grid-two">
                 <div className="form-field"><label>Giống</label><input className="form-input" placeholder="Thuần chủng" value={formValues.breed} onChange={updateField("breed")} /></div>
-                <div className="form-field"><label>Giới tính</label><input className="form-input" placeholder="Ngựa cái / Ngựa đực" value={formValues.gender} onChange={updateField("gender")} /></div>
+                <div className="form-field"><label>Giới tính</label>
+  <select className="form-input" value={formValues.gender} onChange={updateField("gender")} style={{ appearance: "auto" }}>
+    <option value="">-- Chọn --</option>
+    <option value="Đực">Ngựa đực (Stallion)</option>
+    <option value="Cái">Ngựa cái (Mare)</option>
+    <option value="Gelding">Gelding (Ngựa thiến)</option>
+  </select>
+</div>
               </div>
               <div className="form-grid-two">
                 <div className="form-field"><label>Màu sắc</label><input className="form-input" placeholder="Nâu" value={formValues.color} onChange={updateField("color")} /></div>
                 <div className="form-field"><label>Ngày sinh</label><input className="form-input" type="date" value={formValues.dateOfBirth} onChange={updateField("dateOfBirth")} /></div>
               </div>
               <div className="form-grid-three">
-                <div className="form-field"><label>Tuổi (tự động)</label><input className="form-input" type="number" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} /></div>
+                <div className="form-field"><label>Tuổi </label><input className="form-input" type="number" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} /></div>
                 <div className="form-field"><label>Cân nặng (kg)</label><input className="form-input" placeholder="480" value={formValues.weight} onChange={updateField("weight")} /></div>
                 <div className="form-field"><label>Chiều cao (cm)</label><input className="form-input" placeholder="165" value={formValues.height} onChange={updateField("height")} /></div>
               </div>

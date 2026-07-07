@@ -151,8 +151,14 @@ public class RefereesController : ControllerBase
             EntryId = e.Id,
             HorseId = e.HorseId,
             HorseName = e.Horse?.Name ?? e.HorseId.ToString(),
+            HorseWinRate = e.Horse != null && e.Horse.TotalRaces > 0
+                ? Math.Round((decimal)e.Horse.TotalWins / e.Horse.TotalRaces * 100, 1)
+                : 0,
+            HorseTotalRaces = e.Horse?.TotalRaces ?? 0,
             JockeyId = e.JockeyId,
             JockeyName = e.Jockey?.User?.FullName,
+            JockeyWinRate = e.Jockey?.WinRate ?? 0,
+            Odds = e.Odds,
             Status = e.Status.ToString()
         }));
     }

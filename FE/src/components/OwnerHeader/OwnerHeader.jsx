@@ -1,14 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
 import { ownerNavItems } from "../../constants/ownerNavigation";
 import ProfileDropdown from "../ProfileDropdown";
+import NotificationBell from "../NotificationBell/NotificationBell";
 import "./OwnerHeader.css";
 
 function OwnerHeader() {
   return (
     <header className="owner-header">
       <Link className="owner-header__brand" to="/owner">
-        <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Khu vực Chủ Ngựa</p></div>
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
       <nav className="owner-header__nav" aria-label="Horse Owner">
         {ownerNavItems.map((item) => (
@@ -16,6 +16,7 @@ function OwnerHeader() {
         ))}
       </nav>
       <div className="owner-header__actions">
+        <NotificationBell />
         <ProfileDropdown profileUrl="/owner/profile" />
       </div>
     </header>

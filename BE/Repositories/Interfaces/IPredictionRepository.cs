@@ -10,4 +10,8 @@ public interface IPredictionRepository
     Task<bool> ExistsAsync(Guid raceId, Guid spectatorUserId);
     Task AddAsync(Prediction prediction);
     Task<List<Prediction>> GetByUserAsync(Guid spectatorUserId);
+    Task<List<Prediction>> GetByRaceAsync(Guid raceId);
+    Task ExecuteUpdateLosersAsync(Guid raceId, Guid winningHorseId);
+    Task ExecuteUpdateWinnersAsync(Guid raceId, Guid winningHorseId);
+    Task<List<Prediction>> GetWinnersByRaceAsync(Guid raceId);
 }

@@ -100,16 +100,7 @@ function OwnerHorseCreatePage() {
 
   return (
     <div className="owner-page owner-horse-form-page">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header">
-            <p className="pill">Chủ Ngựa</p>
-            <h3>Tạo ngựa mới</h3>
-            <p className="muted">Thêm hồ sơ ngựa mới vào chuồng ngựa.</p>
-          </div>
-        </aside>
-
-        <div className="owner-content">
+      <div><div className="owner-content">
           <section className="page-header"><h1>Tạo ngựa mới</h1><p>Nhập thông tin hồ sơ ngựa để chờ duyệt.</p></section>
 
           <form className="horse-form-card" onSubmit={handleSubmit}>
@@ -152,7 +143,12 @@ function OwnerHorseCreatePage() {
                   </div>
                   <div className="form-field">
                     <label htmlFor="horse-gender">Giới tính</label>
-                    <input id="horse-gender" className="form-input" type="text" placeholder="Ngựa cái / Ngựa đực" value={formValues.gender} onChange={updateField("gender")} />
+                    <select id="horse-gender" className="form-input" value={formValues.gender} onChange={updateField("gender")} style={{ appearance: "auto" }}>
+                      <option value="">-- Chọn giới tính --</option>
+                      <option value="Đực">Ngựa đực (Stallion)</option>
+                      <option value="Cái">Ngựa cái (Mare)</option>
+                      <option value="Gelding">Gelding (Ngựa thiến)</option>
+                    </select>
                   </div>
                 </div>
                 <div className="form-grid-two">

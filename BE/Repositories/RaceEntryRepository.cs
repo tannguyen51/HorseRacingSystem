@@ -70,7 +70,7 @@ public class RaceEntryRepository : IRaceEntryRepository
     {
         return _db.RaceEntries
             .Include(e => e.Horse)
-            .Include(e => e.Jockey)
+            .Include(e => e.Jockey)!.ThenInclude(j => j!.User)
             .Where(e => e.RaceId == raceId)
             .ToListAsync();
     }

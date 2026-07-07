@@ -37,4 +37,42 @@ public class PredictionRepository : IPredictionRepository
             .Where(p => p.SpectatorUserId == spectatorUserId)
             .ToListAsync();
     }
+
+    public Task<List<Prediction>> GetByRaceAsync(Guid raceId)
+    {
+        return _db.Predictions
+            .Where(p => p.RaceId == raceId)
+            .ToListAsync();
+    }
+
+    public Task ExecuteUpdateLosersAsync(Guid raceId, Guid winningHorseId)
+    {
+        return _db.Predictions
+            .Where(p => p.RaceId == raceId
+                && p.Status == PredictionStatus.Pending
+                && p.PredictedHorseId != winningHorseId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.Status, PredictionStatus.Lost)
+                .SetProperty(p => p.PayoutAmount, 0)
+                .SetProperty(p => p.SettledAt, DateTime.UtcNow));
+    }
+
+    public Task ExecuteUpdateWinnersAsync(Guid raceId, Guid winningHorseId)
+    {
+        return _db.Predictions
+            .Where(p => p.RaceId == raceId
+                && p.Status == PredictionStatus.Pending
+                && p.PredictedHorseId == winningHorseId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.Status, PredictionStatus.Won)
+                .SetProperty(p => p.PayoutAmount, p => p.PotentialPayout > 0 ? p.PotentialPayout : p.BetAmount * 2)
+                .SetProperty(p => p.SettledAt, DateTime.UtcNow));
+    }
+
+    public Task<List<Prediction>> GetWinnersByRaceAsync(Guid raceId)
+    {
+        return _db.Predictions
+            .Where(p => p.RaceId == raceId && p.Status == PredictionStatus.Won)
+            .ToListAsync();
+    }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Services.Interfaces;
+using HorseRacing.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,10 +20,12 @@ namespace HorseRacing.Controllers;
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
+    private readonly ICloudStorageService _cloudStorage;
 
-    public HorsesController(IHorseService horseService)
+    public HorsesController(IHorseService horseService, ICloudStorageService cloudStorage)
     {
         _horseService = horseService;
+        _cloudStorage = cloudStorage;
     }
 
     [HttpGet("my-entries")]
@@ -111,23 +114,15 @@ public class HorsesController : ControllerBase
         if (file is null || file.Length == 0)
             return BadRequest(new { message = "No file uploaded." });
 
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (ext is not ".jpg" and not ".jpeg" and not ".png" and not ".gif" and not ".webp")
-            return BadRequest(new { message = "Only JPG, PNG, GIF, WEBP allowed." });
-
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest(new { message = "Max 5MB." });
-
-        var fileName = $"{Guid.NewGuid()}{ext}";
-        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "horses");
-        Directory.CreateDirectory(uploadsDir);
-        var filePath = Path.Combine(uploadsDir, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
-
-        var url = $"/uploads/horses/{fileName}";
-        return Ok(new { url });
+        try
+        {
+            var url = await _cloudStorage.UploadAsync(file, "horses");
+            return Ok(new { url });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost("races/{raceId:guid}/entries/{entryId:guid}/owner-confirm")]

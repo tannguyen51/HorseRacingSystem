@@ -1,529 +1,196 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  getMyHorses,
-  inviteJockeyToHorse,
-} from "../../services/ownerHorseApi";
+import { deleteHorse, getMyHorses, inviteJockeyToHorse } from "../../services/ownerHorseApi";
 import { getAvailableJockeys } from "../../services/jockeyApi";
-import "../OwnerSharedLayout.css";
 import "./OwnerHorseListPage.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5226";
-const getImageUrl = (url) => {
-  if (!url) return "";
-  if (/^https?:\/\//i.test(url)) return url;
-  return `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
-};
-
-const statusFilters = ["Tất cả", "Chờ duyệt", "Đã duyệt", "Từ chối"];
-const approvalStatusMap = {
-  1: "Chờ duyệt",
-  2: "Đã duyệt",
-  3: "Từ chối",
-};
-
-const invitationStatusMap = {
-  1: "Chờ duyệt",
-  2: "Đã chấp nhận",
-  3: "Từ chối",
-};
-
-const getInvitationStatus = (invitation) => {
-  const status = invitation?.status ?? invitation?.Status;
-  return typeof status === "number"
-    ? invitationStatusMap[status] ?? "Chờ duyệt"
-    : status || "Chờ duyệt";
-};
-
-const getJockeyName = (invitation) =>
-  invitation?.jockey?.user?.fullName ??
-  invitation?.Jockey?.User?.FullName ??
-  invitation?.jockey?.user?.FullName ??
-  invitation?.Jockey?.user?.fullName ??
-  "Kỵ sĩ đã chọn";
-
-const getHorseAssignment = (horse) => {
-  const invitations = horse?.jockeyInvitations ?? horse?.JockeyInvitations ?? [];
-  const activeInvitation = invitations.find((invitation) => {
-    const status = getInvitationStatus(invitation).toLowerCase();
-    return status === "chờ duyệt" || status === "đã chấp nhận";
-  });
-
-  if (activeInvitation) {
-    const status = getInvitationStatus(activeInvitation);
-    return {
-      jockeyName: getJockeyName(activeInvitation),
-      status,
-      isLocked: true,
-      label: status === "Đã chấp nhận" ? "Đã chỉ định" : "Chờ duyệt",
-    };
-  }
-
-  if (horse?.assignedJockeyName) {
-    return {
-      jockeyName: horse.assignedJockeyName,
-      status: horse.jockeyInvitationStatus || "Chờ duyệt",
-      isLocked: true,
-      label: horse.jockeyInvitationStatus || "Chờ duyệt",
-    };
-  }
-
-  return null;
-};
+const approvalStatusMap = { 1: "Chờ duyệt", 2: "Đã duyệt", 3: "Từ chối" };
+const statusClass = { 1: "pending", 2: "approved", 3: "rejected" };
 
 function OwnerHorseListPage() {
   const [horses, setHorses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("Tất cả");
-  const [page, setPage] = useState(1);
-  const [jockeys, setJockeys] = useState([]);
-  const [isJockeyLoading, setIsJockeyLoading] = useState(false);
-  const [jockeyError, setJockeyError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Tất cả");
+
   const [assignHorse, setAssignHorse] = useState(null);
-  const [selectedJockeyId, setSelectedJockeyId] = useState("");
-  const [isAssigning, setIsAssigning] = useState(false);
-  const [assignMessage, setAssignMessage] = useState("");
+  const [jockeys, setJockeys] = useState([]);
+  const [selectedJockey, setSelectedJockey] = useState("");
+  const [jockeyError, setJockeyError] = useState("");
 
-  const fetchJockeys = async () => {
-    setIsJockeyLoading(true);
-    setJockeyError("");
-
+  const loadHorses = async () => {
+    setLoading(true);
     try {
-      const list = await getAvailableJockeys();
-      setJockeys(list);
-      setSelectedJockeyId((current) => current || list[0]?.id || "");
-
-      if (list.length === 0) {
-        setJockeyError(
-          "API trả về 0 kỵ sĩ. Vui lòng kiểm tra xem có tài khoản kỵ sĩ trong bảng Jockeys không.",
-        );
-      }
-    } catch (fetchError) {
-      const statusPrefix = fetchError?.status ? `HTTP ${fetchError.status}: ` : "";
-      setJockeys([]);
-      setJockeyError(
-        `${statusPrefix}${fetchError?.message || "Không thể tải danh sách kỵ sĩ."}`,
-      );
-    } finally {
-      setIsJockeyLoading(false);
-    }
+      const data = await getMyHorses();
+      setHorses(Array.isArray(data) ? data : []);
+    } catch (e) { setError(e.message || "Không thể tải danh sách ngựa."); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchHorses = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const data = await getMyHorses();
-        if (isMounted) {
-          setHorses(Array.isArray(data) ? data : []);
-        }
-      } catch (fetchError) {
-        if (isMounted) {
-          setError(fetchError?.message || "Không thể tải danh sách ngựa.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
+  useEffect(() => { loadHorses(); }, []);
 
-    fetchHorses();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const filtered = useMemo(() =>
+    horses.filter(h => {
+      const name = h.name ?? h.Name ?? "";
+      const s = approvalStatusMap[h.approvalStatus ?? h.ApprovalStatus ?? 0] ?? "Tất cả";
+      return name.toLowerCase().includes(query.toLowerCase()) && (statusFilter === "Tất cả" || s === statusFilter);
+    }), [query, statusFilter, horses]);
 
-  useEffect(() => {
-    fetchJockeys();
-  }, []);
+  const stats = useMemo(() => ({
+    total: horses.length,
+    approved: horses.filter(h => (h.approvalStatus ?? h.ApprovalStatus) === 2).length,
+    pending: horses.filter(h => (h.approvalStatus ?? h.ApprovalStatus) === 1).length,
+    winRate: (() => {
+      const totalR = horses.reduce((s, h) => s + Number(h.totalRaces ?? h.TotalRaces ?? 0), 0);
+      const totalW = horses.reduce((s, h) => s + Number(h.totalWins ?? h.TotalWins ?? 0), 0);
+      return totalR > 0 ? Math.round((totalW / totalR) * 100) : 0;
+    })(),
+  }), [horses]);
 
-  const getStatusLabel = (horse) =>
-    approvalStatusMap[horse.approvalStatus] ?? "Chờ duyệt";
-
-  const totalCount = horses.length;
-  const pendingCount = horses.filter(
-    (horse) => getStatusLabel(horse) === "Chờ duyệt",
-  ).length;
-
-  const filteredHorses = useMemo(() => {
-    return horses.filter((horse) => {
-      const horseStatus = getStatusLabel(horse);
-      const matchesStatus =
-        status === "Tất cả" || horseStatus.toLowerCase() === status.toLowerCase();
-      const matchesQuery = horse.name
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      return matchesStatus && matchesQuery;
-    });
-  }, [query, status, horses]);
-
-  const pageSize = 6;
-  const pageCount = Math.max(1, Math.ceil(filteredHorses.length / pageSize));
-  const pageItems = filteredHorses.slice(
-    (page - 1) * pageSize,
-    page * pageSize,
-  );
-
-  const selectedJockey = jockeys.find((jockey) => jockey.id === selectedJockeyId);
-
-  const openAssignModal = (horse = pageItems[0]) => {
-    if (!horse) {
-      return;
-    }
-
-    if (getHorseAssignment(horse)?.isLocked) {
-      return;
-    }
-
+  const openAssign = async (horse) => {
     setAssignHorse(horse);
-    setAssignMessage("");
-    setSelectedJockeyId((current) => current || jockeys[0]?.id || "");
-    fetchJockeys();
-  };
-
-  const closeAssignModal = () => {
-    if (isAssigning) {
-      return;
-    }
-
-    setAssignHorse(null);
-    setAssignMessage("");
-  };
-
-  const handleAssignJockey = async () => {
-    if (!assignHorse || !selectedJockeyId) {
-      setJockeyError("Vui lòng chọn kỵ sĩ.");
-      return;
-    }
-
-    setIsAssigning(true);
+    setSelectedJockey("");
     setJockeyError("");
-    setAssignMessage("");
-
     try {
-      await inviteJockeyToHorse(assignHorse.id, {
-        jockeyId: selectedJockeyId,
-      });
+      const data = await getAvailableJockeys();
+      setJockeys(Array.isArray(data) ? data : []);
+    } catch { setJockeys([]); }
+  };
 
-      const jockeyName = selectedJockey?.fullName || "Kỵ sĩ đã chọn";
-      setHorses((current) =>
-        current.map((horse) =>
-          horse.id === assignHorse.id
-            ? {
-                ...horse,
-                assignedJockeyName: jockeyName,
-                jockeyInvitationStatus: "Chờ duyệt",
-              }
-            : horse,
-        ),
-      );
-      setAssignMessage(`Đã gửi lời mời đến ${jockeyName}.`);
-    } catch (assignError) {
-      setJockeyError(assignError?.message || "Không thể chỉ định kỵ sĩ.");
-    } finally {
-      setIsAssigning(false);
-    }
+  const submitAssign = async () => {
+    if (!selectedJockey) { setJockeyError("Vui lòng chọn kỵ sĩ."); return; }
+    try {
+      await inviteJockeyToHorse(assignHorse.id ?? assignHorse.Id, { jockeyId: selectedJockey });
+      setAssignHorse(null);
+    } catch (e) { setJockeyError(e.message || "Lỗi."); }
+  };
+
+  const handleDelete = async (horse) => {
+    if (!window.confirm(`Xóa ${horse.name ?? horse.Name}?`)) return;
+    try { await deleteHorse(horse.id ?? horse.Id); loadHorses(); }
+    catch (e) { alert(e.message); }
   };
 
   return (
-    <div className="owner-page owner-horse-list">
-      <div className="owner-layout">
-        <aside className="owner-sidebar">
-          <div className="owner-sidebar__header">
-            <p className="pill">Chủ Ngựa</p>
-            <h3>Quản lý ngựa</h3>
-            <p className="muted">Tìm kiếm, chỉnh sửa và theo dõi chuồng ngựa.</p>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Tổng số ngựa</p>
-            <h4>{totalCount}</h4>
-            <span>Trong chuồng ngựa</span>
-          </div>
-          <div className="owner-sidebar__card">
-            <p className="muted">Chờ phê duyệt</p>
-            <h4>{pendingCount}</h4>
-            <span>Đang chờ xét duyệt</span>
-          </div>
-        </aside>
+    <div className="oh-page">
+      {/* Header */}
+      <div className="oh-top">
+        <div>
+          <h1>Ngựa của tôi</h1>
+          <p className="oh-sub">{stats.total} con ngựa · {stats.approved} đã duyệt</p>
+        </div>
+        <Link to="/owner/horses/new" className="oh-btn oh-btn--primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+          Thêm ngựa
+        </Link>
+      </div>
 
-        <div className="owner-content">
-          <section className="page-header">
-            <h1>Danh sách ngựa</h1>
-            <p>Quản lý hồ sơ ngựa và đăng ký sắp tới.</p>
-          </section>
+      {/* Stats */}
+      <div className="oh-stats">
+        <div className="oh-stat"><span>Tổng số</span><strong>{stats.total}</strong></div>
+        <div className="oh-stat"><span>Đã duyệt</span><strong>{stats.approved}</strong><small>{stats.pending} chờ</small></div>
+        <div className="oh-stat"><span>Tỉ lệ thắng</span><strong>{stats.winRate}%</strong></div>
+        <div className="oh-stat"><span>Đang chờ</span><strong>{stats.pending}</strong></div>
+      </div>
 
-          <section className="owner-actions">
-            <Link className="primary-button" to="/owner/horses/new">
-              Tạo ngựa mới
-            </Link>
-          </section>
-
-          <section className="owner-filters">
-            <div className="filter-group">
-              <label htmlFor="horse-search" className="label-required">
-                Tìm kiếm ngựa
-              </label>
-              <input
-                id="horse-search"
-                className="form-input"
-                type="text"
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setPage(1);
-                }}
-                placeholder="Tìm theo tên ngựa"
-              />
-            </div>
-            <div className="filter-group">
-              <label htmlFor="horse-status" className="label-required">
-                Trạng thái
-              </label>
-              <select
-                id="horse-status"
-                className="form-select"
-                value={status}
-                onChange={(event) => {
-                  setStatus(event.target.value);
-                  setPage(1);
-                }}
-              >
-                {statusFilters.map((filter) => (
-                  <option key={filter} value={filter}>
-                    {filter}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </section>
-
-          {error ? <p className="form-error">{error}</p> : null}
-
-          <section className="horse-grid">
-            {isLoading ? (
-              <p className="muted">Đang tải danh sách ngựa...</p>
-            ) : (
-              pageItems.map((horse) => {
-                const statusLabel = getStatusLabel(horse);
-                const assignment = getHorseAssignment(horse);
-                const imageUrl = getImageUrl(horse.imageUrl ?? horse.ImageUrl);
-                const imageStyle = imageUrl
-                  ? { "--horse-image": `url(${imageUrl})` }
-                  : undefined;
-                return (
-                  <article key={horse.id} className="horse-card hover-lift">
-                    <div className="horse-media">
-                      <div
-                        className="horse-image"
-                        style={imageStyle}
-                        aria-hidden="true"
-                      />
-                      <span
-                        className={`horse-status badge badge-${statusLabel.toLowerCase()}`}
-                      >
-                        {statusLabel}
-                      </span>
-                    </div>
-                    <div className="horse-card__content">
-                      <div className="horse-card__header">
-                        <h3>{horse.name}</h3>
-                        <p className="muted">
-                          {horse.breed || "Không rõ giống"}
-                          {horse.color ? ` • ${horse.color}` : ""}
-                        </p>
-                        {assignment ? (
-                          <span className="horse-card__jockey">
-                            {assignment.jockeyName} · {assignment.label}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="horse-card__details">
-                        <div>
-                          <span>Tuổi</span>
-                          <strong>{horse.age ?? "-"}</strong>
-                        </div>
-                        <div>
-                          <span>Giới tính</span>
-                          <strong>{horse.gender || "-"}</strong>
-                        </div>
-                        <div>
-                          <span>Tổng số trận thắng</span>
-                          <strong>{horse.totalWins ?? 0}</strong>
-                        </div>
-                        <div>
-                          <span>Tổng số cuộc đua</span>
-                          <strong>{horse.totalRaces ?? 0}</strong>
-                        </div>
-                      </div>
-                      <div className="horse-card__actions">
-                        <Link
-                          className="horse-action horse-action--primary"
-                          to={`/owner/horses/${horse.id}`}
-                        >
-                          Xem chi tiết
-                        </Link>
-                        <div className="horse-card__secondary-actions">
-                          <Link
-                            className="horse-action horse-action--edit"
-                            to={`/owner/horses/${horse.id}/edit`}
-                          >
-                            Chỉnh sửa
-                          </Link>
-                          <button
-                            type="button"
-                            className={`horse-action horse-action--assign ${
-                              assignment?.isLocked ? "horse-action--locked" : ""
-                            }`}
-                            onClick={() => openAssignModal(horse)}
-                            disabled={assignment?.isLocked}
-                          >
-                            {assignment?.isLocked ? "Đã chỉ định kỵ sĩ" : "Chỉ định kỵ sĩ"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })
-            )}
-          </section>
-
-          <section className="pagination">
-            <button
-              className="ghost-button"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              disabled={page === 1}
-            >
-              Trước
-            </button>
-            <span>
-              Trang {page} / {pageCount}
-            </span>
-            <button
-              className="ghost-button"
-              onClick={() => setPage((prev) => Math.min(pageCount, prev + 1))}
-              disabled={page === pageCount}
-            >
-              Sau
-            </button>
-          </section>
+      {/* Filters */}
+      <div className="oh-filters">
+        <div className="oh-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input placeholder="Tìm theo tên ngựa" value={query} onChange={e => setQuery(e.target.value)} />
+        </div>
+        <div className="oh-chip-group">
+          {["Tất cả", "Đã duyệt", "Chờ duyệt", "Từ chối"].map(s => (
+            <button key={s} className={`oh-chip ${statusFilter === s ? "oh-chip--active" : ""}`} onClick={() => setStatusFilter(s)}>{s}</button>
+          ))}
         </div>
       </div>
 
-      {assignHorse ? (
-        <div
-          className="assign-modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="assign-jockey-title"
-        >
-          <div className="assign-modal">
-            <div className="assign-modal__header">
-              <div>
-                <span className="pill">Chỉ định kỵ sĩ</span>
-                <h3 id="assign-jockey-title">{assignHorse.name}</h3>
-              </div>
-              <button
-                className="assign-modal__close"
-                type="button"
-                onClick={closeAssignModal}
-                aria-label="Đóng hộp thoại chỉ định kỵ sĩ"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="assign-modal__body">
-              {isJockeyLoading ? (
-                <p className="muted">Đang tải danh sách kỵ sĩ...</p>
-              ) : jockeyError && jockeys.length === 0 ? (
-                <div className="assign-empty">
-                  <h4>Không thể hiển thị kỵ sĩ</h4>
-                  <p className="muted">{jockeyError}</p>
+      {/* Horse Grid */}
+      {loading ? <p className="oh-muted">Đang tải...</p> : error ? <p className="oh-error">{error}</p> : filtered.length === 0 ? (
+        <div className="oh-empty"><p>Không tìm thấy ngựa.</p></div>
+      ) : (
+        <div className="oh-grid">
+          {filtered.map(h => {
+            const id = h.id ?? h.Id;
+            const name = h.name ?? h.Name ?? "Chưa có tên";
+            const breed = h.breed ?? h.Breed ?? "";
+            const age = h.age ?? h.Age ?? h.dateOfBirth ?? h.DateOfBirth ?? "";
+            const gender = h.gender ?? h.Gender ?? "";
+            const totalRaces = h.totalRaces ?? h.TotalRaces ?? 0;
+            const totalWins = h.totalWins ?? h.TotalWins ?? 0;
+            const winRate = totalRaces > 0 ? Math.round((totalWins / totalRaces) * 100) : 0;
+            const approvalStatus = h.approvalStatus ?? h.ApprovalStatus ?? 0;
+            const statusLabel = approvalStatusMap[approvalStatus] ?? "Chưa xác định";
+            const horseWinRate = totalRaces > 0 ? Math.round((totalWins / totalRaces) * 100) : 0;
+            const speed = Math.min(95, 45 + totalWins * 8);
+            const stamina = Math.min(95, 35 + (totalRaces - totalWins) * 4);
+            return (
+              <div key={id} className="oh-card">
+                <div className="oh-card-img">
+                  <div className={"oh-card-status" + (statusClass[approvalStatus] ? " oh-card-status--" + statusClass[approvalStatus] : "")}>{statusLabel}</div>
                 </div>
-              ) : jockeys.length === 0 ? (
-                <div className="assign-empty">
-                  <h4>Không có kỵ sĩ nào</h4>
-                  <p className="muted">
-                    Tài khoản kỵ sĩ từ API sẽ xuất hiện tại đây.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <label className="label-required" htmlFor="assign-jockey">
-                    Kỵ sĩ khả dụng
-                  </label>
-                  <select
-                    id="assign-jockey"
-                    className="form-select"
-                    value={selectedJockeyId}
-                    onChange={(event) => setSelectedJockeyId(event.target.value)}
-                  >
-                    {jockeys.map((jockey) => (
-                      <option key={jockey.id} value={jockey.id}>
-                        {jockey.fullName} ·{" "}
-                        {jockey.approvalStatusName || "Không rõ"} ·{" "}
-                        {jockey.winRate ?? 0}% tỷ lệ thắng
-                      </option>
-                    ))}
-                  </select>
-
-                  {selectedJockey ? (
-                    <div className="jockey-preview">
-                      <div className="jockey-preview__avatar">
-                        {selectedJockey.fullName?.slice(0, 1) || "J"}
-                      </div>
-                      <div>
-                        <h4>{selectedJockey.fullName}</h4>
-                        <p className="muted">
-                          Giấy phép {selectedJockey.licenseNumber || "N/A"} ·{" "}
-                          {selectedJockey.nationality || "Không rõ quốc tịch"}
-                        </p>
-                      </div>
-                      <div className="jockey-preview__stats">
-                        <span>{selectedJockey.approvalStatusName || "Không rõ"}</span>
-                        <span>{selectedJockey.totalWins ?? 0} trận thắng</span>
-                        <span>{selectedJockey.totalRaces ?? 0} cuộc đua</span>
-                      </div>
+                <div className="oh-card-body">
+                  <div className="oh-card-header">
+                    <h3>{name}</h3>
+                    <div className="oh-ring">
+                      <svg width="44" height="44" viewBox="0 0 44 44">
+                        <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3" />
+                        <circle cx="22" cy="22" r="18" fill="none" stroke="#f2d28b" strokeWidth="3" strokeDasharray={`${horseWinRate * 1.13} 113`} strokeLinecap="round" transform="rotate(-90 22 22)" />
+                      </svg>
+                      <span className="oh-ring-label">{horseWinRate}%</span>
                     </div>
-                  ) : null}
-                </>
-              )}
+                  </div>
+                  <p className="oh-breed">{breed}{breed && gender ? " · " : ""}{gender}</p>
+                  <div className="oh-meta">
+                    <span>{totalRaces} đua</span>
+                    <span className="oh-dot" />
+                    <span>{totalWins} thắng</span>
+                    <span className="oh-dot" />
+                    <span>{age}{typeof age === "number" ? " tuổi" : ""}</span>
+                  </div>
+                  <div className="oh-bars">
+                    <div className="oh-bar-row"><span className="oh-bar-l">Tốc độ</span><div className="oh-bar"><div className="oh-bar-fill oh-bar-gold" style={{width:speed+"%"}} /></div><span className="oh-bar-r">{speed}%</span></div>
+                    <div className="oh-bar-row"><span className="oh-bar-l">Sức bền</span><div className="oh-bar"><div className="oh-bar-fill" style={{width:stamina+"%"}} /></div><span className="oh-bar-r">{stamina}%</span></div>
+                  </div>
+                  <div className="oh-actions">
+                    <Link to={`/owner/horses/${id}`} className="oh-btn oh-btn--sm oh-btn--primary">Chi tiết</Link>
+                    <button className="oh-btn-icon" onClick={() => openAssign(h)} title="Chỉ định kỵ sĩ">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+                    </button>
+                    <button className="oh-btn-icon" onClick={() => handleDelete(h)} title="Xóa">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                    <Link to={`/owner/horses/${id}/edit`} className="oh-btn-icon" title="Chỉnh sửa">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-              {jockeyError && jockeys.length > 0 ? (
-                <p className="form-error">{jockeyError}</p>
-              ) : null}
-              {assignMessage ? (
-                <p className="assign-success">{assignMessage}</p>
-              ) : null}
-            </div>
-
-            <div className="assign-modal__actions">
-              <button
-                className="horse-action horse-action--assign"
-                type="button"
-                onClick={handleAssignJockey}
-                disabled={isAssigning || isJockeyLoading || jockeys.length === 0}
-              >
-                {isAssigning ? "Đang gửi..." : "Gửi lời mời"}
-              </button>
-              <button
-                className="horse-action horse-action--edit"
-                type="button"
-                onClick={closeAssignModal}
-                disabled={isAssigning}
-              >
-                Đóng
-              </button>
+      {/* Assign Modal */}
+      {assignHorse && (
+        <div className="oh-modal" onClick={() => setAssignHorse(null)}>
+          <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
+            <h3>Chỉ định kỵ sĩ</h3>
+            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn kỵ sĩ cho {assignHorse.name ?? assignHorse.Name}</p>
+            <select value={selectedJockey} onChange={e => setSelectedJockey(e.target.value)} className="oh-select">
+              <option value="">-- Chọn kỵ sĩ --</option>
+              {jockeys.map(j => <option key={j.id ?? j.Id} value={j.id ?? j.Id}>{j.fullName ?? j.FullName ?? j.email ?? j.Email}</option>)}
+            </select>
+            {jockeyError && <p className="oh-error" style={{margin:"8px 0 0"}}>{jockeyError}</p>}
+            <div className="oh-modal-actions">
+              <button className="oh-btn" onClick={() => setAssignHorse(null)}>Huỷ</button>
+              <button className="oh-btn oh-btn--primary" onClick={submitAssign}>Xác nhận</button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

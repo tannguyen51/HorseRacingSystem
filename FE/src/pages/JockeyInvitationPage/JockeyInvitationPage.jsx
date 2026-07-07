@@ -5,202 +5,162 @@ import {
   getJockeyInvitations,
   respondJockeyInvitation,
 } from "../../services/jockeyApi";
-import "../SpectatorSharedLayout.css";
 import "./JockeyInvitationPage.css";
 
-const fallbackInvitations = [
-  {
-    id: "sample-invitation-1",
-    status: "Pending",
-    raceName: "Bluegrass Sprint",
-    scheduledAt: "2026-06-10T10:10:00Z",
-    location: "Churchill Downs",
-    tournamentName: "Summer Racing Cup",
-    horseName: "Thunder Strike",
-    horseBreed: "Thoroughbred",
-    horseAge: 5,
-  },
-  {
-    id: "sample-invitation-2",
-    status: "Pending",
-    raceName: "Coastal Derby",
-    scheduledAt: "2026-06-12T09:30:00Z",
-    location: "Gulfstream Park",
-    tournamentName: "Elite Track Series",
-    horseName: "Silver Comet",
-    horseBreed: "Arabian",
-    horseAge: 4,
-  },
-];
-
-export function JockeyInvitationPage() {
+function JockeyInvitationPage() {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
   const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
 
   const loadInvitations = async () => {
-    try {
-      setLoading(true);
-      const data = await getJockeyInvitations();
-      setInvitations(data);
-      setMessage("");
-    } catch (error) {
-      setInvitations(fallbackInvitations);
-      setMessage(error.message || "Không thể tải lời mời.");
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); const d = await getJockeyInvitations(); setInvitations(d); setMessage(""); }
+    catch (e) { setMessage(e.message || "Không thể tải lời mời."); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    loadInvitations();
-  }, []);
+  useEffect(() => { loadInvitations(); }, []);
 
-  const pendingInvitations = useMemo(
-    () =>
-      invitations.filter((invitation) =>
-        String(invitation.status).toLowerCase().includes("pending"),
-      ),
-    [invitations],
-  );
+  const pending = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("pending")), [invitations]);
+  const accepted = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("accept")), [invitations]);
+  const declined = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("decline") || String(i.status).toLowerCase().includes("reject")), [invitations]);
+
+  const filtered = useMemo(() => {
+    let items = invitations;
+    if (activeTab === "pending") items = pending;
+    else if (activeTab === "accepted") items = accepted;
+    else if (activeTab === "declined") items = declined;
+    if (search.trim()) items = items.filter(i => (i.raceName || "").toLowerCase().includes(search.toLowerCase()) || (i.horseName || "").toLowerCase().includes(search.toLowerCase()));
+    return items;
+  }, [activeTab, invitations, pending, accepted, declined, search]);
 
   const handleResponse = async (id, accept) => {
     setLoadingId(id);
     try {
       await respondJockeyInvitation(id, accept);
-      setInvitations((current) =>
-        current.filter((invitation) => invitation.id !== id),
-      );
+      setInvitations(c => c.filter(i => i.id !== id));
       setMessage(accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời.");
-    } catch (error) {
-      setMessage(error.message || "Không thể xử lý lời mời.");
-    } finally {
-      setLoadingId(null);
-    }
+    } catch (e) { setMessage(e.message || "Lỗi."); }
+    finally { setLoadingId(null); }
   };
 
+  const statusMeta = (s) => {
+    const str = String(s || "").toLowerCase();
+    if (str.includes("pending")) return { label: "Chờ duyệt", cls: "pending" };
+    if (str.includes("accept")) return { label: "Đã chấp nhận", cls: "accepted" };
+    if (str.includes("decline") || str.includes("reject")) return { label: "Đã từ chối", cls: "declined" };
+    return { label: s || "Không rõ", cls: "" };
+  };
+
+  const TABS = [
+    { key: "all", label: "Tất cả" },
+    { key: "pending", label: "Chờ duyệt", count: pending.length },
+    { key: "accepted", label: "Đã chấp nhận", count: accepted.length },
+    { key: "declined", label: "Đã từ chối", count: declined.length },
+  ];
+
   return (
-    <div className="spectator-page jockey-invitations">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Quản Lý Lời Mời</p>
-            <h3>Đề nghị đua</h3>
-            <p className="muted">Chấp nhận hoặc từ chối lời mời đua từ chủ ngựa.</p>
-          </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Lời mời đang chờ</p>
-            <h4>{loading ? "Đang tải..." : pendingInvitations.length}</h4>
-            <span>Cần phản hồi</span>
-          </div>
-        </aside>
-
-        <div className="spectator-content">
-          <section className="jockey-page-header">
-            <div>
-              <span className="pill">Lời Mời</span>
-              <h1>Quản Lý Lời Mời</h1>
-              <p>
-                Xem lời mời đua, kiểm tra ngựa được phân công và phản hồi
-                trước khi danh sách đua đóng.
-              </p>
-              {message ? <p className="jockey-message">{message}</p> : null}
-            </div>
-          </section>
-
-          <section className="jockey-invitation-toolbar">
-            <div>
-              <span>Tất cả lời mời</span>
-              <strong>{loading ? "--" : invitations.length}</strong>
-            </div>
-            <div>
-              <span>Đang chờ</span>
-              <strong>{loading ? "--" : pendingInvitations.length}</strong>
-            </div>
-            <button
-              type="button"
-              className="ghost-button"
-              onClick={loadInvitations}
-              disabled={loading}
-            >
-              Làm mới
-            </button>
-          </section>
-
-          <section className="jockey-table-panel">
-            <div className="section-heading">
-              <h2>Lời Mời</h2>
-              <p>Mở trang chi tiết để xem đầy đủ thông tin ngựa và cuộc đua.</p>
-            </div>
-
-            {loading ? (
-              <div className="jockey-loading-panel">
-                <div className="skeleton-line wide" />
-                <div className="skeleton-line" />
-              </div>
-            ) : invitations.length === 0 ? (
-              <div className="jockey-empty-state">
-                <h3>Không có lời mời</h3>
-                <p className="muted">Lời mời mới sẽ xuất hiện tại đây.</p>
-              </div>
-            ) : (
-              <div className="jockey-invitation-list">
-                {invitations.map((invitation) => (
-                  <article key={invitation.id} className="jockey-invitation-card">
-                    <div className="jockey-invitation-card__main">
-                      <span className="badge">{invitation.status}</span>
-                      <h3>{invitation.raceName}</h3>
-                      <p className="muted">{invitation.tournamentName}</p>
-                      <div className="jockey-invitation-meta">
-                        <span>{formatJockeyDate(invitation.scheduledAt)}</span>
-                        <span>{invitation.location}</span>
-                        <span>Ngựa: {invitation.horseName}</span>
-                      </div>
-                    </div>
-
-                    <div className="jockey-invitation-card__horse">
-                      <span>Ngựa được phân công</span>
-                      <strong>{invitation.horseName}</strong>
-                      <p className="muted">
-                        {[invitation.horseBreed, invitation.horseAge && `${invitation.horseAge} tuổi`]
-                          .filter(Boolean)
-                          .join(" / ") || "Hồ sơ đang chờ"}
-                      </p>
-                    </div>
-
-                    <div className="jockey-invitation-actions">
-                      <Link
-                        className="ghost-button"
-                        to={`/jockey/invitations/${invitation.id}`}
-                        state={{ invitation }}
-                      >
-                        Xem Chi Tiết
-                      </Link>
-                      <button
-                        type="button"
-                        className="ghost-button"
-                        disabled={loadingId !== null}
-                        onClick={() => handleResponse(invitation.id, false)}
-                      >
-                        Từ chối
-                      </button>
-                      <button
-                        type="button"
-                        className="primary-button"
-                        disabled={loadingId !== null}
-                        onClick={() => handleResponse(invitation.id, true)}
-                      >
-                        {loadingId === invitation.id ? "Đang xử lý..." : "Chấp nhận"}
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
+    <div className="ji-page">
+      {/* Header */}
+      <div className="ji-header">
+        <div>
+          <h1>Lời mời đua</h1>
+          <p className="ji-sub">Theo dõi và phản hồi các lời mời từ chủ ngựa.</p>
         </div>
       </div>
+
+      {/* Chips */}
+      <div className="ji-chips">
+        <span className={`ji-chip ${activeTab === "pending" ? "ji-chip--pending" : ""}`} onClick={() => setActiveTab("pending")}>
+          <span className="ji-chip-dot ji-chip-dot--pending" /> Chờ duyệt <strong>{pending.length}</strong>
+        </span>
+        <span className={`ji-chip ${activeTab === "accepted" ? "ji-chip--accepted" : ""}`} onClick={() => setActiveTab("accepted")}>
+          <span className="ji-chip-dot ji-chip-dot--accepted" /> Đã chấp nhận <strong>{accepted.length}</strong>
+        </span>
+        <span className={`ji-chip ${activeTab === "declined" ? "ji-chip--declined" : ""}`} onClick={() => setActiveTab("declined")}>
+          <span className="ji-chip-dot ji-chip-dot--declined" /> Đã từ chối <strong>{declined.length}</strong>
+        </span>
+      </div>
+
+      {/* Toolbar */}
+      <div className="ji-toolbar">
+        <div className="ji-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input placeholder="Tìm lời mời..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <button className="ji-btn-icon" onClick={loadInvitations} disabled={loading} title="Làm mới">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+        </button>
+        <div className="ji-tabs">
+          {TABS.map(t => (
+            <button key={t.key} className={`ji-tab ${activeTab === t.key ? "ji-tab--active" : ""}`} onClick={() => setActiveTab(t.key)}>
+              {t.label}{t.count !== undefined && <span className="ji-tab-num">{t.count}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {message && <div className="ji-msg">{message}</div>}
+
+      {/* Content */}
+      {loading ? (
+        <div className="ji-loading">
+          <div className="ji-skeleton" />
+          <div className="ji-skeleton" />
+          <div className="ji-skeleton" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="ji-empty">
+          <div className="ji-empty-visual">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(242,210,139,0.3)" strokeWidth="1"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>Chưa có lời mời nào</h3>
+          <p>Khi chủ ngựa gửi lời mời tham gia cuộc đua, chúng sẽ xuất hiện tại đây.</p>
+          <Link to="/jockey/schedule" className="ji-btn ji-btn--primary" style={{marginTop:12}}>Xem lịch đua</Link>
+        </div>
+      ) : (
+        <div className="ji-list">
+          {filtered.map(inv => {
+            const s = statusMeta(inv.status);
+            return (
+              <div key={inv.id} className={`ji-card ji-card--${s.cls}`}>
+                <div className="ji-card__main">
+                  <div className="ji-card__left">
+                    <div className="ji-card__icon">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8f6420" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <div>
+                      <h3>{inv.raceName}</h3>
+                      <p className="ji-card__meta">
+                        {inv.horseName && <>Ngựa: <strong>{inv.horseName}</strong> · </>}
+                        {inv.scheduledAt ? formatJockeyDate(inv.scheduledAt) : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ji-card__right">
+                    <span className={`ji-badge ji-badge--${s.cls}`}>{s.label}</span>
+                  </div>
+                </div>
+                <div className="ji-card__extra">
+                  {inv.tournamentName && <span>Giải: {inv.tournamentName}</span>}
+                  {inv.location && <span> · {inv.location}</span>}
+                </div>
+                <div className="ji-card__actions">
+                  <button className="ji-btn ji-btn--ghost" onClick={() => handleResponse(inv.id, false)} disabled={loadingId !== null}>
+                    Từ chối
+                  </button>
+                  <button className="ji-btn ji-btn--primary" onClick={() => handleResponse(inv.id, true)} disabled={loadingId !== null}>
+                    {loadingId === inv.id ? "..." : "Chấp nhận"}
+                  </button>
+                  <Link to={`/jockey/invitations/${inv.id}`} className="ji-btn ji-btn--outline">Chi tiết</Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

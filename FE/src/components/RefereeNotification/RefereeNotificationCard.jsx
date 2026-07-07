@@ -106,10 +106,10 @@ export function RefereeNotificationCard({ assignment, onResponse, onRemove }) {
       <div className="notification-body">
         <div className="assignment-details">
           <p className="match-info">
-            <strong>Match:</strong> {assignment.matchName || "N/A"}
+            <strong>Match:</strong> {assignment.raceName || assignment.matchName || "N/A"}
           </p>
           <p className="date-info">
-            <strong>Date & Time:</strong> {formatDateTime(assignment.dateTime)}
+            <strong>Date & Time:</strong> {formatDateTime(assignment.assignedAt || assignment.dateTime)}
           </p>
         </div>
 

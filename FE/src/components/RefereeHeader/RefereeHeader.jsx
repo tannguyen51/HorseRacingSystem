@@ -1,14 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
 import { refereeNavItems } from "../../constants/refereeNavigation";
 import ProfileDropdown from "../ProfileDropdown";
+import NotificationBell from "../NotificationBell/NotificationBell";
 import "./RefereeHeader.css";
 
 function RefereeHeader() {
   return (
     <header className="referee-header">
       <Link className="referee-header__brand" to="/referee">
-        <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Cổng Trọng Tài</p></div>
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
       <nav className="referee-header__nav" aria-label="Referee">
         {refereeNavItems.map((item) => (
@@ -16,6 +16,7 @@ function RefereeHeader() {
         ))}
       </nav>
       <div className="referee-header__actions">
+        <NotificationBell />
         <ProfileDropdown profileUrl="/referee/profile" />
       </div>
     </header>

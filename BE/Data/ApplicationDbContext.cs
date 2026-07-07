@@ -33,6 +33,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<HorseTransfer> HorseTransfers => Set<HorseTransfer>();
     public DbSet<InjuryRecord> InjuryRecords => Set<InjuryRecord>();
     public DbSet<Contract> Contracts => Set<Contract>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
+    public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -435,5 +439,54 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Contract>()
             .Property(c => c.Status)
             .HasConversion<string>();
+
+        // ── Unique constraints ──
+        modelBuilder.Entity<Prediction>()
+            .HasIndex(p => new { p.RaceId, p.SpectatorUserId })
+            .IsUnique();
+
+        modelBuilder.Entity<RaceEntry>()
+            .HasIndex(e => new { e.RaceId, e.HorseId })
+            .IsUnique();
+
+        // ── Transaction indexes ──
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => t.Reference);
+
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => t.SepayTransactionId)
+            .IsUnique();
+
+        modelBuilder.Entity<Transaction>()
+            .HasIndex(t => new { t.UserId, t.Status, t.CompletedAt });
+
+        // ── Cascade delete → Restrict for financial entities ──
+        modelBuilder.Entity<Transaction>()
+            .HasOne(t => t.User)
+            .WithMany()
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Wallet>()
+            .HasOne(w => w.User)
+            .WithMany()
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Wallet>()
+            .HasIndex(w => w.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<BankAccount>()
+            .HasOne(b => b.User)
+            .WithMany()
+            .HasForeignKey(b => b.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WithdrawalRequest>()
+            .HasOne(w => w.User)
+            .WithMany()
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

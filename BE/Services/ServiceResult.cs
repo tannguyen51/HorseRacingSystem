@@ -7,6 +7,7 @@ public class ServiceResult<T>
 {
     public int StatusCode { get; set; }
     public ApiResult<T> Result { get; set; }
+    public bool IsSuccess => StatusCode >= 200 && StatusCode < 300;
 
     public ServiceResult() { }
 

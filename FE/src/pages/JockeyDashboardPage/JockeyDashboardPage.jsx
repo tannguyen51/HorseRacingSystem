@@ -5,39 +5,13 @@ import {
   getJockeyAssignedRaces,
   getJockeyInvitations,
 } from "../../services/jockeyApi";
-import "../SpectatorSharedLayout.css";
+import { getProfile } from "../../services/authApi";
 import "./JockeyDashboardPage.css";
-
-const fallbackRaces = [
-  {
-    id: "sample-race-1",
-    title: "Coastal Derby",
-    scheduledAt: "2026-06-12T09:30:00Z",
-    location: "Gulfstream Park",
-    tournamentName: "Summer Racing Cup",
-    status: "Assigned",
-    jockeyConfirmed: true,
-    horseName: "Silver Comet",
-    horseTotalRaces: 12,
-    horseTotalWins: 4,
-  },
-  {
-    id: "sample-race-2",
-    title: "Golden Mile",
-    scheduledAt: "2026-06-17T08:00:00Z",
-    location: "Santa Anita",
-    tournamentName: "Elite Track Series",
-    status: "Scheduled",
-    jockeyConfirmed: true,
-    horseName: "Midnight Runner",
-    horseTotalRaces: 18,
-    horseTotalWins: 6,
-  },
-];
 
 function JockeyDashboardPage() {
   const [races, setRaces] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -47,182 +21,177 @@ function JockeyDashboardPage() {
     const loadDashboard = async () => {
       try {
         setLoading(true);
-        const [raceData, invitationData] = await Promise.all([
+        const [raceData, invitationData, profileData] = await Promise.all([
           getJockeyAssignedRaces(),
           getJockeyInvitations(),
+          getProfile().then(d => d?.data ?? d).catch(() => null),
         ]);
 
         if (!cancelled) {
           setRaces(raceData);
           setInvitations(invitationData);
+          setProfile(profileData);
           setErrorMessage("");
         }
       } catch (error) {
         if (!cancelled) {
-          setRaces(fallbackRaces);
-          setInvitations([]);
-          setErrorMessage(
-            error.message || "Không thể tải dữ liệu bảng điều khiển.",
-          );
+          setErrorMessage(error.message || "Không thể tải dữ liệu.");
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadDashboard();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const sortedRaces = useMemo(
-    () =>
-      [...races].sort((first, second) => {
-        const firstTime = new Date(first.scheduledAt).getTime();
-        const secondTime = new Date(second.scheduledAt).getTime();
-        return (Number.isNaN(firstTime) ? 0 : firstTime) - (Number.isNaN(secondTime) ? 0 : secondTime);
-      }),
+    () => [...races].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()),
     [races],
   );
 
   const nextRace = sortedRaces[0];
-  const totalHorseRaces = races.reduce(
-    (sum, race) => sum + Number(race.horseTotalRaces || 0),
-    0,
-  );
-  const totalHorseWins = races.reduce(
-    (sum, race) => sum + Number(race.horseTotalWins || 0),
-    0,
-  );
-  const winRate =
-    totalHorseRaces > 0 ? `${Math.round((totalHorseWins / totalHorseRaces) * 100)}%` : "0%";
+  const totalRacesNum = races.length;
+  const confirmedRaces = races.filter(r => r.jockeyConfirmed).length;
+  const pendingCount = invitations.filter(i => i.status === "Pending" || i.status === "pending").length;
+  const winRate = profile?.winRate ?? profile?.WinRate ?? 0;
+  const rank = profile?.rank ?? profile?.Rank ?? null;
 
   return (
-    <div className="spectator-page jockey-dashboard">
-      <div className="spectator-layout">
-        <aside className="spectator-sidebar">
-          <div className="spectator-sidebar__header">
-            <p className="pill">Bảng Điều Khiển Nài Ngựa</p>
-            <h3>Bảng điều khiển</h3>
-            <p className="muted">Các cuộc đua được phân công, lời mời và trạng thái sẵn sàng.</p>
+    <div className="jockey-dashboard">
+      {/* Hero Banner */}
+      <section className="jd-hero" style={{ backgroundImage: "url('/src/assets/racing.png')" }}>
+        <div className="jd-hero__overlay" />
+        <div className="jd-hero__content">
+          <div>
+            <span className="pill" style={{ background: "rgba(215,170,77,0.2)", color: "#f2d28b" }}>Kỵ sĩ</span>
+            <h1>Bảng điều khiển</h1>
+            <p>Theo dõi lịch đua, quản lý lời mời và kiểm tra thành tích của bạn.</p>
           </div>
-          <div className="spectator-sidebar__card">
-            <p className="muted">Lịch tiếp theo</p>
-            <h4>{nextRace?.title ?? "Chưa có cuộc đua"}</h4>
-            <span>{formatJockeyDate(nextRace?.scheduledAt, "Đang chờ")}</span>
-          </div>
-          <div className="jockey-side-actions">
-            <Link to="/jockey/invitations" className="jockey-side-link">
-              Quản lý lời mời
-            </Link>
-            <Link to="/jockey/schedule" className="jockey-side-link">
-              Mở lịch đua
-            </Link>
-          </div>
-        </aside>
-
-        <div className="spectator-content">
-          <section className="jockey-hero">
+          <div className="jd-hero__stats">
             <div>
-              <span className="pill">Tổng quan kỵ sĩ</span>
-              <h1>Bảng Điều Khiển Nài Ngựa</h1>
-              <p>
-                Xem các cuộc đua được phân công, theo dõi lịch trình sắp tới và
-                giám sát hiệu suất trước ngày đua.
+              <span>Cuộc đua</span>
+              <strong>{totalRacesNum}</strong>
+            </div>
+            <div>
+              <span>Đã xác nhận</span>
+              <strong>{confirmedRaces}</strong>
+            </div>
+            <div>
+              <span>Tỉ lệ thắng</span>
+              <strong>{winRate}%</strong>
+            </div>
+            <div>
+              <span>Lời mời</span>
+              <strong>{pendingCount}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {errorMessage && <p className="jd-error">{errorMessage}</p>}
+
+      {/* Quick Actions + Next Race */}
+      <div className="jd-cols">
+        <div className="jd-card">
+          <h3>Cuộc đua tiếp theo</h3>
+          {nextRace ? (
+            <div className="jd-next-race">
+              <h4>{nextRace.title}</h4>
+              <p className="jd-race-meta">
+                {formatJockeyDate(nextRace.scheduledAt, "Chưa lên lịch")}
+                {nextRace.location ? ` · ${nextRace.location}` : ""}
               </p>
-              {errorMessage ? <p className="jockey-inline-warning">{errorMessage}</p> : null}
+              <p className="jd-race-meta">
+                Ngựa: <strong>{nextRace.horseName || "Chưa phân công"}</strong>
+              </p>
+              <span className={`jd-badge ${nextRace.jockeyConfirmed ? "jd-badge--ok" : "jd-badge--warn"}`}>
+                {nextRace.jockeyConfirmed ? "Đã xác nhận" : "Chờ xác nhận"}
+              </span>
             </div>
-            <div className="jockey-hero__panel">
-              <div>
-                <span>Cuộc đua được phân công</span>
-                <strong>{loading ? "--" : races.length}</strong>
-              </div>
-              <div>
-                <span>Lời mời đang chờ</span>
-                <strong>{loading ? "--" : invitations.length}</strong>
-              </div>
-              <div>
-                <span>Tổng kết chiến thắng</span>
-                <strong>{winRate}</strong>
-              </div>
-            </div>
-          </section>
+          ) : (
+            <p className="muted">Chưa có cuộc đua nào được phân công.</p>
+          )}
+          <div className="jd-actions">
+            <Link to="/jockey/schedule" className="jd-btn">Lịch đua</Link>
+            <Link to="/jockey/invitations" className="jd-btn jd-btn--outline">Lời mời</Link>
+          </div>
+        </div>
 
-          <section className="jockey-stat-grid">
-            <article className="jockey-stat-card hover-lift">
-              <p className="muted">Cuộc đua được phân công</p>
-              <h3>{races.length}</h3>
-              <span>Danh sách cưỡi đã xác nhận</span>
-            </article>
-            <article className="jockey-stat-card hover-lift">
-              <p className="muted">Lịch sắp tới</p>
-              <h3>{nextRace ? formatJockeyDate(nextRace.scheduledAt) : "Không có"}</h3>
-              <span>{nextRace?.location ?? "Chưa đặt đường đua"}</span>
-            </article>
-            <article className="jockey-stat-card hover-lift">
-              <p className="muted">Tổng kết hiệu suất</p>
-              <h3>{winRate}</h3>
-              <span>{totalHorseWins} chiến thắng từ ngựa được phân công</span>
-            </article>
-          </section>
-
-          <section className="jockey-dashboard-grid">
-            <div className="jockey-panel">
-              <div className="section-heading">
-                <h2>Lịch Sắp Tới</h2>
-                <p>Các cuộc đua được xác nhận gần nhất của bạn.</p>
-              </div>
-              <div className="jockey-list">
-                {sortedRaces.slice(0, 4).map((race) => (
-                  <article key={race.id} className="jockey-list-item">
-                    <div>
-                      <span className="badge">{race.status}</span>
-                      <h3>{race.title}</h3>
-                      <p className="muted">{race.tournamentName}</p>
-                    </div>
-                    <div className="jockey-list-item__meta">
-                      <strong>{formatJockeyDate(race.scheduledAt)}</strong>
-                      <span>{race.location}</span>
-                      <span>Ngựa: {race.horseName}</span>
-                    </div>
-                  </article>
-                ))}
-                {!loading && sortedRaces.length === 0 ? (
-                  <p className="muted">Chưa có cuộc đua nào được phân công.</p>
-                ) : null}
-              </div>
+        {/* Upcoming Races */}
+        <div className="jd-card jd-card--wide">
+          <h3>Lịch sắp tới</h3>
+          {sortedRaces.slice(0, 4).length > 0 ? (
+            <div className="jd-race-list">
+              {sortedRaces.slice(0, 4).map(race => (
+                <div key={race.id} className="jd-race-row">
+                  <div>
+                    <strong>{race.title}</strong>
+                    <p>{race.tournamentName || ""}{race.horseName ? ` · ${race.horseName}` : ""}</p>
+                  </div>
+                  <div className="jd-race-right">
+                    <span className="jd-date">{formatJockeyDate(race.scheduledAt, "")}</span>
+                    <span className={`jd-badge ${race.jockeyConfirmed ? "jd-badge--ok" : "jd-badge--warn"}`}>
+                      {race.jockeyConfirmed ? "Đã xác nhận" : "Chờ"}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
+          ) : (
+            <p className="muted">Chưa có cuộc đua nào.</p>
+          )}
+        </div>
+      </div>
 
-            <div className="jockey-panel">
-              <div className="section-heading">
-                <h2>Quản Lý Lời Mời</h2>
-                <p>Các đề nghị đua đang chờ phản hồi của bạn.</p>
-              </div>
-              <div className="jockey-list">
-                {invitations.slice(0, 3).map((invitation) => (
-                  <article key={invitation.id} className="jockey-list-item">
-                    <div>
-                      <span className="badge">{invitation.status}</span>
-                      <h3>{invitation.raceName}</h3>
-                      <p className="muted">Ngựa: {invitation.horseName}</p>
-                    </div>
-                    <Link
-                      to={`/jockey/invitations/${invitation.id}`}
-                      className="jockey-text-link"
-                    >
-                      Xem chi tiết
-                    </Link>
-                  </article>
-                ))}
-                {!loading && invitations.length === 0 ? (
-                  <p className="muted">Không có lời mời đang chờ.</p>
-                ) : null}
-              </div>
+      {/* Invitations + Stats */}
+      <div className="jd-cols">
+        <div className="jd-card">
+          <h3>Lời mời đang chờ</h3>
+          {invitations.filter(i => i.status === "Pending" || i.status === "pending").length > 0 ? (
+            <div className="jd-invite-list">
+              {invitations.filter(i => i.status === "Pending" || i.status === "pending").slice(0, 3).map(inv => (
+                <div key={inv.id} className="jd-invite-row">
+                  <div>
+                    <strong>{inv.raceName}</strong>
+                    <p>Ngựa: {inv.horseName}</p>
+                  </div>
+                  <Link to={`/jockey/invitations/${inv.id}`} className="jd-btn jd-btn--sm">Xem</Link>
+                </div>
+              ))}
             </div>
-          </section>
+          ) : (
+            <p className="muted">Không có lời mời đang chờ.</p>
+          )}
+          <Link to="/jockey/invitations" className="jd-link">Xem tất cả lời mời →</Link>
+        </div>
+
+        <div className="jd-card">
+          <h3>Thành tích</h3>
+          <div className="jd-stats">
+            <div className="jd-stat">
+              <span>Hạng</span>
+              <strong>#{rank ?? "--"}</strong>
+            </div>
+            <div className="jd-stat">
+              <span>Tỉ lệ thắng</span>
+              <strong>{winRate}%</strong>
+            </div>
+            <div className="jd-stat">
+              <span>Tổng số cuộc đua</span>
+              <strong>{totalRacesNum}</strong>
+            </div>
+            <div className="jd-stat">
+              <span>Đã xác nhận</span>
+              <strong>{confirmedRaces}</strong>
+            </div>
+            <div className="jd-stat">
+              <span>Đang chờ</span>
+              <strong>{pendingCount}</strong>
+            </div>
+          </div>
+          <Link to="/jockey/performance" className="jd-link">Xem chi tiết →</Link>
         </div>
       </div>
     </div>

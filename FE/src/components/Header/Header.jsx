@@ -20,16 +20,12 @@ function Header({ isLoggedIn = false }) {
   };
 
   return (
-    <header className="site-header navbar navbar-expand-xl">
-      <Link className="site-header__brand navbar-brand" to="/">
-        <div className="brand-mark">RM</div>
-        <div>
-          <p className="brand-title">RaceMaster</p>
-          <p className="brand-subtitle">Nền tảng giải đấu</p>
-        </div>
+    <header className="site-header">
+      <Link className="site-header__brand" to="/">
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
 
-      <nav className="site-header__nav navbar-nav" aria-label="Primary">
+      <nav className="site-header__nav" aria-label="Primary">
         {navItems.map((item) => (
           <NavLink
             key={item.to}

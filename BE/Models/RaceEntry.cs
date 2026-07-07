@@ -47,4 +47,7 @@ public class RaceEntry
 
     [MaxLength(50)]
     public string? Equipment { get; set; }
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal Odds { get; set; } = 1.0m;
 }

@@ -1,27 +1,54 @@
+/* ── Override page-wrapper ── */
+.app-shell:has(.register-page) .page-wrapper {
+  padding: 0;
+}
+.app-shell:has(.register-page) .site-footer {
+  display: none;
+}
+
 .register-page {
-  display: grid;
-  place-items: center;
-  justify-items: center;
-  gap: 40px;
-  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  
+  height: 100%;
   width: 100%;
-  padding: 40px 24px;
+  padding: 0;
+  background: #f7f3ea;
 }
 
 .page-header {
   text-align: center;
   max-width: 580px;
+  padding: 24px 24px 0;
+  margin: 0 auto;
+  display: none;
+}
+
+.page-header h1 {
+  color: #172033;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: "Spectral", serif;
+  margin-bottom: 6px;
+}
+
+.page-header p {
+  color: #657086;
+  font-size: 14px;
 }
 
 /* ── Layout: form left + cards right ── */
 
-.register-layout {
+.register-page .register-layout {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 40px;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
   width: 100%;
-  max-width: 1040px;
-  align-items: start;
+  max-width: 960px;
+  align-items: center;
+  padding: 0 24px;
+  margin: 0 auto;
 }
 
 /* ── Form card ── */
@@ -30,6 +57,7 @@
   width: 100%;
   max-width: none;
   margin: 0;
+  padding: 28px 32px !important;
 }
 
 .single-card {
@@ -42,7 +70,7 @@
 
 .auth-form {
   display: grid;
-  gap: 24px;
+  gap: 16px;
 }
 
 .auth-form h2 {
@@ -360,7 +388,7 @@
   flex: 55;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  
   padding: 32px 28px;
   position: relative;
   z-index: 3;
@@ -381,7 +409,7 @@
   height: 52px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  
   border-radius: 14px;
 }
 
@@ -549,4 +577,55 @@
     height: 120px;
     flex: none;
   }
+}
+
+/* ── Footer ── */
+.register-page .login-footer {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.register-page .login-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 10px 40px;
+  gap: 20px;
+}
+
+.register-page .login-footer__links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.register-page .login-footer__links a {
+  color: #657086;
+  text-decoration: none;
+  transition: color 0.2s;
+  line-height: 0;
+}
+
+.register-page .login-footer__links a:hover {
+  color: #8f6420;
+}
+
+.register-page .login-footer__copy {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.register-page .login-footer__badge {
+  font-size: 10px;
+  color: rgba(219, 168, 58, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  white-space: nowrap;
 }

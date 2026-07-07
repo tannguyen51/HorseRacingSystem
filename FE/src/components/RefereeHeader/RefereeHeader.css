@@ -6,17 +6,17 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 251, 242, 0.98);
+  background: #262323;
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(23, 32, 51, 0.12);
-  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
 .referee-header__brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #172033;
+  color: #f2d28b;
   text-decoration: none;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .referee-header__nav::-webkit-scrollbar-thumb {
-  background: rgba(231, 198, 120, 0.35);
+  background: rgba(215, 170, 77, 0.35);
   border-radius: 999px;
 }
 
@@ -42,84 +42,39 @@
   background: transparent;
 }
 
-.referee-header__actions {
-  display: flex;
-  gap: 12px;
-}
-
-.referee-header .brand-mark {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #f2d28b, #d7aa4d);
-  color: #14100a;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  letter-spacing: 1px;
-  box-shadow: 0 12px 20px rgba(17, 14, 5, 0.4);
-}
-
-.referee-header__brand > div p {
-  margin: 0;
-  line-height: 1.2;
-}
-
-.brand-title {
-  font-weight: 600;
-  font-size: 18px;
-  margin: 0;
-}
-
-.brand-subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: #8f6420;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-}
-
-.nav-link {
+.referee-header .nav-link {
   display: inline-flex;
   align-items: center;
   background: transparent;
   border: none;
-  color: #34415b;
+  color: rgba(242, 210, 139, 0.8);
   font-size: 14px;
+  font-weight: 700;
   padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
 }
 
 .referee-header .nav-link:hover,
 .referee-header .nav-link:focus-visible {
-  color: #172033;
-  background: rgba(231, 198, 120, 0.1);
+  color: #f2d28b;
+  background: rgba(215, 170, 77, 0.15);
   outline: none;
 }
 
-.referee-header .nav-link--active {
+.referee-header .nav-link--active,
+.referee-header .nav-link--active:hover,
+.referee-header .nav-link--active:focus-visible {
   color: #14100a;
-  background: linear-gradient(145deg, #f2d28b, #d7aa4d);
-  box-shadow: 0 10px 20px rgba(16, 12, 5, 0.35);
+  background: linear-gradient(145deg, #f2c565, #d29a2d);
+  box-shadow: 0 10px 22px rgba(215, 170, 77, 0.3);
 }
 
-.referee-header .ghost-button {
-  background: transparent;
-  border: 1px solid rgba(231, 198, 120, 0.35);
-  color: #8f6420;
-  padding: 8px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.ghost-button:hover {
-  background: rgba(231, 198, 120, 0.1);
+.referee-header__actions {
+  display: flex;
+  gap: 12px;
 }
 
 @media (max-width: 1024px) {

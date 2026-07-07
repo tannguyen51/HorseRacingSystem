@@ -1,14 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Spectral:wght@400;500;600;700&display=swap");
 
 :root {
-  --bs-body-font-family: "Sora", system-ui, sans-serif;
-  --bs-body-bg: #f7f3ea;
-  --bs-body-color: #172033;
-  --bs-border-color: rgba(22, 32, 51, 0.12);
-  --bs-primary: #c99636;
-  --bs-primary-rgb: 201, 150, 54;
-  --bs-link-color: #8f6420;
-  --bs-link-hover-color: #172033;
   color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -68,12 +60,4 @@ select {
 .form-check-input:focus {
   border-color: rgba(242, 210, 139, 0.72);
   box-shadow: 0 0 0 0.2rem rgba(215, 170, 77, 0.18);
-}
-
-.table {
-  --bs-table-bg: rgba(255, 255, 255, 0.86);
-  --bs-table-color: #172033;
-  --bs-table-border-color: rgba(23, 32, 51, 0.1);
-  --bs-table-striped-bg: rgba(201, 150, 54, 0.07);
-  --bs-table-hover-bg: rgba(201, 150, 54, 0.12);
 }

@@ -1,268 +1,354 @@
-.jockey-schedule-header,
-.jockey-schedule-main,
-.jockey-schedule-detail,
-.jockey-calendar-panel,
-.jockey-schedule-loading,
-.jockey-schedule-empty {
-  background: rgba(255, 250, 240, 0.96);
-  border: 1px solid rgba(231, 198, 120, 0.1);
-  border-radius: 8px;
-}
-
-.jockey-schedule-header {
-  padding: 30px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
-}
-
-.jockey-schedule-header h1 {
-  color: #172033;
-  font-size: 40px;
-  margin: 12px 0 8px;
-}
-
-.jockey-schedule-header p {
-  color: #657086;
-  max-width: 700px;
-}
-
-.jockey-schedule-message {
-  color: #8f6420 !important;
-  margin-top: 12px;
-}
-
-.jockey-schedule .primary-button {
-  background: #d7aa4d;
-  border: 1px solid #d7aa4d;
-  color: #080c14;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.jockey-schedule .primary-button:hover:not(:disabled) {
-  background: #d8a84b;
-}
-
-.jockey-schedule .skeleton-line {
-  height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(231, 198, 120, 0.08), rgba(231, 198, 120, 0.2), rgba(231, 198, 120, 0.08));
-}
-
-.jockey-schedule .skeleton-line.wide {
-  width: 75%;
-}
-
-.jockey-schedule-layout {
+.js-page {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 28px 32px 48px;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.75fr);
   gap: 24px;
-  align-items: start;
 }
 
-.jockey-schedule-main,
-.jockey-schedule-detail,
-.jockey-calendar-panel {
-  display: grid;
-  gap: 18px;
-  padding: 22px;
-}
+.app-shell:has(.js-page) .page-wrapper { padding: 20px 32px 40px; }
 
-.jockey-race-card-list {
-  display: grid;
-  gap: 14px;
-}
-
-.jockey-race-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(170px, 0.55fr) auto;
-  gap: 18px;
-  align-items: center;
-  padding: 18px;
-  border-radius: 8px;
-  background: rgba(255, 250, 240, 0.92);
-  border: 1.5px solid rgba(143, 100, 32, 0.16);
-}
-
-.jockey-race-card--active {
-  border-color: rgba(242, 210, 139, 0.45);
-}
-
-.jockey-race-card h3 {
-  color: #172033;
-  margin: 10px 0 4px;
-}
-
-.jockey-race-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-  color: #c4ccda;
-  font-size: 13px;
-}
-
-.jockey-race-card__horse,
-.jockey-schedule-info-row {
+/* ── Header ── */
+.js-header {
   display: grid;
   gap: 6px;
 }
 
-.jockey-race-card__horse span,
-.jockey-schedule-info-row span {
-  color: #657086;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.jockey-race-card__horse strong,
-.jockey-schedule-info-row strong {
-  color: #172033;
-}
-
-.jockey-race-card__actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.jockey-race-card__actions .ghost-button,
-.jockey-race-card__actions .primary-button {
-  border-radius: 6px;
-  padding: 10px 14px;
-  white-space: nowrap;
-}
-
-.jockey-detail-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 4px;
-  border-radius: 8px;
-  background: rgba(255, 250, 240, 0.92);
-  border: 1.5px solid rgba(143, 100, 32, 0.16);
-}
-
-.jockey-detail-tabs button {
-  border: 0;
-  border-radius: 6px;
-  padding: 10px;
-  color: #34415b;
-  background: transparent;
-  cursor: pointer;
+.js-header h1 {
+  font-size: 28px;
   font-weight: 700;
+  color: #1a1d23;
+  margin: 0;
 }
 
-.jockey-detail-tabs button.active {
-  color: #080c14;
-  background: #d7aa4d;
-}
+.js-sub { color: #64748b; font-size: 15px; margin: 4px 0 0; }
 
-.jockey-schedule-detail__body {
-  display: grid;
-  gap: 12px;
-}
-
-.jockey-schedule-info-row {
-  grid-template-columns: 1fr auto;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(231, 198, 120, 0.08);
-}
-
-.jockey-schedule-info-row:last-child {
-  border-bottom: 0;
-}
-
-.jockey-calendar-list {
-  display: grid;
-  gap: 14px;
-}
-
-.jockey-calendar-day {
-  display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 16px;
-  padding: 16px;
-  border-radius: 8px;
-  background: rgba(255, 250, 240, 0.92);
-  border: 1.5px solid rgba(143, 100, 32, 0.16);
-}
-
-.jockey-calendar-day h3 {
-  color: #8f6420;
-}
-
-.jockey-calendar-day > div {
-  display: grid;
+/* ── Toolbar ── */
+.js-toolbar {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.jockey-calendar-day button {
+.js-search {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 12px;
-  border-radius: 6px;
-  border: 1.5px solid rgba(143, 100, 32, 0.16);
-  background: rgba(255, 250, 240, 0.96);
-  color: #34415b;
-  cursor: pointer;
-  text-align: left;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.04);
+  flex: 1;
+  max-width: 400px;
 }
 
-.jockey-calendar-day button:hover {
-  border-color: rgba(242, 210, 139, 0.45);
+.js-search input {
+  border: none; background: none; outline: none; font-size: 13px; color: #1a1d23; font-family: inherit; flex: 1;
 }
 
-.jockey-calendar-day button span {
-  color: #657086;
+.js-search input::placeholder { color: #94a3b8; }
+
+.js-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 99px;
+  border: 1px solid rgba(0,0,0,0.06); background: rgba(255,255,255,0.5); color: #64748b;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-family: inherit;
 }
 
-.jockey-schedule-loading,
-.jockey-schedule-empty {
-  padding: 28px;
-}
+.js-pill:hover { background: rgba(255,255,255,0.8); }
+.js-pill--active { background: #1a1d23; color: #fff; border-color: #1a1d23; }
 
-.jockey-schedule-loading {
+/* ── Master-detail layout ── */
+.js-layout {
   display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ── Race List ── */
+.js-list { display: grid; gap: 10px; }
+
+.js-card {
+  background: rgba(255,255,255,0.72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  display: grid;
+  gap: 8px;
+}
+
+.js-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,0.06); }
+
+.js-card--active {
+  border-color: rgba(242,210,139,0.4);
+  box-shadow: 0 8px 24px rgba(242,210,139,0.08);
+}
+
+.js-card__top {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.jockey-schedule-empty h3 {
-  color: #172033;
+.js-card__icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(242,210,139,0.12);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+
+.js-card__top h3 { font-size: 15px; font-weight: 700; color: #1a1d23; margin: 0; }
+
+.js-card__sub { font-size: 12px; color: #64748b; margin: 1px 0 0; }
+
+.js-card__meta {
+  display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: #94a3b8; padding-left: 50px;
+}
+
+/* ── Badge ── */
+.js-badge {
+  margin-left: auto; padding: 2px 10px; border-radius: 99px; font-size: 10px; font-weight: 700;
+  flex-shrink: 0;
+}
+.js-badge--ok { background: rgba(16,185,129,0.1); color: #0f7a5a; }
+.js-badge--warn { background: rgba(245,158,11,0.1); color: #b8860b; }
+
+/* ── Detail ── */
+.js-detail {
+  background: rgba(255,255,255,0.72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+.js-detail-empty { color: #94a3b8; font-size: 13px; text-align: center; padding: 40px 0; margin: 0; }
+
+.js-detail-tabs {
+  display: flex; gap: 4px; background: rgba(0,0,0,0.03);
+  padding: 3px; border-radius: 10px; margin-bottom: 16px;
+}
+
+.js-dt {
+  flex: 1; padding: 7px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+  background: transparent; color: #64748b;
+}
+
+.js-dt:hover { color: #1a1d23; }
+
+.js-dt--active { background: #fff; color: #1a1d23; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+.js-detail-body h2 { font-size: 18px; font-weight: 700; color: #1a1d23; margin: 0 0 2px; }
+.js-detail-sub { font-size: 13px; color: #64748b; margin: 0 0 16px; }
+
+.js-detail-grid { display: grid; gap: 10px; }
+
+.js-info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.js-info-row:last-child { border-bottom: none; }
+.js-info-row span { font-size: 12px; color: #94a3b8; }
+.js-info-row strong { font-size: 13px; color: #1a1d23; font-weight: 600; }
+
+/* ── Timeline ── */
+.js-timeline {
+  background: rgba(255,255,255,0.72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 20px 24px;
+}
+
+.js-timeline h3 { font-size: 15px; font-weight: 700; color: #1a1d23; margin: 0 0 16px; }
+
+.js-tl-list { display: grid; gap: 0; }
+
+.js-tl-day { display: grid; grid-template-columns: 24px 1fr; gap: 12px; }
+
+.js-tl-line { display: flex; flex-direction: column; align-items: center; }
+
+.js-tl-dot { width: 10px; height: 10px; border-radius: 50%; background: #f2d28b; flex-shrink: 0; margin-top: 4px; }
+
+.js-tl-bar { width: 2px; flex: 1; min-height: 40px; background: rgba(0,0,0,0.06); }
+
+.js-tl-day:last-child .js-tl-bar { display: none; }
+
+.js-tl-date { font-size: 12px; font-weight: 700; color: #1a1d23; display: block; margin-bottom: 8px; }
+
+.js-tl-race {
+  padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.03); cursor: pointer; margin-bottom: 6px;
+  transition: background 0.15s;
+}
+
+.js-tl-race:hover { background: rgba(255,255,255,0.8); }
+
+.js-tl-race strong { display: block; font-size: 13px; color: #1a1d23; font-weight: 600; }
+.js-tl-race span { font-size: 11px; color: #94a3b8; }
+
+/* ── Empty / Loading ── */
+.js-empty { text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.4); border-radius: 16px; border: 1px dashed rgba(0,0,0,0.05); }
+.js-empty h3 { font-size: 18px; font-weight: 700; color: #1a1d23; margin: 12px 0 6px; }
+.js-empty p { color: #94a3b8; font-size: 14px; margin: 0; }
+
+.js-loading { display: grid; gap: 10px; }
+.js-skeleton { height: 70px; border-radius: 14px; background: rgba(0,0,0,0.04); animation: js-shimmer 1.5s infinite; }
+@keyframes js-shimmer { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .js-page { padding: 20px 16px; }
+  .js-layout { grid-template-columns: 1fr; }
+  .js-detail { position: static; }
+  .js-toolbar { flex-wrap: wrap; }
+  .js-search { max-width: none; }
+}
+
+/* ── Summary ── */
+.js-summary {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.js-sum-chip {
+  font-size: 12px;
+  color: #64748b;
+  background: rgba(255,255,255,0.5);
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+.js-sum-chip strong { font-weight: 700; color: #1a1d23; margin-right: 4px; }
+
+/* ── Filter group ── */
+.js-filter-group {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.03);
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.js-filter-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  background: transparent;
+  color: #64748b;
+}
+
+.js-filter-btn:hover { background: rgba(255,255,255,0.5); color: #1a1d23; }
+
+.js-filter-btn--active {
+  background: #fff;
+  color: #1a1d23;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* ── Blocks (Detail) ── */
+.js-blocks {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.js-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.02);
+  transition: background 0.15s;
+}
+
+.js-block:hover { background: rgba(0,0,0,0.04); }
+
+.js-block-icon { display: none; }
+
+.js-block-label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
+
+.js-block-value { display: block; font-size: 14px; color: #1a1d23; font-weight: 600; margin-top: 1px; }
+
+/* ── Detail actions ── */
+.js-detail-actions {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+.js-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+  border: none;
+}
+
+.js-btn--primary { background: #1a1d23; color: #fff; }
+.js-btn--primary:hover { background: #2a2e38; }
+
+.js-btn--outline { background: transparent; border: 1px solid rgba(0,0,0,0.08); color: #1a1d23; }
+.js-btn--outline:hover { border-color: rgba(0,0,0,0.2); }
+
+/* ── Card active state ── */
+.js-card { border-left: 3px solid transparent; }
+
+.js-card--active {
+  border-left-color: #f2d28b;
+  background: rgba(255,248,239,0.7);
+}
+
+/* ── Timeline race ── */
+.js-tl-race {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
   margin-bottom: 8px;
+  transition: background 0.15s;
 }
 
-@media (max-width: 1180px) {
-  .jockey-schedule-layout,
-  .jockey-race-card {
-    grid-template-columns: 1fr;
-  }
+.js-tl-race:hover { background: rgba(255,255,255,0.8); }
 
-  .jockey-race-card__actions {
-    justify-content: flex-start;
-  }
+.js-tl-race__icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(242,210,139,0.12);
+  display: grid; place-items: center; flex-shrink: 0;
 }
 
-@media (max-width: 720px) {
-  .jockey-schedule-header {
-    padding: 24px;
-  }
+.js-tl-race strong { display: block; font-size: 13px; color: #1a1d23; font-weight: 600; }
+.js-tl-race span { font-size: 11px; color: #94a3b8; }
 
-  .jockey-schedule-header h1 {
-    font-size: 32px;
-  }
+.js-tl-race .js-badge { margin-left: auto; }
 
-  .jockey-race-card__actions,
-  .jockey-calendar-day,
-  .jockey-calendar-day button {
-    grid-template-columns: 1fr;
-    flex-direction: column;
-  }
+/* ── Detail title ── */
+.js-detail-title { font-size: 18px; font-weight: 700; color: #1a1d23; margin: 0 0 2px; }
 
-  .jockey-schedule-info-row {
-    grid-template-columns: 1fr;
-  }
-}
+/* ── Ensure full width ── */
+.js-page { width: 100%; box-sizing: border-box; }

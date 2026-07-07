@@ -1,14 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
 import { spectatorNavItems } from "../../constants/spectatorNavigation";
 import ProfileDropdown from "../ProfileDropdown";
+import NotificationBell from "../NotificationBell/NotificationBell";
 import "./SpectatorHeader.css";
 
 function SpectatorHeader() {
   return (
     <header className="spectator-header">
       <Link className="spectator-header__brand" to="/spectator/tournaments">
-        <div className="brand-mark">RM</div>
-        <div><p className="brand-title">RaceMaster</p><p className="brand-subtitle">Khu vực Khán Giả</p></div>
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
       <nav className="spectator-header__nav" aria-label="Spectator">
         {spectatorNavItems.map((item) => (
@@ -16,6 +16,7 @@ function SpectatorHeader() {
         ))}
       </nav>
       <div className="spectator-header__actions">
+        <NotificationBell />
         <ProfileDropdown profileUrl="/spectator/profile" />
       </div>
     </header>

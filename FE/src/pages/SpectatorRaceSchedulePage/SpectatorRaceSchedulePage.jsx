@@ -217,24 +217,12 @@ function SpectatorRaceSchedulePage() {
       {/* ── Highlight stats ── */}
       <section className="srs-highlights">
         <div className="srs-highlight srs-highlight--live">
-          <span className="srs-highlight__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="4" fill="currentColor" />
-            </svg>
-          </span>
           <div>
             <span className="srs-highlight__value">{stats.liveCount}</span>
             <span className="srs-highlight__label">Đang trực tiếp</span>
           </div>
         </div>
         <div className="srs-highlight srs-highlight--upcoming">
-          <span className="srs-highlight__icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-          </span>
           <div>
             <span className="srs-highlight__value">{stats.upcomingCount}</span>
             <span className="srs-highlight__label">Sắp diễn ra</span>
@@ -309,19 +297,10 @@ function SpectatorRaceSchedulePage() {
                               </h3>
                               <div className="srs-race-card__meta">
                                 <span>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                  </svg>
                                   {race.location}
                                 </span>
                                 {race.distance > 0 && (
                                   <span>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <path d="M2 12h2M20 12h2M12 2v2M12 20v2" />
-                                      <circle cx="12" cy="12" r="2" />
-                                      <path d="M12 4a8 8 0 0 1 8 8" />
-                                    </svg>
                                     {race.distance}m
                                   </span>
                                 )}
@@ -384,11 +363,7 @@ function SpectatorRaceSchedulePage() {
                 className="srs-modal__close"
                 onClick={() => setDetailRace(null)}
                 aria-label="Đóng"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
+              ></button>
             </div>
             <div className="srs-modal__grid">
               <div className="srs-modal__field">

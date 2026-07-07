@@ -37,6 +37,11 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
+    public Task<User?> GetByRefreshTokenHashAsync(string hash)
+    {
+        return _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == hash);
+    }
+
     public Task<List<User>> GetAllAsync()
     {
         return _db.Users

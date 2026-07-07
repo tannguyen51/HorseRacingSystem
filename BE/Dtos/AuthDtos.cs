@@ -10,7 +10,9 @@ public class RegisterRequest
     public string Email { get; set; } = string.Empty;
 
     [Required]
-    [MinLength(6)]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
     public string Password { get; set; } = string.Empty;
 
     [Required]
@@ -49,8 +51,10 @@ public class AuthResponse
 {
     public Guid UserId { get; set; }
     public string Email { get; set; } = string.Empty;
+    public string? FullName { get; set; }
     public UserRole Role { get; set; }
     public string Token { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; }
 }
 
 public class OwnerProfileResponse
@@ -65,4 +69,57 @@ public class OwnerProfileResponse
     public string Status { get; set; } = string.Empty;
     public DateTime JoinDate { get; set; }
     public int HorseCount { get; set; }
+}
+
+public class ChangePasswordRequest
+{
+    [Required]
+    public string CurrentPassword { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [Required]
+    public string ConfirmNewPassword { get; set; } = string.Empty;
+}
+
+public class UpdateProfileRequest
+{
+    public string? FullName { get; set; }
+    public string? PhoneNumber { get; set; }
+}
+
+public class ForgotPasswordRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+}
+
+public class ResetPasswordRequest
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    public string Token { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
+    public string NewPassword { get; set; } = string.Empty;
+
+    [Required]
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public class RefreshRequest
+{
+    [Required]
+    public string RefreshToken { get; set; } = string.Empty;
 }

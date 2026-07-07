@@ -101,3 +101,15 @@ export const rejectRegistration = (id, reason) =>
     method: "POST",
     body: JSON.stringify({ reason }),
   });
+
+export const getAllRegistrations = async () =>
+  unwrap(await request("/api/admin/registrations"));
+
+export const getRegistrationDetail = async (id) =>
+  unwrap(await request(`/api/admin/registrations/${id}`));
+
+export const publishRaceResult = (raceId, payload) =>
+  request(`/api/admin/races/${raceId}/publish-result`, {
+    method: "POST",
+    body: JSON.stringify(payload || {}),
+  });

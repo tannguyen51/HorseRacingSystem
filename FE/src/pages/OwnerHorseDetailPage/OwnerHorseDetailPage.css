@@ -279,3 +279,37 @@
     gap: 8px;
   }
 }
+
+/* ---- Jockey Invitation & Race Entry cards ---- */
+.horse-invitation-card,
+.horse-entry-card {
+  background: rgba(255, 250, 240, 0.92);
+  border: 1px solid rgba(231, 198, 120, 0.1);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.horse-invitation-card__row,
+.horse-entry-card__row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.42fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.horse-invitation-card__row span,
+.horse-entry-card__row span {
+  color: #657086;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.horse-invitation-card__row strong,
+.horse-entry-card__row strong {
+  color: #172033;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}

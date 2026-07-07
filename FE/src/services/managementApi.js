@@ -11,6 +11,7 @@ export const deletePrize = (id) => request(`/api/management/prizes/${id}`, { met
 // ── Protests ──
 export const getProtests = async () => unwrap(await request("/api/management/protests"));
 export const getPendingProtests = async () => unwrap(await request("/api/management/protests/pending"));
+export const createProtest = (p) => request("/api/management/protests", { method: "POST", body: JSON.stringify(p) });
 export const ruleProtest = (id, p) => request(`/api/management/protests/${id}/rule`, { method: "POST", body: JSON.stringify(p) });
 
 // ── Horse Transfers ──

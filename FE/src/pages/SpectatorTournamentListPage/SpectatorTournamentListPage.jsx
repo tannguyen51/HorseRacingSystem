@@ -181,16 +181,6 @@ function SpectatorTournamentListPage() {
       {/* ── Filters ── */}
       <section className="stl-filters">
         <div className="stl-search">
-          <svg
-            className="stl-search__icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
           <input
             className="stl-search__input"
             type="text"
@@ -218,19 +208,6 @@ function SpectatorTournamentListPage() {
       <section className="stl-content">
         {isLoading ? (
           <div className="stl-empty">
-            <div className="stl-empty__icon">
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-            </div>
             <h3>Đang tải giải đấu</h3>
             <p>Vui lòng đợi trong giây lát...</p>
           </div>
@@ -279,17 +256,6 @@ function SpectatorTournamentListPage() {
                   <div className="stl-card__body">
                     <h3 className="stl-card__title">{t.name}</h3>
                     <div className="stl-card__venue">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
                       <span>{t.venue}</span>
                     </div>
                     {t.description && (
@@ -344,16 +310,6 @@ function SpectatorTournamentListPage() {
             onClick={handlePrevPage}
             disabled={safePage === 1}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
             Trước
           </button>
           <div className="stl-pagination__numbers">
@@ -375,16 +331,6 @@ function SpectatorTournamentListPage() {
             disabled={safePage === totalPages}
           >
             Tiếp
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
           </button>
         </nav>
       )}
@@ -416,16 +362,6 @@ function SpectatorTournamentListPage() {
                 onClick={() => setDetailTournament(null)}
                 aria-label="Đóng"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
               </button>
             </div>
             <div className="stl-modal__grid">
