@@ -59,17 +59,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.MultipleCollectionIncludeWarning)));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var configuredOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
-var origins = new List<string>(configuredOrigins);
-origins.Add("http://localhost:5173");
-origins.Add("http://127.0.0.1:5173");
-origins.Add("https://horse-racing-system.vercel.app");
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins(origins.ToArray())
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+        policy.SetIsOriginAllowed(origin =>
+        {
+            if (string.IsNullOrEmpty(origin)) return false;
+            if (origin.StartsWith("http://localhost:") || origin.StartsWith("http://127.0.0.1:")) return true;
+            if (origin.EndsWith(".vercel.app")) return true;
+            foreach (var configuredOrigin in configuredOrigins)
+            {
+                if (string.Equals(origin, configuredOrigin, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 builder.Services.AddRateLimiter(options =>
 {
