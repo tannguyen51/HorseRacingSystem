@@ -190,8 +190,6 @@ app.UseRateLimiter();
 app.UseCors("Frontend");
 
 app.UseStaticFiles(); // serve uploaded images from wwwroot
-if (!app.Environment.IsDevelopment())
-    app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {
