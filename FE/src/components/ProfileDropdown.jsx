@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getBalance } from "../services/walletApi";
 
 const getInitials = (name) => (name || "Người dùng").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -7,6 +7,7 @@ const getInitials = (name) => (name || "Người dùng").split(" ").map((w) => w
 export default function ProfileDropdown({ profileUrl }) {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -29,7 +30,7 @@ export default function ProfileDropdown({ profileUrl }) {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authUser");
     localStorage.removeItem("refreshToken");
-    window.location.assign("/login");
+    navigate("/login");
   };
 
   const fullName = user?.fullName || user?.email || "Người dùng";

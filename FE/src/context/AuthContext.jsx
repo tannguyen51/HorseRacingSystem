@@ -18,9 +18,9 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem("authUser");
     localStorage.removeItem("authToken");
+    localStorage.removeItem("refreshToken");
     setUser(null);
     setToken(null);
-    window.location.assign("/login");
   }, []);
 
   const isAuthenticated = Boolean(token && user);
