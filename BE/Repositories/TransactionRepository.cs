@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Data;
@@ -65,5 +66,13 @@ public class TransactionRepository : ITransactionRepository
                 .SetProperty(t => t.CompletedAt, DateTime.UtcNow)
                 .SetProperty(t => t.SepayTransactionId, sepayTransactionId));
         return updated > 0;
+    }
+
+    public Task<List<string>> GetPendingReferencesAsync()
+    {
+        return _db.Transactions
+            .Where(t => t.Status == "pending" && t.Reference != null)
+            .Select(t => t.Reference!)
+            .ToListAsync();
     }
 }

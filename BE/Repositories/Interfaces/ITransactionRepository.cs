@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HorseRacing.Models;
 
@@ -13,4 +14,5 @@ public interface ITransactionRepository
     Task<Transaction?> GetPendingByRefAsync(string reference);
     Task<bool> ExistsBySepayIdAsync(long sepayTransactionId);
     Task<bool> TryCompleteByRefAsync(string reference, long sepayTransactionId);
+    Task<List<string>> GetPendingReferencesAsync();
 }

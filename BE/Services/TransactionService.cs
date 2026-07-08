@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
@@ -19,8 +21,6 @@ public class TransactionService : ITransactionService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _config;
     private readonly ILogger<TransactionService> _logger;
-
-    private const string ReferencePrefix = "DH";
 
     public TransactionService(
         ITransactionRepository transactionRepo,
@@ -109,11 +109,12 @@ public class TransactionService : ITransactionService
 
         // ── Extract our reference from transfer content ──
         var content = (request.Content ?? "").Trim();
-        var reference = ExtractReference(content);
+        var pendingRefs = await _transactionRepo.GetPendingReferencesAsync();
+        var reference = FindReference(content, pendingRefs);
 
         if (reference == null)
         {
-            _logger.LogWarning("No {Prefix} reference found in content: {Content}", ReferencePrefix, content);
+            _logger.LogWarning("No reference found in transfer content: {Content}", content);
             return ServiceResult<object>.Ok(new { message = "No reference code found." });
         }
 
@@ -171,26 +172,21 @@ public class TransactionService : ITransactionService
 
     private static string GenerateReference()
     {
-        var bytes = RandomNumberGenerator.GetBytes(3);
-        var hex = Convert.ToHexString(bytes); // 6 hex chars
-        return $"{ReferencePrefix}{hex}";
+        var bytes = RandomNumberGenerator.GetBytes(4);
+        return Convert.ToHexString(bytes); // 8 hex chars
     }
 
-    private static string? ExtractReference(string text)
+    /// <summary>
+    /// Tìm reference trong nội dung chuyển khoản bằng cách so khớp với danh sách pending references.
+    /// </summary>
+    private static string? FindReference(string content, List<string> pendingRefs)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
-
-        var idx = text.IndexOf(ReferencePrefix, StringComparison.OrdinalIgnoreCase);
-        if (idx < 0) return null;
-
-        var start = idx;
-        var end = start + 2;
-        while (end < text.Length && end - start < 12 && char.IsLetterOrDigit(text[end]))
+        if (string.IsNullOrWhiteSpace(content) || pendingRefs.Count == 0) return null;
+        var upper = content.ToUpperInvariant();
+        foreach (var r in pendingRefs)
         {
-            end++;
+            if (upper.Contains(r)) return r;
         }
-
-        var extracted = text[start..end];
-        return extracted.Length >= 7 ? extracted.ToUpperInvariant() : null; // "DH" + 5+ chars
+        return null;
     }
 }
