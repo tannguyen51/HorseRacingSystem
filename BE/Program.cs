@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using System.Threading.RateLimiting;
 
 // Npgsql: treat Unspecified DateTime as UTC for PostgreSQL timestamptz compatibility
@@ -56,9 +57,10 @@ string connectionString;
 
 if (!string.IsNullOrEmpty(dbUrl))
 {
-    var uri = new Uri(dbUrl);
-    var userInfo = uri.UserInfo.Split(':', 2);
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SslMode=Require;TrustServerCertificate=true;";
+    var csb = new NpgsqlConnectionStringBuilder(dbUrl);
+    csb.SslMode = SslMode.Require;
+    csb.TrustServerCertificate = true;
+    connectionString = csb.ToString();
 }
 else
 {
