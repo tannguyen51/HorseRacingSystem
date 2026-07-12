@@ -239,6 +239,11 @@ using (var scope = app.Services.CreateScope())
     {
         await DemoSeeder.SeedAsync(app.Services);
     }
+    else
+    {
+        // Production: chỉ tạo admin nếu chưa có, không seed toàn bộ demo data
+        await DemoSeeder.EnsureAdminAsync(app.Services);
+    }
 }
 
 app.Run();

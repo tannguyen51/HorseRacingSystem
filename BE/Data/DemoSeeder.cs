@@ -14,6 +14,29 @@ public static class DemoSeeder
 {
     private const string AdminPwd = "Admin@123";
 
+    /// <summary>
+    /// Production: chỉ tạo tài khoản admin nếu chưa tồn tại.
+    /// </summary>
+    public static async Task EnsureAdminAsync(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+
+        if (await db.Users.AnyAsync(u => u.Role == UserRole.Admin))
+        {
+            logger.LogInformation("Admin account already exists. Skipping.");
+            return;
+        }
+
+        var hasher = new PasswordHasher<User>();
+        var now = DateTime.UtcNow;
+        AddUser(db, hasher, "admin@horseracing.com", AdminPwd, "System Admin", UserRole.Admin, now);
+        await db.SaveChangesAsync();
+
+        logger.LogInformation("Admin account created: admin@horseracing.com / Admin@123");
+    }
+
     public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
