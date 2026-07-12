@@ -1,23 +1,28 @@
 import { Link, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
 const navItems = [
-  { to: "/", label: "Home", end: true },
-  { to: "/tournaments", label: "Tournament List" },
-  { to: "/schedule", label: "Race Schedule" },
-  { to: "/live-results", label: "Live Results" },
-  { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/", label: "Trang chủ", end: true },
+  { to: "/tournaments", label: "Giải đấu" },
+  { to: "/schedule", label: "Lịch đua" },
+  { to: "/live-results", label: "Kết quả trực tiếp" },
+  { to: "/leaderboard", label: "Bảng xếp hạng" },
 ];
 
-function Header() {
+function Header({ isLoggedIn = false }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+    navigate("/");
+  };
+
   return (
     <header className="site-header">
       <Link className="site-header__brand" to="/">
-        <div className="brand-mark">RM</div>
-        <div>
-          <p className="brand-title">RaceMaster</p>
-          <p className="brand-subtitle">Tournament Platform</p>
-        </div>
+        <img src="/logo.png" alt="RaceMaster" className="header-logo" />
       </Link>
 
       <nav className="site-header__nav" aria-label="Primary">
@@ -36,12 +41,20 @@ function Header() {
       </nav>
 
       <div className="site-header__actions">
-        <Link className="ghost-button" to="/auth">
-          Login
-        </Link>
-        <Link className="primary-button" to="/auth">
-          Register
-        </Link>
+        {isLoggedIn ? (
+          <button className="ghost-button btn" onClick={handleLogout}>
+            Đăng xuất
+          </button>
+        ) : (
+          <>
+            <Link className="ghost-button btn" to="/login">
+              Đăng nhập
+            </Link>
+            <Link className="primary-button btn" to="/register">
+              Đăng ký
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

@@ -1,58 +1,55 @@
+import { useEffect, useState } from "react";
+import { getRaces } from "../../services/spectatorApi";
 import "./RaceSchedulePage.css";
 
+const fDate = (v) =>
+  v
+    ? new Date(v).toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "Chưa xác định";
+
 function RaceSchedulePage() {
+  const [races, setRaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getRaces()
+      .then((d) => setRaces(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <div className="race-schedule-page">
-      <section className="page-header">
-        <h1>Race Schedule</h1>
-        <p>Live scheduling for qualifiers, heats, and championship races.</p>
+      <section className="page-header schedule-hero">
+        <span className="pill">Lịch Đua</span>
+        <h1>Lịch Đua</h1>
+        <p>Các cuộc đua sắp tới và đã qua với trạng thái, địa điểm, cự ly và thời gian bắt đầu.</p>
       </section>
 
-      <div className="schedule-grid">
-        {[
-          {
-            date: "July 12, 2026",
-            track: "Del Mar",
-            title: "Summer Sprint Championship",
-            time: "2:30 PM",
-            status: "Full",
-          },
-          {
-            date: "July 20, 2026",
-            track: "Pimlico",
-            title: "Heritage Cup",
-            time: "3:00 PM",
-            status: "Open",
-          },
-          {
-            date: "July 27, 2026",
-            track: "Aqueduct",
-            title: "Metropolitan Mile",
-            time: "1:30 PM",
-            status: "Open",
-          },
-          {
-            date: "August 3, 2026",
-            track: "Santa Anita Park",
-            title: "Pacific Classic",
-            time: "4:30 PM",
-            status: "Open",
-          },
-        ].map((race) => (
-          <article key={race.title} className="schedule-card">
-            <div>
-              <span className="badge">{race.status}</span>
-              <h3>{race.title}</h3>
-              <p>{race.date}</p>
-              <p>{race.track}</p>
+      {loading ? (
+        <p className="empty-state">Đang tải danh sách đua...</p>
+      ) : races.length === 0 ? (
+        <p className="empty-state">Không có cuộc đua nào được lên lịch.</p>
+      ) : (
+        <div className="race-grid">
+          {races.map((r) => (
+            <div key={r.id ?? r.Id} className="race-card">
+              <div>
+                <span className="badge">{r.status ?? r.Status ?? "Đã lên lịch"}</span>
+                <h3>{r.name ?? r.Name}</h3>
+              </div>
+              <div className="race-meta">
+                <span>{r.location ?? r.Location ?? "Chưa xác định"}</span>
+                <span>{r.distance ?? r.Distance ?? "-"}m</span>
+                <strong>{fDate(r.scheduledAt ?? r.ScheduledAt)}</strong>
+              </div>
             </div>
-            <div className="schedule-meta">
-              <span>{race.time}</span>
-              <button className="ghost-button">View Details</button>
-            </div>
-          </article>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

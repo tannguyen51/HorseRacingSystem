@@ -1,87 +1,57 @@
 .site-footer {
-  padding: 64px 72px 32px;
-  color: #d3d9e5;
-  background: linear-gradient(180deg, rgba(6, 10, 20, 0.4), rgba(6, 10, 20, 0.9));
-  border-top: 1px solid rgba(231, 198, 120, 0.12);
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
-.site-footer__grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 32px;
-}
-
-.site-footer__grid h3 {
-  font-size: 20px;
-  color: #f8f4e6;
-  margin-bottom: 12px;
-}
-
-.site-footer__grid h4 {
-  font-size: 16px;
-  color: #f8f4e6;
-  margin-bottom: 12px;
-}
-
-.site-footer__grid p {
-  color: #aeb6c4;
-  max-width: 240px;
-}
-
-.site-footer__grid ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 8px;
-  color: #aeb6c4;
-}
-
-.footer-badges {
+.site-footer__inner {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.footer-badges span {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(231, 198, 120, 0.1);
-  color: #f5e4b1;
-  font-size: 12px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.site-footer__bottom {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-top: 36px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(231, 198, 120, 0.12);
-  font-size: 13px;
-  color: #98a1b3;
-  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 72px;
+  gap: 20px;
+}
+
+.site-footer__links {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.footer-links {
-  display: flex;
-  gap: 18px;
+.site-footer__links a {
+  color: #657086;
+  text-decoration: none;
+  line-height: 0;
+  transition: color 0.2s;
 }
 
-@media (max-width: 1024px) {
-  .site-footer {
-    padding: 48px 24px 28px;
-  }
-
-  .site-footer__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.site-footer__links a:hover {
+  color: #8f6420;
 }
 
-@media (max-width: 640px) {
-  .site-footer__grid {
-    grid-template-columns: 1fr;
+.site-footer__copy {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.site-footer__badge {
+  font-size: 10px;
+  color: rgba(219, 168, 58, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .site-footer__inner {
+    flex-direction: column;
+    padding: 14px 24px;
+    gap: 8px;
+    text-align: center;
   }
 }

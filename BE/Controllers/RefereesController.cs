@@ -1,0 +1,167 @@
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using HorseRacing.Dtos;
+using HorseRacing.Models;
+using HorseRacing.Repositories.Interfaces;
+using HorseRacing.Services;
+using HorseRacing.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HorseRacing.Controllers;
+
+[ApiController]
+[Route("api/referees")]
+public class RefereesController : ControllerBase
+{
+    private readonly IRefereeService _refereeService;
+    private readonly IRefereeRepository _refereeRepo;
+    private readonly IRefereeAssignmentRepository _assignmentRepo;
+    private readonly IRaceEntryRepository _entryRepo;
+
+    public RefereesController(IRefereeService refereeService, IRefereeRepository refereeRepo, IRefereeAssignmentRepository assignmentRepo, IRaceEntryRepository entryRepo)
+    {
+        _refereeService = refereeService;
+        _refereeRepo = refereeRepo;
+        _assignmentRepo = assignmentRepo;
+        _entryRepo = entryRepo;
+    }
+
+    // ── Referee CRUD ──
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> Create([FromBody] CreateRefereeRequest r)
+        => OkR(await _refereeService.CreateRefereeAsync(r));
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetAll()
+        => OkR(await _refereeService.GetAllRefereesAsync());
+
+    [HttpGet("active")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetActive()
+        => OkR(await _refereeService.GetActiveRefereesAsync());
+
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetById(Guid id)
+        => OkR(await _refereeService.GetRefereeAsync(id));
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Referee")]
+    public async Task<ActionResult> Update(Guid id, [FromBody] UpdateRefereeRequest r)
+        => OkR(await _refereeService.UpdateRefereeAsync(id, r));
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> Delete(Guid id)
+        => OkR(await _refereeService.DeleteRefereeAsync(id));
+
+    // ── Assignments ──
+
+    [HttpPost("assign")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> Assign([FromBody] AssignRefereeRequest r)
+        => OkR(await _refereeService.AssignRefereeToRaceAsync(r));
+
+    [HttpGet("race/{raceId:guid}/assignments")]
+    [Authorize(Roles = "Admin,Referee")]
+    public async Task<ActionResult> GetRaceAssignments(Guid raceId)
+        => OkR(await _refereeService.GetRaceAssignmentsAsync(raceId));
+
+    [HttpGet("{refereeId:guid}/assignments")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> GetRefereeAssignments(Guid refereeId)
+        => OkR(await _refereeService.GetRefereeAssignmentsAsync(refereeId));
+
+    [HttpPost("assignments/{assignmentId:guid}/confirm")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> Confirm(Guid assignmentId, [FromBody] ConfirmRefereeAssignmentRequest r)
+    {
+        r.AssignmentId = assignmentId;
+        return OkR(await _refereeService.ConfirmAssignmentAsync(r));
+    }
+
+    [HttpGet("my-assignments")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> GetMyAssignments([FromQuery] string? status)
+    {
+        var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (uid is null || !Guid.TryParse(uid, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var referee = await _refereeRepo.GetByUserIdAsync(userId);
+        if (referee is null)
+            return NotFound(new { message = "Referee profile not found." });
+
+        var result = await _refereeService.GetRefereeAssignmentsAsync(referee.Id);
+        if (result.StatusCode != 200)
+            return StatusCode(result.StatusCode, result.Result);
+
+        if (!string.IsNullOrEmpty(status)
+            && result.Result.Data is System.Collections.Generic.IEnumerable<RefereeAssignmentResponse> all)
+        {
+            var filtered = all.Where(a =>
+                string.Equals(a.Status, status, StringComparison.OrdinalIgnoreCase)).ToList();
+            return Ok(ApiResult<IEnumerable<RefereeAssignmentResponse>>.Ok(filtered));
+        }
+
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("assignments/{assignmentId:guid}/respond")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> Respond(Guid assignmentId, [FromBody] RespondToAssignmentRequest r)
+    {
+        if (string.IsNullOrWhiteSpace(r.Response) || r.Response is not ("Accept" or "Reject"))
+            return BadRequest(new { message = "Response must be 'Accept' or 'Reject'." });
+
+        var assignment = await _assignmentRepo.GetByIdAsync(assignmentId);
+        if (assignment is null)
+            return NotFound(new { message = "Assignment not found." });
+
+        if (string.Equals(r.Response, "Accept", StringComparison.OrdinalIgnoreCase))
+        {
+            assignment.Status = RefereeAssignmentStatus.Confirmed;
+            assignment.ConfirmedAt = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(r.Notes)) assignment.Notes = r.Notes;
+        }
+        else
+        {
+            assignment.Status = RefereeAssignmentStatus.Cancelled;
+            assignment.CompletedAt = DateTime.UtcNow;
+            assignment.Notes = r.Notes ?? "Rejected by referee";
+        }
+
+        await _assignmentRepo.UpdateAsync(assignment);
+        return Ok(new { message = $"Assignment {r.Response.ToLowerInvariant()}ed." });
+    }
+
+    [HttpGet("race/{raceId:guid}/entries")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetRaceEntries(Guid raceId)
+    {
+        var entries = await _entryRepo.GetByRaceAsync(raceId);
+        return Ok(entries.Select(e => new
+        {
+            EntryId = e.Id,
+            HorseId = e.HorseId,
+            HorseName = e.Horse?.Name ?? e.HorseId.ToString(),
+            HorseWinRate = e.Horse != null && e.Horse.TotalRaces > 0
+                ? Math.Round((decimal)e.Horse.TotalWins / e.Horse.TotalRaces * 100, 1)
+                : 0,
+            HorseTotalRaces = e.Horse?.TotalRaces ?? 0,
+            JockeyId = e.JockeyId,
+            JockeyName = e.Jockey?.User?.FullName,
+            JockeyWinRate = e.Jockey?.WinRate ?? 0,
+            Odds = e.Odds,
+            Status = e.Status.ToString()
+        }));
+    }
+
+    private ActionResult OkR<T>(ServiceResult<T> r) => StatusCode(r.StatusCode, r.Result);
+}
