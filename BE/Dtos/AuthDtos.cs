@@ -5,14 +5,14 @@ namespace HorseRacing.Dtos;
 
 public class RegisterRequest
 {
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+    [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự.")]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
-        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
+        ErrorMessage = "Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một chữ số.")]
     public string Password { get; set; } = string.Empty;
 
     [Required]
@@ -39,11 +39,11 @@ public class RegisterRequest
 
 public class LoginRequest
 {
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Mật khẩu không được để trống.")]
     public string Password { get; set; } = string.Empty;
 }
 
@@ -73,16 +73,16 @@ public class OwnerProfileResponse
 
 public class ChangePasswordRequest
 {
-    [Required]
+    [Required(ErrorMessage = "Mật khẩu hiện tại không được để trống.")]
     public string CurrentPassword { get; set; } = string.Empty;
 
-    [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [Required(ErrorMessage = "Mật khẩu mới không được để trống.")]
+    [MinLength(8, ErrorMessage = "Mật khẩu mới phải có ít nhất 8 ký tự.")]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
-        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
+        ErrorMessage = "Mật khẩu mới phải chứa ít nhất một chữ hoa, một chữ thường và một chữ số.")]
     public string NewPassword { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống.")]
     public string ConfirmNewPassword { get; set; } = string.Empty;
 }
 
@@ -94,27 +94,27 @@ public class UpdateProfileRequest
 
 public class ForgotPasswordRequest
 {
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 }
 
 public class ResetPasswordRequest
 {
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Token không được để trống.")]
     public string Token { get; set; } = string.Empty;
 
-    [Required]
-    [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+    [Required(ErrorMessage = "Mật khẩu mới không được để trống.")]
+    [MinLength(8, ErrorMessage = "Mật khẩu mới phải có ít nhất 8 ký tự.")]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
-        ErrorMessage = "Password must contain at least one uppercase, one lowercase, and one digit.")]
+        ErrorMessage = "Mật khẩu mới phải chứa ít nhất một chữ hoa, một chữ thường và một chữ số.")]
     public string NewPassword { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using System.Threading.RateLimiting;
 
 // Npgsql: treat Unspecified DateTime as UTC for PostgreSQL timestamptz compatibility
@@ -57,10 +56,22 @@ string connectionString;
 
 if (!string.IsNullOrEmpty(dbUrl))
 {
-    var csb = new NpgsqlConnectionStringBuilder(dbUrl);
-    csb.SslMode = SslMode.Require;
-    csb.TrustServerCertificate = true;
-    connectionString = csb.ToString();
+    try
+    {
+        var uri = new Uri(dbUrl);
+        var userParts = uri.UserInfo.Split(':', 2);
+        var user = userParts[0];
+        var pass = userParts.Length > 1 ? userParts[1] : "";
+        var db = uri.AbsolutePath.TrimStart('/');
+        connectionString = $"Host={uri.Host};Port={uri.Port};Database={db};Username={user};Password={pass};SslMode=Require;TrustServerCertificate=true;";
+    }
+    catch (UriFormatException)
+    {
+        // Not a URI — treat as raw connection string (e.g. Host=...;Database=...)
+        connectionString = dbUrl;
+        if (!connectionString.Contains("SslMode", StringComparison.OrdinalIgnoreCase))
+            connectionString += ";SslMode=Require;TrustServerCertificate=true;";
+    }
 }
 else
 {

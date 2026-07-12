@@ -124,17 +124,25 @@ export async function request(path, options = {}) {
       window.location.assign("/login");
     }
 
+    // Trích xuất field-level validation errors
     const validationMessage =
       data?.errors && typeof data.errors === "object"
-        ? Object.values(data.errors).flat().filter(Boolean).join(" ")
+        ? Object.entries(data.errors)
+            .map(([field, msgs]) => {
+              const msgText = Array.isArray(msgs) ? msgs.join(", ") : msgs;
+              // Bỏ tên field nếu message đã chứa context (e.g. "Mật khẩu phải...")
+              return msgText || "";
+            })
+            .filter(Boolean)
+            .join("; ")
         : "";
     const message =
-      (typeof data === "string" && data.trim()) ||
+      validationMessage ||
       data?.message ||
       data?.error ||
-      validationMessage ||
+      (typeof data === "string" && data.trim()) ||
       data?.title ||
-      "Request failed.";
+      "Yêu cầu thất bại.";
     const error = new Error(message);
     error.status = response.status;
     error.data = data;
