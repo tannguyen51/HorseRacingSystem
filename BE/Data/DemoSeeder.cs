@@ -15,7 +15,7 @@ public static class DemoSeeder
     private const string AdminPwd = "Admin@123";
 
     /// <summary>
-    /// Production: chỉ tạo tài khoản admin nếu chưa tồn tại.
+    /// Production: tạo tài khoản admin và trọng tài nếu chưa tồn tại.
     /// </summary>
     public static async Task EnsureAdminAsync(IServiceProvider services)
     {
@@ -23,18 +23,34 @@ public static class DemoSeeder
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
 
-        if (await db.Users.AnyAsync(u => u.Role == UserRole.Admin))
-        {
-            logger.LogInformation("Admin account already exists. Skipping.");
-            return;
-        }
-
         var hasher = new PasswordHasher<User>();
         var now = DateTime.UtcNow;
-        AddUser(db, hasher, "admin@horseracing.com", AdminPwd, "System Admin", UserRole.Admin, now);
-        await db.SaveChangesAsync();
+        var changed = false;
 
-        logger.LogInformation("Admin account created: admin@horseracing.com / Admin@123");
+        if (!await db.Users.AnyAsync(u => u.Role == UserRole.Admin))
+        {
+            AddUser(db, hasher, "admin@horseracing.com", AdminPwd, "System Admin", UserRole.Admin, now);
+            logger.LogInformation("Admin account created: admin@horseracing.com / Admin@123");
+            changed = true;
+        }
+
+        if (!await db.Users.AnyAsync(u => u.Role == UserRole.Referee))
+        {
+            var refereeUser = AddUser(db, hasher, "trongtai@horseracing.com", "Referee@123", "Nguyen Van Trong Tai", UserRole.Referee, now);
+            await db.SaveChangesAsync();
+            db.Referees.Add(new Referee
+            {
+                Id = Guid.NewGuid(), UserId = refereeUser.Id,
+                LicenseNumber = "REF-ADMIN-001", Certifications = "Race Rules, Track Safety",
+                LicenseExpiryDate = now.AddYears(2), IsActive = true,
+                Rating = 4.0m, TotalOfficiated = 0, Specialization = "Chief Referee",
+                Nationality = "Vietnam", CreatedAt = now
+            });
+            logger.LogInformation("Referee account created: trongtai@horseracing.com / Referee@123");
+            changed = true;
+        }
+
+        if (changed) await db.SaveChangesAsync();
     }
 
     public static async Task SeedAsync(IServiceProvider services)
