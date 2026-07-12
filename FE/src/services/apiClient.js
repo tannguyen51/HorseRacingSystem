@@ -113,7 +113,8 @@ export async function request(path, options = {}) {
   if (contentType && contentType.includes("application/json")) {
     data = await response.json();
   } else {
-    data = await response.text();
+    const text = await response.text();
+    try { data = JSON.parse(text); } catch { data = text; }
   }
 
   if (!response.ok) {
