@@ -816,8 +816,9 @@ function TournamentManagement() {
         <input placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         <input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
         <input type="datetime-local" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-        <label style={{ fontSize: 13, color: "#657086" }}>Ảnh nền: {uploading ? "Đang tải..." : ""}
+        <label style={{ fontSize: 13, color: "#657086" }}>Ảnh bìa giải đấu (tỉ lệ 3:1, đề xuất 1200×400px):
           <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} style={{ display: "block", marginTop: 4 }} />
+          {uploading ? <span style={{ color: "#8f6420", fontSize: 12 }}>Đang tải ảnh...</span> : null}
         </label>
         {form.imageUrl && <img src={form.imageUrl} alt="preview" style={{ width: 120, borderRadius: 8, marginTop: 4 }} />}
         <button className="primary-button" disabled={uploading}>Lưu giải đấu</button>

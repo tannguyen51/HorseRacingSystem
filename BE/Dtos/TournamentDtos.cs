@@ -9,6 +9,7 @@ public class CreateTournamentRequest
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class UpdateTournamentRequest
@@ -18,6 +19,7 @@ public class UpdateTournamentRequest
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool? IsActive { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class TournamentResponse
@@ -30,6 +32,7 @@ public class TournamentResponse
     public bool IsActive { get; set; }
     public int RoundCount { get; set; }
     public int RaceCount { get; set; }
+    public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
