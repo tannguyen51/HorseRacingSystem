@@ -44,9 +44,10 @@ public class CloudinaryStorageService : ICloudStorageService
         // Fallback: đọc trực tiếp từ environment variable (Railway)
         if (_uploadPreset == null)
         {
-            _uploadPreset = Environment.GetEnvironmentVariable("Cloudinary__UploadPreset");
+            _uploadPreset = Environment.GetEnvironmentVariable("Cloudinary__UploadPreset")?.Trim();
         }
-        _logger.LogInformation("Cloudinary upload mode: {Mode}", _uploadPreset != null ? $"unsigned (preset={_uploadPreset})" : "signed");
+        _logger.LogInformation("Cloudinary upload mode: {Mode} (preset='{Preset}')",
+            _uploadPreset != null ? "unsigned" : "signed", _uploadPreset ?? "N/A");
     }
 
     public async Task<string> UploadAsync(IFormFile file, string folder = "general")
@@ -87,11 +88,19 @@ public class CloudinaryStorageService : ICloudStorageService
 
     private async Task<string> UnsignedUploadAsync(IFormFile file, string folder)
     {
-        await using var stream = file.OpenReadStream();
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        ms.Position = 0;
+
         using var content = new MultipartFormDataContent();
-        content.Add(new StreamContent(stream), "file", file.FileName);
+        var fileContent = new ByteArrayContent(ms.ToArray());
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+        content.Add(fileContent, "file", file.FileName);
         content.Add(new StringContent(_uploadPreset!), "upload_preset");
         content.Add(new StringContent($"racemaster/{folder}"), "folder");
+
+        _logger.LogInformation("Cloudinary unsigned upload: preset='{Preset}', file='{File}', size={Size}",
+            _uploadPreset, file.FileName, ms.Length);
 
         var response = await _http.PostAsync(
             $"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload",
