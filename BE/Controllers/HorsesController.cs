@@ -10,6 +10,7 @@ using HorseRacing.Models;
 using HorseRacing.Services.Interfaces;
 using HorseRacing.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HorseRacing.Controllers;
@@ -21,11 +22,13 @@ public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
     private readonly ICloudStorageService _cloudStorage;
+    private readonly IWebHostEnvironment _environment;
 
-    public HorsesController(IHorseService horseService, ICloudStorageService cloudStorage)
+    public HorsesController(IHorseService horseService, ICloudStorageService cloudStorage, IWebHostEnvironment environment)
     {
         _horseService = horseService;
         _cloudStorage = cloudStorage;
+        _environment = environment;
     }
 
     [HttpGet("my-entries")]
@@ -117,7 +120,28 @@ public class HorsesController : ControllerBase
         try
         {
             var url = await _cloudStorage.UploadAsync(file, "horses");
-            return Ok(new { url });
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                return Ok(new { url });
+            }
+        }
+        catch
+        {
+            // Ignore cloud upload errors and fallback to local storage
+        }
+
+        try
+        {
+            var uploadsFolder = Path.Combine(_environment.WebRootPath ?? "wwwroot", "uploads", "horses");
+            Directory.CreateDirectory(uploadsFolder);
+            var fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(fileStream);
+
+            var relativeUrl = $"/uploads/horses/{Uri.EscapeDataString(fileName)}";
+            return Ok(new { url = relativeUrl });
         }
         catch (Exception ex)
         {
