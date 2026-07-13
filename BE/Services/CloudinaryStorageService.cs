@@ -40,6 +40,12 @@ public class CloudinaryStorageService : ICloudStorageService
         _cloudinary.Api.Secure = true;
         _cloudName = opts.CloudName;
         _uploadPreset = string.IsNullOrWhiteSpace(opts.UploadPreset) ? null : opts.UploadPreset;
+        // Fallback: đọc trực tiếp từ environment variable (Railway)
+        if (_uploadPreset == null)
+        {
+            _uploadPreset = Environment.GetEnvironmentVariable("Cloudinary__UploadPreset");
+        }
+        _logger.LogInformation("Cloudinary upload mode: {Mode}", _uploadPreset != null ? $"unsigned (preset={_uploadPreset})" : "signed");
         _logger = logger;
     }
 
