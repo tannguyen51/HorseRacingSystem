@@ -39,6 +39,7 @@ public class CloudinaryStorageService : ICloudStorageService
         _cloudinary = new Cloudinary(acc);
         _cloudinary.Api.Secure = true;
         _cloudName = opts.CloudName;
+        _logger = logger;
         _uploadPreset = string.IsNullOrWhiteSpace(opts.UploadPreset) ? null : opts.UploadPreset;
         // Fallback: đọc trực tiếp từ environment variable (Railway)
         if (_uploadPreset == null)
@@ -46,7 +47,6 @@ public class CloudinaryStorageService : ICloudStorageService
             _uploadPreset = Environment.GetEnvironmentVariable("Cloudinary__UploadPreset");
         }
         _logger.LogInformation("Cloudinary upload mode: {Mode}", _uploadPreset != null ? $"unsigned (preset={_uploadPreset})" : "signed");
-        _logger = logger;
     }
 
     public async Task<string> UploadAsync(IFormFile file, string folder = "general")
