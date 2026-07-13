@@ -1,12 +1,14 @@
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 namespace HorseRacing.Services;
 
@@ -34,20 +36,18 @@ public class CloudinaryStorageService : ICloudStorageService
 
     public CloudinaryStorageService(IOptions<CloudinaryOptions> options, ILogger<CloudinaryStorageService> logger)
     {
+        _logger = logger;
         var opts = options.Value;
         var acc = new Account(opts.CloudName, opts.ApiKey, opts.ApiSecret);
         _cloudinary = new Cloudinary(acc);
         _cloudinary.Api.Secure = true;
         _cloudName = opts.CloudName;
-        _logger = logger;
+
         _uploadPreset = string.IsNullOrWhiteSpace(opts.UploadPreset) ? null : opts.UploadPreset;
-        // Fallback: đọc trực tiếp từ environment variable (Railway)
         if (_uploadPreset == null)
-        {
             _uploadPreset = Environment.GetEnvironmentVariable("Cloudinary__UploadPreset")?.Trim();
-        }
-        _logger.LogInformation("Cloudinary upload mode: {Mode} (preset='{Preset}')",
-            _uploadPreset != null ? "unsigned" : "signed", _uploadPreset ?? "N/A");
+
+        _logger.LogInformation("Cloudinary upload mode: {Mode}", _uploadPreset != null ? "unsigned" : "signed");
     }
 
     public async Task<string> UploadAsync(IFormFile file, string folder = "general")
@@ -59,13 +59,9 @@ public class CloudinaryStorageService : ICloudStorageService
         if (Array.IndexOf(validTypes, file.ContentType.ToLower()) < 0)
             throw new ArgumentException($"Unsupported file type: {file.ContentType}");
 
-        // Unsigned upload: dùng HTTP POST trực tiếp, bỏ qua API secret hoàn toàn
         if (_uploadPreset != null)
-        {
             return await UnsignedUploadAsync(file, folder);
-        }
 
-        // Signed upload (fallback)
         await using var stream = file.OpenReadStream();
         var uploadParams = new ImageUploadParams
         {
@@ -74,15 +70,12 @@ public class CloudinaryStorageService : ICloudStorageService
             Transformation = new Transformation().Quality("auto").FetchFormat("auto"),
             Overwrite = true,
         };
-
         var result = await _cloudinary.UploadAsync(uploadParams);
-
         if (result.Error != null)
         {
             _logger.LogError("Cloudinary upload failed: {Error}", result.Error.Message);
             throw new Exception($"Upload failed: {result.Error.Message}");
         }
-
         return result.SecureUrl?.AbsoluteUri ?? result.Url?.AbsoluteUri ?? "";
     }
 
@@ -90,22 +83,22 @@ public class CloudinaryStorageService : ICloudStorageService
     {
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
-        ms.Position = 0;
+        var fileBytes = ms.ToArray();
 
         using var content = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(ms.ToArray());
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-        content.Add(fileContent, "file", file.FileName);
-        content.Add(new StringContent(_uploadPreset!), "upload_preset");
-        content.Add(new StringContent($"racemaster/{folder}"), "folder");
+
+        var filePart = new ByteArrayContent(fileBytes);
+        filePart.Headers.TryAddWithoutValidation("Content-Type", file.ContentType);
+        content.Add(filePart, "file", file.FileName);
+
+        var presetPart = new StringContent(_uploadPreset!, Encoding.UTF8, "text/plain");
+        content.Add(presetPart, "upload_preset");
 
         _logger.LogInformation("Cloudinary unsigned upload: preset='{Preset}', file='{File}', size={Size}",
-            _uploadPreset, file.FileName, ms.Length);
+            _uploadPreset, file.FileName, fileBytes.Length);
 
         var response = await _http.PostAsync(
-            $"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload",
-            content);
-
+            $"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload", content);
         var body = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
