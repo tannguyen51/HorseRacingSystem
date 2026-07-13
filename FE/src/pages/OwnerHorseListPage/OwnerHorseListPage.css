@@ -166,6 +166,14 @@
   overflow: hidden;
 }
 
+.oh-card-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.14));
+  pointer-events: none;
+}
+
 .oh-card-img::before {
   content: "";
   position: absolute;
