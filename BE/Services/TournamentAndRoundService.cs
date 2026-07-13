@@ -31,6 +31,7 @@ public class TournamentService : ITournamentService
                 Description = request.Description,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
+                ImageUrl = request.ImageUrl,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -48,6 +49,7 @@ public class TournamentService : ITournamentService
                 IsActive = tournament.IsActive,
                 RoundCount = 0,
                 RaceCount = 0,
+                ImageUrl = tournament.ImageUrl,
                 CreatedAt = tournament.CreatedAt
             }));
         }
@@ -125,6 +127,8 @@ public class TournamentService : ITournamentService
                 tournament.EndDate = request.EndDate.Value;
             if (request.IsActive.HasValue)
                 tournament.IsActive = request.IsActive.Value;
+            if (request.ImageUrl != null)
+                tournament.ImageUrl = request.ImageUrl;
 
             await _tournamentRepo.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
@@ -163,6 +167,7 @@ public class TournamentService : ITournamentService
             IsActive = tournament.IsActive,
             RoundCount = tournament.Rounds?.Count ?? 0,
             RaceCount = tournament.Races?.Count ?? 0,
+            ImageUrl = tournament.ImageUrl,
             CreatedAt = tournament.CreatedAt,
             UpdatedAt = tournament.UpdatedAt
         };

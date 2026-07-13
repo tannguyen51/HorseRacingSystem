@@ -242,7 +242,14 @@ function SpectatorTournamentListPage() {
               const meta = STATUS_META[t.status] || STATUS_META.upcoming;
               return (
                 <article key={t.id} className="stl-card">
-                  <div className="stl-card__banner">
+                  <div
+                    className="stl-card__banner"
+                    style={
+                      (t.imageUrl ?? t.ImageUrl)
+                        ? { backgroundImage: `url(${t.imageUrl ?? t.ImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                        : {}
+                    }
+                  >
                     <span className={`stl-badge ${meta.className}`}>
                       {meta.label}
                     </span>

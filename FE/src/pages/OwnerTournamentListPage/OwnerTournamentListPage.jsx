@@ -123,7 +123,14 @@ function OwnerTournamentListPage() {
             <div className="otl-grid">
               {filteredTournaments.map((t) => (
                 <article key={t.id} className="otl-card">
-                  <div className="otl-card__banner">
+                  <div
+                    className="otl-card__banner"
+                    style={
+                      (t.imageUrl ?? t.ImageUrl)
+                        ? { backgroundImage: `url(${t.imageUrl ?? t.ImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                        : {}
+                    }
+                  >
                     <div className="otl-card__banner-top">
                       <span className={`otl-badge otl-badge--${statusClass(t.status)}`}>{t.status}</span>
                       <div className="otl-card__banner-right">

@@ -54,7 +54,15 @@ function TournamentListPage() {
             <div className="tournament-list">
               {items.map((t) => (
                 <article key={t.id ?? t.Id} className="tournament-card">
-                  <div className="tournament-banner">
+                  <div
+                    className="tournament-banner"
+                    style={{
+                      position: "relative",
+                      ...(t.imageUrl ?? t.ImageUrl
+                        ? { backgroundImage: `url(${t.imageUrl ?? t.ImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                        : {}),
+                    }}
+                  >
                     <span
                       className={
                         (t.isActive ?? t.IsActive)
@@ -64,6 +72,14 @@ function TournamentListPage() {
                     >
                       {(t.isActive ?? t.IsActive) ? "Đang hoạt động" : "Không hoạt động"}
                     </span>
+                    {(t.imageUrl ?? t.ImageUrl) && (
+                      <span title="Có ảnh bìa" style={{
+                        position: "absolute", left: 12, top: 12,
+                        background: "rgba(0,0,0,0.5)", color: "#fff",
+                        borderRadius: 6, padding: "2px 8px", fontSize: 11,
+                        display: "inline-flex", alignItems: "center", gap: 4
+                      }}>🖼</span>
+                    )}
                   </div>
                   <div className="tournament-body">
                     <div>

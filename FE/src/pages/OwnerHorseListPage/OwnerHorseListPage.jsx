@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteHorse, getMyHorses, inviteJockeyToHorse } from "../../services/ownerHorseApi";
 import { getAvailableJockeys } from "../../services/jockeyApi";
+import { resolveApiUrl } from "../../services/apiClient";
 import "./OwnerHorseListPage.css";
 
 const approvalStatusMap = { 1: "Chờ duyệt", 2: "Đã duyệt", 3: "Từ chối" };
@@ -126,9 +127,10 @@ function OwnerHorseListPage() {
             const horseWinRate = totalRaces > 0 ? Math.round((totalWins / totalRaces) * 100) : 0;
             const speed = Math.min(95, 45 + totalWins * 8);
             const stamina = Math.min(95, 35 + (totalRaces - totalWins) * 4);
+            const imageUrl = resolveApiUrl(h.imageUrl ?? h.ImageUrl ?? "");
             return (
               <div key={id} className="oh-card">
-                <div className="oh-card-img">
+                <div className="oh-card-img" style={{ backgroundImage: imageUrl ? `url(${imageUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                   <div className={"oh-card-status" + (statusClass[approvalStatus] ? " oh-card-status--" + statusClass[approvalStatus] : "")}>{statusLabel}</div>
                 </div>
                 <div className="oh-card-body">
