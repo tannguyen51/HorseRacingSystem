@@ -113,3 +113,16 @@ export const publishRaceResult = (raceId, payload) =>
     method: "POST",
     body: JSON.stringify(payload || {}),
   });
+
+// Referee management
+export const getActiveReferees = async () =>
+  unwrap(await request("/api/referees/active"));
+
+export const getRaceRefereeAssignments = async (raceId) =>
+  unwrap(await request(`/api/referees/race/${raceId}/assignments`));
+
+export const assignRefereeToRace = (payload) =>
+  request("/api/referees/assign", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
