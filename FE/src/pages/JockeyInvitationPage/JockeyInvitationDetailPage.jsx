@@ -65,7 +65,10 @@ function JockeyInvitationDetailPage() {
     try {
       await respondJockeyInvitation(id, accept);
       navigate("/jockey/invitations", {
-        state: { message: accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời." },
+        state: {
+          message: accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời.",
+          focusTab: accept ? "accepted" : "declined",
+        },
       });
     } catch (error) {
       setMessage(error.message || "Không thể xử lý lời mời.");
