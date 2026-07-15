@@ -61,14 +61,14 @@ export const normalizeInvitationStatus = (rawStatus) => {
   }
 
   if (typeof rawStatus === "number") {
-    return ["Pending", "Accepted", "Declined"][rawStatus] ?? "Pending";
+    return ["Pending", "Accepted", "Declined"][rawStatus - 1] ?? "Pending";
   }
 
   if (typeof rawStatus === "string") {
     const normalized = rawStatus.trim().toLowerCase();
-    if (["pending", "1"].includes(normalized)) return "Pending";
-    if (["accepted", "accept", "2"].includes(normalized)) return "Accepted";
-    if (["declined", "decline", "reject", "rejected", "3"].includes(normalized)) return "Declined";
+    if (["pending", "1", "wait", "waiting", "chờ", "chờ duyệt", "chờ xác nhận"].includes(normalized)) return "Pending";
+    if (["accepted", "accept", "2", "đã chấp nhận", "da chap nhan", "confirmed", "confirm"].includes(normalized)) return "Accepted";
+    if (["declined", "decline", "reject", "rejected", "3", "đã từ chối", "da tu choi"].includes(normalized)) return "Declined";
   }
 
   return String(rawStatus);

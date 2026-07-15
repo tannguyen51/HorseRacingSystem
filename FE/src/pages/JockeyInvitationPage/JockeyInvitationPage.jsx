@@ -34,7 +34,7 @@ function JockeyInvitationPage() {
   const getBucket = (value) => {
     const normalized = normalizeInvitationStatus(value).toLowerCase();
     if (normalized.includes("pending") || normalized === "1") return "pending";
-    if (normalized.includes("accept") || normalized === "2") return "accepted";
+    if (normalized.includes("accept") || normalized.includes("confirm") || normalized === "2") return "accepted";
     if (normalized.includes("decline") || normalized.includes("reject") || normalized === "3") return "declined";
     return "unknown";
   };
@@ -58,7 +58,7 @@ function JockeyInvitationPage() {
       await respondJockeyInvitation(id, accept);
       setInvitations((current) =>
         current.map((item) =>
-          item.id === id ? { ...item, status: accept ? "Accepted" : "Declined" } : item,
+          item.id === id ? { ...item, status: accept ? "Accepted" : "Declined", normalizedStatus: accept ? "Accepted" : "Declined" } : item,
         ),
       );
       setActiveTab(accept ? "accepted" : "declined");
