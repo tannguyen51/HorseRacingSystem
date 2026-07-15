@@ -17,6 +17,7 @@ public class LiveResultService : ILiveResultService
     private readonly IJockeyRepository _jockeyRepo;
     private readonly IRaceManagementRepository _raceManagementRepo;
     private readonly IRaceResultRepository _raceResultRepo;
+    private readonly IPredictionService _predictionService;
     private readonly IUnitOfWork _unitOfWork;
 
     public LiveResultService(
@@ -26,6 +27,7 @@ public class LiveResultService : ILiveResultService
         IJockeyRepository jockeyRepo,
         IRaceManagementRepository raceManagementRepo,
         IRaceResultRepository raceResultRepo,
+        IPredictionService predictionService,
         IUnitOfWork unitOfWork)
     {
         _raceRepo = raceRepo;
@@ -34,6 +36,7 @@ public class LiveResultService : ILiveResultService
         _jockeyRepo = jockeyRepo;
         _raceManagementRepo = raceManagementRepo;
         _raceResultRepo = raceResultRepo;
+        _predictionService = predictionService;
         _unitOfWork = unitOfWork;
     }
 
@@ -177,6 +180,7 @@ public class LiveResultService : ILiveResultService
                 existingResult.RecordedAt = DateTime.UtcNow;
                 await _raceResultRepo.UpdateAsync(existingResult);
                 await _unitOfWork.SaveChangesAsync();
+                await _predictionService.SettlePredictionAsync(raceId, request.WinningHorseId);
                 return ServiceResult<bool>.Success(true);
             }
 
@@ -192,6 +196,9 @@ public class LiveResultService : ILiveResultService
 
             await _raceResultRepo.AddAsync(result);
             await _unitOfWork.SaveChangesAsync();
+
+            // Settle predictions — pay winners and mark losers
+            await _predictionService.SettlePredictionAsync(raceId, request.WinningHorseId);
 
             return ServiceResult<bool>.Success(true);
         }

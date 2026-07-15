@@ -72,6 +72,8 @@ public class PredictionRepository : IPredictionRepository
     public Task<List<Prediction>> GetWinnersByRaceAsync(Guid raceId)
     {
         return _db.Predictions
+            .AsNoTracking()
+            .Include(p => p.PredictedHorse)
             .Where(p => p.RaceId == raceId && p.Status == PredictionStatus.Won)
             .ToListAsync();
     }

@@ -210,6 +210,12 @@ function SpectatorPredictionFormPage() {
         predictedHorseId: selectedHorseId,
         betAmount: bet,
       });
+      // Refresh wallet balance after bet
+      try {
+        const bal = await getBalance();
+        const b = bal?.data ?? bal;
+        setWalletBalance(b?.balance ?? b?.Balance ?? 0);
+      } catch { /* ignore */ }
       setShowConfirmation(false);
       setBetAmount("");
       setSelectedHorseId(null);
