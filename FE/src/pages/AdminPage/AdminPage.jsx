@@ -27,7 +27,6 @@ import {
   getPendingRaceEntries,
   approveRaceEntry,
   rejectRaceEntry,
-  settlePredictions,
   rejectJockey,
   rejectRegistration,
   setUserActive,
@@ -849,8 +848,8 @@ function TournamentManagement() {
       {showForm && <form className="admin-form" onSubmit={submit}>
         <input placeholder="Tên giải đấu" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        <input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-        <input type="datetime-local" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+        <input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} min={inputDate(0)} />
+        <input type="datetime-local" required value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} min={inputDate(0)} />
         <label style={{ fontSize: 13, color: "#657086" }}>Ảnh bìa giải đấu (tỉ lệ 3:1, đề xuất 1200×400px):
           <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} style={{ display: "block", marginTop: 4 }} />
           {uploading ? <span style={{ color: "#8f6420", fontSize: 12 }}>Đang tải ảnh...</span> : null}
@@ -884,6 +883,17 @@ function ScheduleManagement({ type }) {
   const [raceEntries, setRaceEntries] = useState([]);
   const [raceReferees, setRaceReferees] = useState([]);
   const [raceViolations, setRaceViolations] = useState([]);
+  const [assignedHorseIds, setAssignedHorseIds] = useState(new Set());
+
+  useEffect(() => {
+    if (!assignment.raceId) { setAssignedHorseIds(new Set()); return; }
+    request(`/api/referees/race/${assignment.raceId}/entries`)
+      .then(d => {
+        const entries = Array.isArray(d) ? d : d?.data ?? [];
+        setAssignedHorseIds(new Set(entries.map(e => e.horseId ?? e.HorseId)));
+      })
+      .catch(() => setAssignedHorseIds(new Set()));
+  }, [assignment.raceId]);
 
   const VIOLATION_LABELS = { 1: "Hành vi nguy hiểm", 2: "Xuất phát sai", 3: "Can thiệp", 4: "Phúc lợi động vật", 5: "Vi phạm thiết bị", 6: "Khác" };
 
@@ -1043,16 +1053,6 @@ function ScheduleManagement({ type }) {
     } catch (err) { setMessage(err.message); }
   };
 
-  const handleSettle = async (raceId) => {
-    if (!window.confirm("Nhập ID ngựa thắng để thanh toán cược:")) return;
-    const horseId = window.prompt("ID ngựa thắng (GUID):");
-    if (!horseId) return;
-    try {
-      await settlePredictions(raceId, horseId);
-      setMessage("Đã thanh toán cược thành công!");
-    } catch (err) { setMessage(err.message); }
-  };
-
   const title = type === "round" ? "Quản lý vòng đấu" : "Quản lý cuộc đua & lên lịch";
   return (
     <>
@@ -1063,10 +1063,10 @@ function ScheduleManagement({ type }) {
         <input placeholder={`Tên ${type === "round" ? "vòng đấu" : "cuộc đua"}`} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         {type === "round" ? <>
           <input type="number" min="1" value={form.roundNumber} onChange={(e) => setForm({ ...form, roundNumber: Number(e.target.value) })} />
-          <input type="datetime-local" value={form.scheduledStartDate} onChange={(e) => setForm({ ...form, scheduledStartDate: e.target.value })} />
-          <input type="datetime-local" value={form.scheduledEndDate} onChange={(e) => setForm({ ...form, scheduledEndDate: e.target.value })} />
+          <input type="datetime-local" value={form.scheduledStartDate} onChange={(e) => setForm({ ...form, scheduledStartDate: e.target.value })} min={inputDate(0)} />
+          <input type="datetime-local" value={form.scheduledEndDate} onChange={(e) => setForm({ ...form, scheduledEndDate: e.target.value })} min={inputDate(0)} />
         </> : <>
-          <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
+          <input type="datetime-local" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} min={inputDate(0)} />
           <input placeholder="Địa điểm" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <input type="number" min="1" placeholder="Số người tham gia tối đa" value={form.maxParticipants} onChange={(e) => setForm({ ...form, maxParticipants: e.target.value })} />
           <input type="number" min="100" placeholder="Khoảng cách (m)" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
@@ -1089,11 +1089,16 @@ function ScheduleManagement({ type }) {
         <select className="admin-select" required value={assignment.horseId} onChange={(e) => selectHorse(e.target.value)}>
           <option value="">Chọn ngựa đã được phê duyệt</option>
           {visibleHorses.map((horse) => {
+            const horseId = horse.id ?? horse.Id;
+            const isAssigned = assignedHorseIds.has(horseId);
             const jockeyName =
               horse.assignedJockeyName ?? horse.AssignedJockeyName;
             const assignmentStatus =
               horse.jockeyAssignmentStatus ?? horse.JockeyAssignmentStatus;
-            return <option key={horse.id ?? horse.Id} value={horse.id ?? horse.Id}>{horse.name ?? horse.Name} · {jockeyName ? `${jockeyName} (${assignmentStatus || "Đã phân công"})` : "Không có kỵ sĩ"}</option>;
+            return <option key={horseId} value={horseId} disabled={isAssigned} style={{color: isAssigned ? "#94a3b8" : "inherit"}}>
+              {horse.name ?? horse.Name} · {jockeyName ? `${jockeyName} (${assignmentStatus || "Đã phân công"})` : "Không có kỵ sĩ"}
+              {isAssigned ? " [Đã thêm]" : ""}
+            </option>;
           })}
         </select>
         <select className="admin-select" value={assignment.jockeyId} onChange={(e) => selectJockey(e.target.value)} disabled={Boolean(selectedHorseJockeyId)}>
@@ -1179,14 +1184,9 @@ function ScheduleManagement({ type }) {
                 </button>
               )}
               {itemStatus === "finished" && (
-                <>
-                  <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
-                    Công bố KQ
-                  </button>
-                  <button style={{background:"rgba(79,70,229,0.1)",color:"#4f46e5"}} onClick={() => handleSettle(itemId)}>
-                    Thanh toán
-                  </button>
-                </>
+                <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
+                  Công bố KQ
+                </button>
               )}
               {itemStatus !== "finished" && itemStatus !== "cancelled" && (
                 <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
