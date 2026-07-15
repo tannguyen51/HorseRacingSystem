@@ -92,6 +92,9 @@ public enum NotificationCategory
     ViolationRecord = 8,
     HealthCheckResult = 9,
     SystemAlert = 10,
+    TournamentCreated = 12,
+    BetWon = 13,
+    DepositSuccess = 14,
     Other = 11
 }
 

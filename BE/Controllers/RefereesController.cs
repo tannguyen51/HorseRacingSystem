@@ -146,6 +146,14 @@ public class RefereesController : ControllerBase
     public async Task<ActionResult> GetRaceEntries(Guid raceId)
     {
         var entries = await _entryRepo.GetByRaceAsync(raceId);
+
+        // Auto-recalculate if all odds are at default (1.0)
+        if (entries.Count > 1 && entries.All(e => e.Odds == 1.0m))
+        {
+            OddsCalculator.Recalculate(entries);
+            await _entryRepo.UpdateRangeAsync(entries);
+        }
+
         return Ok(entries.Select(e => new
         {
             EntryId = e.Id,

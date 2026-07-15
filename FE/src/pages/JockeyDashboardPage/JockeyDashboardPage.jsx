@@ -12,7 +12,7 @@ function JockeyDashboardPage() {
   const [races, setRaces] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {

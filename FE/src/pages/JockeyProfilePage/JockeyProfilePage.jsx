@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { updateProfile, changePassword, getProfile } from "../../services/authApi";
 import { getContracts, signContractJockey, getProtests, createProtest } from "../../services/managementApi";
-import { ProfileLayout, Field, Detail, StatusBadge, msgBox, grid2, btnPrimary, btnSecondary } from "../ProfileCommon";
+import { ProfileLayout, Field, Detail, msgBox, grid2, btnPrimary, btnSecondary } from "../ProfileCommon";
 import "../ProfilePages.css";
 
 const JOCKEY_TABS = [

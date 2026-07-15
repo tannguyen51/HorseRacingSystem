@@ -80,7 +80,6 @@ function RequireAuth({ roles }) {
 function AppLayout() {
   const location = useLocation();
   const authUser = getStoredAuthUser();
-  const hasAuthToken = Boolean(localStorage.getItem("authToken"));
 
   const isAdmin = location.pathname.startsWith("/admin");
 
@@ -182,6 +181,7 @@ function AppLayout() {
               <Route path="/admin/audit" element={<AdminPage />} />
               <Route path="/admin/notifications" element={<AdminPage />} />
               <Route path="/admin/withdrawals" element={<AdminPage />} />
+              <Route path="/admin/referee-assign" element={<AdminPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

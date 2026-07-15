@@ -28,3 +28,6 @@ export const createPrediction = (payload) =>
     body: JSON.stringify(payload),
   });
 export const getMyPredictions = () => request("/api/predictions/mine");
+
+export const getRaceEntries = async (raceId) =>
+  unwrap(await request(`/api/referees/race/${raceId}/entries`));
