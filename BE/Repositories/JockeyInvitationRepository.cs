@@ -50,6 +50,16 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
             .FirstOrDefaultAsync();
     }
 
+    public Task<JockeyInvitation?> GetByHorseAndJockeyAsync(Guid horseId, Guid jockeyId)
+    {
+        return _db.JockeyInvitations
+            .Include(i => i.Jockey)
+                .ThenInclude(j => j!.User)
+            .Where(i => i.HorseId == horseId && i.JockeyId == jockeyId)
+            .OrderByDescending(i => i.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
     public Task AddAsync(JockeyInvitation invitation)
     {
         _db.JockeyInvitations.Add(invitation);

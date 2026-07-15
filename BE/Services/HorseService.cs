@@ -1,10 +1,13 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using HorseRacing.Data;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace HorseRacing.Services;
 
@@ -17,6 +20,7 @@ public class HorseService : IHorseService
     private readonly IRaceEntryRepository _raceEntries;
     private readonly IJockeyInvitationRepository _invitations;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ApplicationDbContext _db;
 
     public HorseService(
         IHorseRepository horses,
@@ -25,7 +29,8 @@ public class HorseService : IHorseService
         IRaceRepository races,
         IRaceEntryRepository raceEntries,
         IJockeyInvitationRepository invitations,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ApplicationDbContext db)
     {
         _horses = horses;
         _owners = owners;
@@ -34,6 +39,7 @@ public class HorseService : IHorseService
         _raceEntries = raceEntries;
         _invitations = invitations;
         _unitOfWork = unitOfWork;
+        _db = db;
     }
 
     public async Task<ServiceResult<object>> GetMyHorsesAsync(Guid userId)
@@ -153,6 +159,7 @@ public class HorseService : IHorseService
             return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
         }
 
+        await RemoveHorseRelatedDataAsync(horse);
         await _horses.RemoveAsync(horse);
         await _unitOfWork.SaveChangesAsync();
 
@@ -173,14 +180,21 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
         }
 
-        var activeInvitation = await _invitations.GetActiveByHorseAsync(horseId);
-        if (activeInvitation != null)
+        var existingInvitation = await _invitations.GetByHorseAndJockeyAsync(horseId, request.JockeyId);
+        if (existingInvitation != null)
         {
-            var jockeyName = activeInvitation.Jockey?.User?.FullName ?? "another jockey";
-            var status = activeInvitation.Status.ToString().ToLowerInvariant();
-            return ServiceResult<object>.Fail(
-                StatusCodes.Status409Conflict,
-                $"This horse already has a {status} jockey assignment with {jockeyName}.");
+            if (existingInvitation.Status == JockeyInvitationStatus.Declined)
+            {
+                _db.JockeyInvitations.Remove(existingInvitation);
+            }
+            else
+            {
+                var jockeyName = existingInvitation.Jockey?.User?.FullName ?? "another jockey";
+                var status = existingInvitation.Status.ToString().ToLowerInvariant();
+                return ServiceResult<object>.Fail(
+                    StatusCodes.Status409Conflict,
+                    $"This horse already has a {status} jockey assignment with {jockeyName}.");
+            }
         }
 
         var jockeyExists = await _jockeys.ExistsAsync(request.JockeyId);
@@ -272,6 +286,57 @@ public class HorseService : IHorseService
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult<object>.Ok(entry);
+    }
+
+    private async Task RemoveHorseRelatedDataAsync(Horse horse)
+    {
+        var invitations = await _db.JockeyInvitations.Where(i => i.HorseId == horse.Id).ToListAsync();
+        if (invitations.Count > 0)
+        {
+            _db.JockeyInvitations.RemoveRange(invitations);
+        }
+
+        var raceEntries = await _db.RaceEntries.Where(e => e.HorseId == horse.Id).ToListAsync();
+        if (raceEntries.Count > 0)
+        {
+            _db.RaceEntries.RemoveRange(raceEntries);
+        }
+
+        var predictions = await _db.Predictions.Where(p => p.PredictedHorseId == horse.Id).ToListAsync();
+        if (predictions.Count > 0)
+        {
+            _db.Predictions.RemoveRange(predictions);
+        }
+
+        var healthChecks = await _db.HorseHealthChecks.Where(h => h.HorseId == horse.Id).ToListAsync();
+        if (healthChecks.Count > 0)
+        {
+            _db.HorseHealthChecks.RemoveRange(healthChecks);
+        }
+
+        var injuryRecords = await _db.InjuryRecords.Where(i => i.HorseId == horse.Id).ToListAsync();
+        if (injuryRecords.Count > 0)
+        {
+            _db.InjuryRecords.RemoveRange(injuryRecords);
+        }
+
+        var contracts = await _db.Contracts.Where(c => c.HorseId == horse.Id).ToListAsync();
+        if (contracts.Count > 0)
+        {
+            _db.Contracts.RemoveRange(contracts);
+        }
+
+        var horseTransfers = await _db.HorseTransfers.Where(t => t.HorseId == horse.Id).ToListAsync();
+        if (horseTransfers.Count > 0)
+        {
+            _db.HorseTransfers.RemoveRange(horseTransfers);
+        }
+
+        var raceResults = await _db.RaceResults.Where(r => r.WinningHorseId == horse.Id).ToListAsync();
+        if (raceResults.Count > 0)
+        {
+            _db.RaceResults.RemoveRange(raceResults);
+        }
     }
 
     private Task<Owner?> GetOwnerProfileAsync(Guid userId) => _owners.GetByUserIdAsync(userId);
