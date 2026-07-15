@@ -78,7 +78,7 @@ public interface IRefereeHtmlCheckService
 public interface IViolationRecordService
 {
     // Violation Records
-    Task<ServiceResult<ViolationResponse>> RecordViolationAsync(CreateViolationRequest request);
+    Task<ServiceResult<ViolationResponse>> RecordViolationAsync(CreateViolationRequest request, Guid refereeUserId);
     Task<ServiceResult<ViolationResponse>> GetViolationAsync(Guid id);
     Task<ServiceResult<IEnumerable<ViolationResponse>>> GetRaceViolationsAsync(Guid raceId);
     Task<ServiceResult<IEnumerable<ViolationResponse>>> GetHorseViolationsAsync(Guid horseId);

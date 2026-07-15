@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
 using HorseRacing.Services;
@@ -18,7 +19,12 @@ public class ViolationsController : ControllerBase
     [HttpPost("violations")]
     [Authorize(Roles = "Referee")]
     public async Task<ActionResult> Record([FromBody] CreateViolationRequest r)
-        => OkR(await _service.RecordViolationAsync(r));
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(uid, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+        return OkR(await _service.RecordViolationAsync(r, userId));
+    }
 
     [HttpGet("violations/{id:guid}")]
     [Authorize(Roles = "Referee,Admin")]

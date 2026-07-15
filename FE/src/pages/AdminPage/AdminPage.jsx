@@ -878,6 +878,20 @@ function ScheduleManagement({ type }) {
   const [publishRaceId, setPublishRaceId] = useState(null);
   const [publishWinnerId, setPublishWinnerId] = useState("");
   const [publishLoading, setPublishLoading] = useState(false);
+  const [publishEntries, setPublishEntries] = useState([]);
+  const [expandedRaceId, setExpandedRaceId] = useState(null);
+  const [raceEntries, setRaceEntries] = useState([]);
+  const [raceReferees, setRaceReferees] = useState([]);
+  const [raceViolations, setRaceViolations] = useState([]);
+
+  const VIOLATION_LABELS = { 1: "Hành vi nguy hiểm", 2: "Xuất phát sai", 3: "Can thiệp", 4: "Phúc lợi động vật", 5: "Vi phạm thiết bị", 6: "Khác" };
+
+  useEffect(() => {
+    if (!publishRaceId) return;
+    request(`/api/referees/race/${publishRaceId}/entries`)
+      .then(d => { const arr = Array.isArray(d) ? d : d?.data ?? []; setPublishEntries(arr); })
+      .catch(() => setPublishEntries([]));
+  }, [publishRaceId]);
   const [form, setForm] = useState(type === "round"
     ? { name: "", roundNumber: 1, scheduledStartDate: inputDate(7), scheduledEndDate: inputDate(8), description: "" }
     : { name: "", roundId: "", scheduledAt: inputDate(7), location: "", description: "", maxParticipants: 12, distance: 2000, imageUrl: "" });
@@ -1093,8 +1107,11 @@ function ScheduleManagement({ type }) {
         <div className="modal-overlay" onClick={() => setPublishRaceId(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{background:"rgba(255,255,255,0.96)",borderRadius:18,padding:24,maxWidth:420,width:"100%",boxShadow:"0 30px 60px rgba(0,0,0,0.12)"}}>
             <h3 style={{margin:"0 0 12px",fontSize:17,fontWeight:700,color:"#1a1d23"}}>Công bố kết quả</h3>
-            <p style={{fontSize:13,color:"#64748b",margin:"0 0 16px"}}>Nhập ID ngựa chiến thắng để công bố kết quả cuộc đua.</p>
-            <input className="admin-select" placeholder="Winning Horse ID (GUID)" value={publishWinnerId} onChange={(e) => setPublishWinnerId(e.target.value)} style={{width:"100%",boxSizing:"border-box",marginBottom:12}} />
+            <p style={{fontSize:13,color:"#64748b",margin:"0 0 16px"}}>Chọn ngựa chiến thắng để công bố kết quả cuộc đua.</p>
+            <select className="admin-select" value={publishWinnerId} onChange={(e) => setPublishWinnerId(e.target.value)} style={{width:"100%",boxSizing:"border-box",marginBottom:12,padding:"10px 14px",borderRadius:10,border:"1px solid rgba(143,100,32,0.2)"}}>
+              <option value="">-- Chọn ngựa thắng --</option>
+              {publishEntries.map(e => <option key={e.horseId ?? e.HorseId} value={e.horseId ?? e.HorseId}>{e.horseName ?? e.HorseName} (odds: {e.odds ?? e.Odds}x)</option>)}
+            </select>
             <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
               <button className="ghost-button" onClick={() => setPublishRaceId(null)}>Huỷ</button>
               <button className="primary-button" disabled={!publishWinnerId || publishLoading} onClick={async () => {
@@ -1117,7 +1134,23 @@ function ScheduleManagement({ type }) {
       <section className="admin-card-grid">{items.map((item) => {
         const itemId = item.id ?? item.Id;
         const itemStatus = (item.status ?? item.Status ?? "").toLowerCase();
-        return <article key={itemId} className="admin-simple-card">
+        return <article key={itemId} className="admin-simple-card" style={{cursor:"pointer"}} onClick={async () => {
+          if (type !== "race") return;
+          if (expandedRaceId === itemId) { setExpandedRaceId(null); return; }
+          setExpandedRaceId(itemId);
+          try {
+            const [entriesRes, refsRes, violRes] = await Promise.all([
+              request(`/api/referees/race/${itemId}/entries`),
+              request(`/api/referees/race/${itemId}/assignments`),
+              request(`/api/referees/race/${itemId}/violations`),
+            ]);
+            setRaceEntries(Array.isArray(entriesRes) ? entriesRes : entriesRes?.data ?? []);
+            const refs = Array.isArray(refsRes) ? refsRes : refsRes?.data ?? [];
+            setRaceReferees(Array.isArray(refs) ? refs : []);
+            const viols = Array.isArray(violRes) ? violRes : violRes?.data ?? [];
+            setRaceViolations(Array.isArray(viols) ? viols : []);
+          } catch { setRaceEntries([]); setRaceReferees([]); setRaceViolations([]); }
+        }}>
           <span className="badge">{item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
           <h3>{item.name ?? item.Name}</h3>
           <p>{formatDate(item.scheduledAt ?? item.ScheduledAt ?? item.scheduledStartDate ?? item.ScheduledStartDate)}</p>
@@ -1143,6 +1176,57 @@ function ScheduleManagement({ type }) {
                 <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
                   Hủy
                 </button>
+              )}
+            </div>
+          )}
+          {type === "race" && expandedRaceId === itemId && (
+            <div style={{marginTop:12,padding:12,borderTop:"1px solid rgba(143,100,32,0.1)"}} onClick={e => e.stopPropagation()}>
+              <h4 style={{fontSize:14,margin:"0 0 8px",color:"#172033"}}>Ngựa tham gia</h4>
+              {raceEntries.length === 0 ? (
+                <p style={{color:"#657086",fontSize:13}}>Chưa có ngựa nào được phân công.</p>
+              ) : (
+                <table style={{width:"100%",fontSize:13,borderCollapse:"collapse"}}>
+                  <thead><tr>
+                    <th style={th}>Ngựa</th><th style={th}>Kỵ sĩ</th><th style={th}>Tỉ lệ cược</th>
+                  </tr></thead>
+                  <tbody>{raceEntries.map(e => (
+                    <tr key={e.entryId ?? e.EntryId}>
+                      <td style={td}>{e.horseName ?? e.HorseName}</td>
+                      <td style={td}>{e.jockeyName ?? e.JockeyName ?? "Chưa có"}</td>
+                      <td style={td}>{(e.odds ?? e.Odds ?? 1).toFixed(2)}x</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              )}
+              {raceReferees.length > 0 && (
+                <div style={{marginTop:12}}>
+                  <h4 style={{fontSize:14,margin:"0 0 8px",color:"#172033"}}>Trọng tài</h4>
+                  {raceReferees.map(r => {
+                    const st = r.status ?? r.Status;
+                    return (
+                      <span key={r.id ?? r.Id} style={{
+                        display:"inline-block",margin:"0 8px 4px 0",padding:"4px 12px",
+                        borderRadius:8,fontSize:12,fontWeight:600,
+                        background:st==="Confirmed"?"rgba(22,101,52,.1)":st==="Assigned"?"rgba(245,158,11,.1)":"rgba(100,116,139,.1)",
+                        color:st==="Confirmed"?"#166534":st==="Assigned"?"#92400e":"#64748b"
+                      }}>
+                        {r.refereeName ?? r.RefereeName} — {r.role==="Chief Referee"?"Trọng tài trưởng":"Trợ lý"}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {raceViolations.length > 0 && (
+                <div style={{marginTop:12}}>
+                  <h4 style={{fontSize:14,margin:"0 0 8px",color:"#c41e1e"}}>Vi phạm ({raceViolations.length})</h4>
+                  {raceViolations.map(v => (
+                    <div key={v.id ?? v.Id} style={{padding:"8px 12px",marginBottom:6,borderRadius:8,background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.12)",fontSize:12}}>
+                      <strong style={{color:"#c41e1e"}}>{VIOLATION_LABELS[v.violationType ?? v.ViolationType] ?? "Vi phạm"}</strong>
+                      <span style={{color:"#657086",marginLeft:8}}>— {v.horseName ?? v.HorseName} — {v.refereeName ?? v.RefereeName}</span>
+                      <p style={{margin:"4px 0 0",color:"#34415b"}}>{v.description ?? v.Description}</p>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

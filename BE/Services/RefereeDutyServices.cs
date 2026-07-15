@@ -239,6 +239,8 @@ public class ViolationRecordService : IViolationRecordService
     private readonly IRaceRepository _raceRepo;
     private readonly IRaceEntryRepository _entryRepo;
     private readonly IRefereeRepository _refereeRepo;
+    private readonly INotificationService _notificationService;
+    private readonly IUserRepository _userRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public ViolationRecordService(
@@ -246,26 +248,44 @@ public class ViolationRecordService : IViolationRecordService
         IRaceRepository raceRepo,
         IRaceEntryRepository entryRepo,
         IRefereeRepository refereeRepo,
+        INotificationService notificationService,
+        IUserRepository userRepo,
         IUnitOfWork unitOfWork)
     {
         _violationRepo = violationRepo;
         _raceRepo = raceRepo;
         _entryRepo = entryRepo;
         _refereeRepo = refereeRepo;
+        _notificationService = notificationService;
+        _userRepo = userRepo;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult<ViolationResponse>> RecordViolationAsync(CreateViolationRequest request)
+    public async Task<ServiceResult<ViolationResponse>> RecordViolationAsync(CreateViolationRequest request, Guid refereeUserId)
     {
         try
         {
+            // Resolve RaceEntryId from HorseId + RaceId
+            var entry = await _entryRepo.GetByRaceAndHorseAsync(request.RaceId, request.HorseId);
+            if (entry == null)
+            {
+                return ServiceResult<ViolationResponse>.Error("Horse not found in this race.", 404);
+            }
+
+            // Resolve RefereeId from the authenticated user
+            var referee = await _refereeRepo.GetByUserIdAsync(refereeUserId);
+            if (referee == null)
+            {
+                return ServiceResult<ViolationResponse>.Error("Referee profile not found.", 404);
+            }
+
             var violation = new ViolationRecord
             {
                 Id = Guid.NewGuid(),
                 RaceId = request.RaceId,
-                RaceEntryId = request.RaceEntryId,
-                RefereeId = request.RefereeId,
-                ViolationType = Enum.Parse<ViolationType>(request.ViolationType),
+                RaceEntryId = entry.Id,
+                RefereeId = referee.Id,
+                ViolationType = (ViolationType)request.ViolationType,
                 Description = request.Description,
                 RecordedAt = DateTime.UtcNow,
                 Evidence = request.Evidence,
@@ -276,8 +296,31 @@ public class ViolationRecordService : IViolationRecordService
             await _unitOfWork.SaveChangesAsync();
 
             var race = await _raceRepo.GetByIdAsync(request.RaceId);
-            var entry = await _entryRepo.GetByIdAsync(request.RaceEntryId);
-            var referee = await _refereeRepo.GetByIdAsync(request.RefereeId);
+
+            // Notify all admins about the violation
+            try
+            {
+                var users = await _userRepo.GetAllAsync();
+                var admins = users.Where(u => u.Role == UserRole.Admin && u.IsActive).ToList();
+                foreach (var admin in admins)
+                {
+                    try
+                    {
+                        await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                        {
+                            UserId = admin.Id,
+                            Title = "Vi phạm mới được ghi nhận",
+                            Message = $"Trọng tài {referee.User?.FullName ?? referee.Id.ToString()} đã ghi nhận vi phạm trong cuộc đua \"{race?.Name ?? request.RaceId.ToString()}\": {request.Description[..Math.Min(request.Description.Length, 100)]}",
+                            Type = NotificationType.InApp,
+                            Category = NotificationCategory.ViolationRecord,
+                            RelatedEntityId = race?.Id,
+                            RelatedEntityType = "Race"
+                        });
+                    }
+                    catch { /* skip failed notification */ }
+                }
+            }
+            catch { /* non-critical */ }
 
             return ServiceResult<ViolationResponse>.Success(
                 MapToResponse(violation, race, entry, referee), 201);

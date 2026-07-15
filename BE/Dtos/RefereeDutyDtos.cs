@@ -45,12 +45,12 @@ public class HealthCheckResponse
 public class CreateViolationRequest
 {
     public Guid RaceId { get; set; }
-    public Guid RaceEntryId { get; set; }
-    public Guid RefereeId { get; set; }
-    public string ViolationType { get; set; } = string.Empty;
+    public Guid HorseId { get; set; }
+    public int ViolationType { get; set; }
     public string Description { get; set; } = string.Empty;
     public string? Evidence { get; set; }
     public string? Penalty { get; set; }
+    public string? Severity { get; set; }
 }
 
 public class ViolationResponse
