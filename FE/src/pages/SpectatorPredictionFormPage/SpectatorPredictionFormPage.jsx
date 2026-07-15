@@ -158,14 +158,16 @@ function SpectatorPredictionFormPage() {
         const id = race?.id ?? race?.Id;
         const name = race?.name ?? race?.Name ?? "Cuộc đua";
         const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
-        const status = (race?.status ?? race?.Status ?? "").toLowerCase();
+        const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
+        // Allow betting if status is "scheduled" or if race is in the future
+        const isFuture = scheduledAt && new Date(scheduledAt) > new Date();
         return {
           id,
           name,
           time: formatDateTime(scheduledAt),
           countdown: formatCountdown(scheduledAt),
           status,
-          canBet: status === "scheduled",
+          canBet: status === "scheduled" || (isFuture && !status),
         };
       });
   }, [races, selectedTournament]);
