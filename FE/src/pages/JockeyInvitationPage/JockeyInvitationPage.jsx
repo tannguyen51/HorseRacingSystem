@@ -40,7 +40,11 @@ function JockeyInvitationPage() {
     setLoadingId(id);
     try {
       await respondJockeyInvitation(id, accept);
-      setInvitations(c => c.filter(i => i.id !== id));
+      setInvitations((current) =>
+        current.map((item) =>
+          item.id === id ? { ...item, status: accept ? "Accepted" : "Declined" } : item,
+        ),
+      );
       setMessage(accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời.");
     } catch (e) { setMessage(e.message || "Lỗi."); }
     finally { setLoadingId(null); }

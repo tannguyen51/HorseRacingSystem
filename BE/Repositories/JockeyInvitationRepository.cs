@@ -25,7 +25,9 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
             .Include(i => i.Race)
             .Where(i =>
                 i.JockeyId == jockeyId &&
-                i.Status == JockeyInvitationStatus.Pending)
+                (i.Status == JockeyInvitationStatus.Pending ||
+                 i.Status == JockeyInvitationStatus.Accepted ||
+                 i.Status == JockeyInvitationStatus.Declined))
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
