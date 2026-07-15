@@ -18,9 +18,9 @@ public class HorseRepository : IHorseRepository
         _db = db;
     }
 
-    public Task<List<Horse>> GetByOwnerAsync(Guid ownerId)
+    public async Task<List<Horse>> GetByOwnerAsync(Guid ownerId)
     {
-        return _db.Horses
+        var horses = await _db.Horses
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
@@ -31,11 +31,18 @@ public class HorseRepository : IHorseRepository
                 .ThenInclude(e => e.Race)
             .Where(h => h.OwnerId == ownerId)
             .ToListAsync();
+
+        foreach (var horse in horses)
+        {
+            NormalizeHorseInvitations(horse);
+        }
+
+        return horses;
     }
 
-    public Task<Horse?> GetByIdAsync(Guid horseId)
+    public async Task<Horse?> GetByIdAsync(Guid horseId)
     {
-        return _db.Horses
+        var horse = await _db.Horses
             .Include(h => h.Owner)
                 .ThenInclude(o => o!.User)
             .Include(h => h.JockeyInvitations)
@@ -47,11 +54,18 @@ public class HorseRepository : IHorseRepository
             .Include(h => h.RaceEntries)
                 .ThenInclude(e => e.Race)
             .FirstOrDefaultAsync(h => h.Id == horseId);
+
+        if (horse != null)
+        {
+            NormalizeHorseInvitations(horse);
+        }
+
+        return horse;
     }
 
-    public Task<Horse?> GetOwnedHorseAsync(Guid horseId, Guid ownerId)
+    public async Task<Horse?> GetOwnedHorseAsync(Guid horseId, Guid ownerId)
     {
-        return _db.Horses
+        var horse = await _db.Horses
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
@@ -61,6 +75,13 @@ public class HorseRepository : IHorseRepository
             .Include(h => h.RaceEntries)
                 .ThenInclude(e => e.Race)
             .FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
+
+        if (horse != null)
+        {
+            NormalizeHorseInvitations(horse);
+        }
+
+        return horse;
     }
 
     public Task AddAsync(Horse horse)
@@ -79,5 +100,21 @@ public class HorseRepository : IHorseRepository
     {
         _db.Horses.Remove(horse);
         return Task.CompletedTask;
+    }
+
+    private static void NormalizeHorseInvitations(Horse horse)
+    {
+        var filtered = horse.JockeyInvitations
+            .Where(i => i.Status != JockeyInvitationStatus.Declined)
+            .GroupBy(i => i.JockeyId)
+            .Select(g => g.OrderByDescending(i => i.CreatedAt).First())
+            .OrderByDescending(i => i.CreatedAt)
+            .ToList();
+
+        horse.JockeyInvitations.Clear();
+        foreach (var invitation in filtered)
+        {
+            horse.JockeyInvitations.Add(invitation);
+        }
     }
 }

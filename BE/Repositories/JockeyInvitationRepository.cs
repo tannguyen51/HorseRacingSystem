@@ -25,7 +25,9 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
             .Include(i => i.Race)
             .Where(i =>
                 i.JockeyId == jockeyId &&
-                i.Status == JockeyInvitationStatus.Pending)
+                (i.Status == JockeyInvitationStatus.Pending ||
+                 i.Status == JockeyInvitationStatus.Accepted ||
+                 i.Status == JockeyInvitationStatus.Declined))
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
@@ -44,6 +46,16 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
                 i.HorseId == horseId &&
                 (i.Status == JockeyInvitationStatus.Pending ||
                  i.Status == JockeyInvitationStatus.Accepted))
+            .OrderByDescending(i => i.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task<JockeyInvitation?> GetByHorseAndJockeyAsync(Guid horseId, Guid jockeyId)
+    {
+        return _db.JockeyInvitations
+            .Include(i => i.Jockey)
+                .ThenInclude(j => j!.User)
+            .Where(i => i.HorseId == horseId && i.JockeyId == jockeyId)
             .OrderByDescending(i => i.CreatedAt)
             .FirstOrDefaultAsync();
     }

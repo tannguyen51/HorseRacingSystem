@@ -4,6 +4,7 @@ import {
   formatJockeyDate,
   getJockeyAssignedRaces,
   getJockeyInvitations,
+  normalizeInvitationStatus,
 } from "../../services/jockeyApi";
 import { getProfile } from "../../services/authApi";
 import "./JockeyDashboardPage.css";
@@ -54,7 +55,7 @@ function JockeyDashboardPage() {
   const nextRace = sortedRaces[0];
   const totalRacesNum = races.length;
   const confirmedRaces = races.filter(r => r.jockeyConfirmed).length;
-  const pendingCount = invitations.filter(i => i.status === "Pending" || i.status === "pending").length;
+  const pendingCount = invitations.filter(i => normalizeInvitationStatus(i.status).toLowerCase() === "pending").length;
   const winRate = profile?.winRate ?? profile?.WinRate ?? 0;
   const rank = profile?.rank ?? profile?.Rank ?? null;
 
