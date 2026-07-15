@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   formatJockeyDate,
   getJockeyInvitations,
@@ -9,11 +9,12 @@ import {
 import "./JockeyInvitationPage.css";
 
 function JockeyInvitationPage() {
+  const location = useLocation();
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState(null);
   const [message, setMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(location.state?.focusTab ?? "all");
   const [search, setSearch] = useState("");
 
   const loadInvitations = async () => {
@@ -21,6 +22,12 @@ function JockeyInvitationPage() {
     catch (e) { setMessage(e.message || "Không thể tải lời mời."); }
     finally { setLoading(false); }
   };
+
+  useEffect(() => {
+    if (location.state?.focusTab) {
+      setActiveTab(location.state.focusTab);
+    }
+  }, [location.state?.focusTab]);
 
   useEffect(() => { loadInvitations(); }, []);
 
@@ -54,6 +61,7 @@ function JockeyInvitationPage() {
           item.id === id ? { ...item, status: accept ? "Accepted" : "Declined" } : item,
         ),
       );
+      setActiveTab(accept ? "accepted" : "declined");
       setMessage(accept ? "Đã chấp nhận lời mời." : "Đã từ chối lời mời.");
     } catch (e) { setMessage(e.message || "Lỗi."); }
     finally { setLoadingId(null); }
