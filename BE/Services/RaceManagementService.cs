@@ -245,6 +245,9 @@ public class RaceManagementService : IRaceManagementService
             await _entryRepo.AddAsync(entry);
             await _unitOfWork.SaveChangesAsync();
 
+            // Recalculate odds for all entries in this race
+            await RecalculateOddsAsync(raceId);
+
             return new ServiceResult<bool>(201, ApiResult<bool>.Ok(true));
         }
         catch (Exception ex)
@@ -276,6 +279,7 @@ public class RaceManagementService : IRaceManagementService
             }
 
             await _unitOfWork.SaveChangesAsync();
+            await RecalculateOddsAsync(raceId);
             return new ServiceResult<bool>(201, ApiResult<bool>.Ok(true));
         }
         catch (Exception ex)
@@ -296,6 +300,7 @@ public class RaceManagementService : IRaceManagementService
 
             await _entryRepo.DeleteAsync(entry.Id);
             await _unitOfWork.SaveChangesAsync();
+            await RecalculateOddsAsync(raceId);
             return ServiceResult<bool>.Ok(true);
         }
         catch (Exception ex)
@@ -409,5 +414,58 @@ public class RaceManagementService : IRaceManagementService
             EntriesCount = race.Entries?.Count ?? 0,
             ActiveRefereesCount = race.RefereeAssignments?.Count(a => a.Status != RefereeAssignmentStatus.Cancelled) ?? 0
         };
+    }
+
+    /// <summary>
+    /// Tính toán tỉ lệ cược (odds) cho tất cả ngựa trong một cuộc đua dựa trên:
+    /// - Tỉ lệ thắng của ngựa (50% trọng số)
+    /// - Tỉ lệ thắng của kỵ sĩ (30% trọng số)
+    /// - Kinh nghiệm thi đấu (số trận đã tham gia)
+    /// Odds = 1 / probability, làm tròn 2 chữ số.
+    /// </summary>
+    private async Task RecalculateOddsAsync(Guid raceId)
+    {
+        var entries = await _entryRepo.GetByRaceAsync(raceId);
+        if (!entries.Any()) return;
+
+        // Calculate score for each entry
+        var scores = new List<(Guid entryId, decimal score)>();
+        foreach (var e in entries)
+        {
+            var horse = e.Horse ?? await _horseRepo.GetByIdAsync(e.HorseId);
+            var jockey = e.Jockey;
+
+            decimal winRate = horse != null && horse.TotalRaces > 0
+                ? (decimal)horse.TotalWins / horse.TotalRaces
+                : 0.10m;
+
+            decimal jockeyRate = jockey != null && jockey.WinRate > 0
+                ? jockey.WinRate / 100m
+                : 0.10m;
+
+            decimal experienceBonus = horse != null
+                ? Math.Min(horse.TotalRaces * 0.002m, 0.10m)
+                : 0m;
+
+            // Weighted score: base 0.05 ensures every horse has a minimum chance
+            decimal score = winRate * 0.50m + jockeyRate * 0.30m + experienceBonus + 0.05m;
+            scores.Add((e.Id, score));
+        }
+
+        decimal totalScore = scores.Sum(s => s.score);
+
+        // Convert scores to odds
+        foreach (var (entryId, score) in scores)
+        {
+            decimal probability = score / totalScore;
+            decimal odds = Math.Round(1m / probability, 2);
+            if (odds < 1.01m) odds = 1.01m; // minimum odds
+            if (odds > 99m) odds = 99m;     // maximum odds
+
+            var entry = entries.First(e => e.Id == entryId);
+            entry.Odds = odds;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }
