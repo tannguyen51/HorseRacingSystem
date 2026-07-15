@@ -20,6 +20,37 @@
   box-shadow: 0 24px 52px rgba(2, 6, 18, 0.42);
 }
 
+.owner-tournament-register .form-select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border: 1.5px solid rgba(143, 100, 32, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 250, 240, 0.96);
+  color: #172033;
+  font-size: 14px;
+  line-height: 1.4;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.owner-tournament-register .form-select:focus {
+  border-color: rgba(215, 170, 77, 0.85);
+  box-shadow: 0 0 0 0.16rem rgba(215, 170, 77, 0.18);
+  outline: none;
+}
+
+.owner-tournament-register .form-select::-ms-expand {
+  display: none;
+}
+
 .register-form__heading {
   display: grid;
   gap: 8px;

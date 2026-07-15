@@ -55,15 +55,31 @@ const normalizeJockey = (jockey) => ({
 export const getAvailableJockeys = async () =>
   (unwrapResponseData(await request("/api/jockeys")) ?? []).map(normalizeJockey);
 
+export const normalizeInvitationStatus = (rawStatus) => {
+  if (rawStatus === undefined || rawStatus === null || rawStatus === "") {
+    return "Pending";
+  }
+
+  if (typeof rawStatus === "number") {
+    return ["Pending", "Accepted", "Declined"][rawStatus - 1] ?? "Pending";
+  }
+
+  if (typeof rawStatus === "string") {
+    const normalized = rawStatus.trim().toLowerCase();
+    if (["pending", "1", "wait", "waiting", "chờ", "chờ duyệt", "chờ xác nhận"].includes(normalized)) return "Pending";
+    if (["accepted", "accept", "2", "đã chấp nhận", "da chap nhan", "confirmed", "confirm"].includes(normalized)) return "Accepted";
+    if (["declined", "decline", "reject", "rejected", "3", "đã từ chối", "da tu choi"].includes(normalized)) return "Declined";
+  }
+
+  return String(rawStatus);
+};
+
 export const normalizeInvitation = (invitation) => {
   const horse = read(invitation, "horse", "Horse") ?? {};
   const race = read(invitation, "race", "Race") ?? {};
   const tournament = read(race, "tournament", "Tournament") ?? {};
   const rawStatus = read(invitation, "status", "Status", "statusName", "StatusName");
-  const status =
-    typeof rawStatus === "number"
-      ? ["Pending", "Accepted", "Declined"][rawStatus] ?? "Pending"
-      : rawStatus ?? "Pending";
+  const status = normalizeInvitationStatus(rawStatus);
 
   return {
     id: read(invitation, "id", "Id"),
