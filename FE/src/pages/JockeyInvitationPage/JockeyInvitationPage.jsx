@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   formatJockeyDate,
   getJockeyInvitations,
+  normalizeInvitationStatus,
   respondJockeyInvitation,
 } from "../../services/jockeyApi";
 import "./JockeyInvitationPage.css";
@@ -23,9 +24,17 @@ function JockeyInvitationPage() {
 
   useEffect(() => { loadInvitations(); }, []);
 
-  const pending = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("pending")), [invitations]);
-  const accepted = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("accept")), [invitations]);
-  const declined = useMemo(() => invitations.filter(i => String(i.status).toLowerCase().includes("decline") || String(i.status).toLowerCase().includes("reject")), [invitations]);
+  const getBucket = (value) => {
+    const normalized = normalizeInvitationStatus(value).toLowerCase();
+    if (normalized.includes("pending") || normalized === "1") return "pending";
+    if (normalized.includes("accept") || normalized === "2") return "accepted";
+    if (normalized.includes("decline") || normalized.includes("reject") || normalized === "3") return "declined";
+    return "unknown";
+  };
+
+  const pending = useMemo(() => invitations.filter(i => getBucket(i.status) === "pending"), [invitations]);
+  const accepted = useMemo(() => invitations.filter(i => getBucket(i.status) === "accepted"), [invitations]);
+  const declined = useMemo(() => invitations.filter(i => getBucket(i.status) === "declined"), [invitations]);
 
   const filtered = useMemo(() => {
     let items = invitations;
@@ -51,10 +60,10 @@ function JockeyInvitationPage() {
   };
 
   const statusMeta = (s) => {
-    const str = String(s || "").toLowerCase();
-    if (str.includes("pending")) return { label: "Chờ duyệt", cls: "pending" };
-    if (str.includes("accept")) return { label: "Đã chấp nhận", cls: "accepted" };
-    if (str.includes("decline") || str.includes("reject")) return { label: "Đã từ chối", cls: "declined" };
+    const bucket = getBucket(s);
+    if (bucket === "pending") return { label: "Chờ duyệt", cls: "pending" };
+    if (bucket === "accepted") return { label: "Đã chấp nhận", cls: "accepted" };
+    if (bucket === "declined") return { label: "Đã từ chối", cls: "declined" };
     return { label: s || "Không rõ", cls: "" };
   };
 
