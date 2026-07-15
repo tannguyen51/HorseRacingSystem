@@ -96,6 +96,22 @@ public class RaceEntryRepository : IRaceEntryRepository
         return Task.CompletedTask;
     }
 
+    public Task UpdateRangeAsync(IEnumerable<RaceEntry> entries)
+    {
+        _db.RaceEntries.UpdateRange(entries);
+        return Task.CompletedTask;
+    }
+
+    public Task<List<RaceEntry>> GetPendingWithDetailsAsync()
+    {
+        return _db.RaceEntries
+            .Include(e => e.Race)!.ThenInclude(r => r!.Tournament)
+            .Include(e => e.Horse)!.ThenInclude(h => h!.Owner)!.ThenInclude(o => o!.User)
+            .Include(e => e.Jockey)!.ThenInclude(j => j!.User)
+            .Where(e => e.Status == RegistrationStatus.Pending)
+            .ToListAsync();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var entry = await GetByIdAsync(id);

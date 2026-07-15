@@ -65,7 +65,28 @@ public class AdminService : IAdminService
                 ActiveTournaments = tournaments.Count(),
                 UpcomingRaces = races.Count(r => r.Status == RaceStatus.Scheduled),
                 PendingRegistrations = registrations.Count(),
-                OngoingRaces = races.Count(r => r.Status == RaceStatus.InProgress)
+                OngoingRaces = races.Count(r => r.Status == RaceStatus.InProgress),
+                ActiveRaces = races
+                    .Where(r => r.Status == RaceStatus.InProgress || r.Status == RaceStatus.Scheduled)
+                    .OrderBy(r => r.ScheduledAt)
+                    .Take(5)
+                    .Select(r => new ActiveRaceItem
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Status = r.Status.ToString(),
+                        EntryCount = r.Entries?.Count ?? 0,
+                        ScheduledAt = r.ScheduledAt
+                    }).ToList(),
+                RecentActivity = registrations
+                    .OrderByDescending(r => r.SubmittedAt)
+                    .Take(5)
+                    .Select(r => new RecentActivityItem
+                    {
+                        Action = "Đăng ký mới",
+                        Subject = r.FullName ?? r.Email,
+                        CreatedAt = r.SubmittedAt
+                    }).ToList()
             };
 
             return ServiceResult<AdminDashboardResponse>.Ok(response);

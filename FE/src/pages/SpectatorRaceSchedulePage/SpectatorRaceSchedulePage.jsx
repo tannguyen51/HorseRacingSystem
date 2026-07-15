@@ -92,7 +92,7 @@ function SpectatorRaceSchedulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [detailRace, setDetailRace] = useState(null);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   const intervalRef = useRef(null);
 
   /* Tick every second for countdowns */

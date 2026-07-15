@@ -15,6 +15,7 @@ public class PredictionService : IPredictionService
     private readonly IPredictionRepository _predictions;
     private readonly IWalletService _walletService;
     private readonly IWalletRepository _walletRepo;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
 
     public PredictionService(
@@ -22,12 +23,14 @@ public class PredictionService : IPredictionService
         IPredictionRepository predictions,
         IWalletService walletService,
         IWalletRepository walletRepo,
+        INotificationService notificationService,
         IUnitOfWork unitOfWork)
     {
         _races = races;
         _predictions = predictions;
         _walletService = walletService;
         _walletRepo = walletRepo;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
     }
 
@@ -53,12 +56,6 @@ public class PredictionService : IPredictionService
         if (!horseInRace)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Horse is not registered for this race.");
-        }
-
-        var exists = await _predictions.ExistsAsync(request.RaceId, userId);
-        if (exists)
-        {
-            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Prediction already exists for this race.");
         }
 
         // Check wallet balance before creating prediction
@@ -145,6 +142,22 @@ public class PredictionService : IPredictionService
             var payout = w.PayoutAmount ?? w.PotentialPayout;
             if (payout <= 0) payout = w.BetAmount * 2;
             await _walletService.AddFundsAsync(w.SpectatorUserId, payout, $"win_{w.Id}");
+
+            // Notify winner
+            try
+            {
+                await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                {
+                    UserId = w.SpectatorUserId,
+                    Title = "Chúc mừng! Bạn đã thắng cược",
+                    Message = $"Ngựa {w.PredictedHorse?.Name ?? w.HorseNameSnapshot ?? "?"} đã về nhất! Bạn nhận được {payout:N0} VNĐ vào ví.",
+                    Type = NotificationType.InApp,
+                    Category = NotificationCategory.BetWon,
+                    RelatedEntityId = w.RaceId,
+                    RelatedEntityType = "Race"
+                });
+            }
+            catch { /* non-critical */ }
         }
 
         return ServiceResult<object>.Ok(new

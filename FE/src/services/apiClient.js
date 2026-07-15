@@ -129,7 +129,7 @@ export async function request(path, options = {}) {
     const validationMessage =
       data?.errors && typeof data.errors === "object"
         ? Object.entries(data.errors)
-            .map(([field, msgs]) => {
+            .map(([, msgs]) => {
               const msgText = Array.isArray(msgs) ? msgs.join(", ") : msgs;
               // Bỏ tên field nếu message đã chứa context (e.g. "Mật khẩu phải...")
               return msgText || "";

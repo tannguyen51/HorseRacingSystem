@@ -12,6 +12,8 @@ import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
 const formatCountdown = (value) => {
+
+const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy" };
   if (!value) return "--:--";
   const target = new Date(value);
   if (Number.isNaN(target.getTime())) return "--:--";
@@ -156,11 +158,14 @@ function SpectatorPredictionFormPage() {
         const id = race?.id ?? race?.Id;
         const name = race?.name ?? race?.Name ?? "Cuộc đua";
         const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
+        const status = (race?.status ?? race?.Status ?? "").toLowerCase();
         return {
           id,
           name,
           time: formatDateTime(scheduledAt),
           countdown: formatCountdown(scheduledAt),
+          status,
+          canBet: status === "scheduled",
         };
       });
   }, [races, selectedTournament]);
@@ -272,10 +277,15 @@ function SpectatorPredictionFormPage() {
           >
             {raceOptions.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name}
+                {r.name} {!r.canBet ? " [KHÓA]" : ""} — {r.time}
               </option>
             ))}
           </select>
+          {selectedRaceDetails && !selectedRaceDetails.canBet && (
+            <p style={{ color: "#c41e1e", fontSize: 12, marginTop: 4 }}>
+              Cuộc đua này đã {(statusLabels[selectedRaceDetails.status] ?? selectedRaceDetails.status).toLowerCase()}, không thể đặt cược.
+            </p>
+          )}
         </div>
       </div>
 
@@ -283,10 +293,15 @@ function SpectatorPredictionFormPage() {
       <section className="pf-horses-section">
         <div className="pf-section-header">
           <h2>Chọn ngựa</h2>
-          <p>Nhấn vào thẻ ngựa để chốt dự đoán của bạn.</p>
+          <p>{selectedRaceDetails?.canBet ? "Nhấn vào thẻ ngựa để chốt dự đoán của bạn." : "Cuộc đua đã khóa — không thể đặt cược."}</p>
         </div>
 
-        {isLoading ? (
+        {selectedRaceDetails && !selectedRaceDetails.canBet ? (
+          <div className="pf-empty" style={{ border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", borderRadius: 14 }}>
+            <h4 style={{ color: "#c41e1e" }}>Đã khóa cược</h4>
+            <p>Cuộc đua đang diễn ra hoặc đã kết thúc. Chỉ có thể cược vào cuộc đua sắp diễn ra.</p>
+          </div>
+        ) : isLoading ? (
           <div className="pf-empty">
             <h4>Đang tải danh sách ngựa</h4>
             <p>Vui lòng đợi trong giây lát.</p>
@@ -357,15 +372,16 @@ function SpectatorPredictionFormPage() {
               placeholder="50"
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
+              disabled={!selectedRaceDetails?.canBet}
             />
           </div>
         </div>
         <button
           type="submit"
           className="pf-btn-primary"
-          disabled={!selectedHorseId || isSubmitting}
+          disabled={!selectedHorseId || isSubmitting || !selectedRaceDetails?.canBet}
         >
-          {isSubmitting ? "Đang gửi..." : "Gửi dự đoán"}
+          {selectedRaceDetails && !selectedRaceDetails.canBet ? "Đã khóa cược" : isSubmitting ? "Đang gửi..." : "Gửi dự đoán"}
         </button>
       </form>
 

@@ -145,7 +145,7 @@ export default function RefereeAssignmentPage() {
           )
         );
         showToast(accept ? "Đã xác nhận phân công" : "Đã từ chối phân công");
-      } catch (e) {
+      } catch {
         showToast("Không thể cập nhật. Vui lòng thử lại.");
       } finally {
         setActionLoading(null);

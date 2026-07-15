@@ -16,6 +16,8 @@ public interface IRaceEntryRepository
     Task<List<RaceEntry>> GetByRaceAsync(Guid raceId);
     Task AddAsync(RaceEntry entry);
     Task UpdateAsync(RaceEntry entry);
+    Task UpdateRangeAsync(IEnumerable<RaceEntry> entries);
+    Task<List<RaceEntry>> GetPendingWithDetailsAsync();
     Task DeleteAsync(Guid id);
     Task<RaceEntry?> GetByIdAsync(Guid id);
 }

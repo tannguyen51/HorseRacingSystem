@@ -1,4 +1,3 @@
-import React from 'react';
 import './HorseBodyMap.css';
 
 const SEVERITY_CONFIG = {
