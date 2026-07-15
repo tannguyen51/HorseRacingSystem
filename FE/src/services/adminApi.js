@@ -139,3 +139,9 @@ export const rejectRaceEntry = (entryId, reason) =>
     method: "POST",
     body: JSON.stringify({ reason }),
   });
+
+export const settlePredictions = (raceId, winningHorseId) =>
+  request(`/api/admin/races/${raceId}/settle-predictions`, {
+    method: "POST",
+    body: JSON.stringify({ winningHorseId }),
+  });

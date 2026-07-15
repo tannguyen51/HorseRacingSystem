@@ -27,6 +27,7 @@ import {
   getPendingRaceEntries,
   approveRaceEntry,
   rejectRaceEntry,
+  settlePredictions,
   rejectJockey,
   rejectRegistration,
   setUserActive,
@@ -1042,6 +1043,16 @@ function ScheduleManagement({ type }) {
     } catch (err) { setMessage(err.message); }
   };
 
+  const handleSettle = async (raceId) => {
+    if (!window.confirm("Nhập ID ngựa thắng để thanh toán cược:")) return;
+    const horseId = window.prompt("ID ngựa thắng (GUID):");
+    if (!horseId) return;
+    try {
+      await settlePredictions(raceId, horseId);
+      setMessage("Đã thanh toán cược thành công!");
+    } catch (err) { setMessage(err.message); }
+  };
+
   const title = type === "round" ? "Quản lý vòng đấu" : "Quản lý cuộc đua & lên lịch";
   return (
     <>
@@ -1168,9 +1179,14 @@ function ScheduleManagement({ type }) {
                 </button>
               )}
               {itemStatus === "finished" && (
-                <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
-                  Công bố KQ
-                </button>
+                <>
+                  <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
+                    Công bố KQ
+                  </button>
+                  <button style={{background:"rgba(79,70,229,0.1)",color:"#4f46e5"}} onClick={() => handleSettle(itemId)}>
+                    Thanh toán
+                  </button>
+                </>
               )}
               {itemStatus !== "finished" && itemStatus !== "cancelled" && (
                 <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>

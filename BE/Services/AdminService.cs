@@ -22,6 +22,7 @@ public class AdminService : IAdminService
     private readonly ITournamentRepository _tournamentRepo;
     private readonly IRefereeService _refereeService;
     private readonly ILiveResultService _liveResultService;
+    private readonly IPredictionService _predictionService;
     private readonly IUnitOfWork _unitOfWork;
 
     public AdminService(
@@ -34,6 +35,7 @@ public class AdminService : IAdminService
         ITournamentRepository tournamentRepo,
         IRefereeService refereeService,
         ILiveResultService liveResultService,
+        IPredictionService predictionService,
         IUnitOfWork unitOfWork)
     {
         _userRepo = userRepo;
@@ -45,6 +47,7 @@ public class AdminService : IAdminService
         _tournamentRepo = tournamentRepo;
         _refereeService = refereeService;
         _liveResultService = liveResultService;
+        _predictionService = predictionService;
         _unitOfWork = unitOfWork;
     }
 
@@ -488,6 +491,19 @@ public class AdminService : IAdminService
     public async Task<ServiceResult<bool>> PublishRaceResultAsync(Guid raceId, RaceResultRequest request)
     {
         return await _liveResultService.UpdateRaceResultAsync(raceId, request);
+    }
+
+    public async Task<ServiceResult<bool>> SettlePredictionsAsync(Guid raceId, RaceResultRequest request)
+    {
+        try
+        {
+            await _predictionService.SettlePredictionAsync(raceId, request.WinningHorseId);
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi thanh toán: {ex.Message}");
+        }
     }
 
     private UserRegistrationResponse MapToResponse(UserRegistration registration)

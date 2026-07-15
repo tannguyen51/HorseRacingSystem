@@ -126,6 +126,7 @@ public interface IAdminService
     // Operations
     Task<ServiceResult<RefereeAssignmentResponse>> AssignRefereeToRaceAsync(AssignRefereeRequest request);
     Task<ServiceResult<bool>> PublishRaceResultAsync(Guid raceId, RaceResultRequest request);
+    Task<ServiceResult<bool>> SettlePredictionsAsync(Guid raceId, RaceResultRequest request);
 }
 
 public interface ILiveResultService

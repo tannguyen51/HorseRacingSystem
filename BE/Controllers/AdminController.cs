@@ -152,6 +152,13 @@ public class AdminController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpPost("races/{raceId:guid}/settle-predictions")]
+    public async Task<ActionResult> SettlePredictions(Guid raceId, [FromBody] RaceResultRequest request)
+    {
+        var result = await _adminService.SettlePredictionsAsync(raceId, request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     // Race Entry Management
     [HttpGet("race-entries/pending")]
     public async Task<ActionResult> GetPendingRaceEntries()
