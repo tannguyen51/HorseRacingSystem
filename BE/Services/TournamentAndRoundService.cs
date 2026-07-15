@@ -50,20 +50,28 @@ public class TournamentService : ITournamentService
                 var spectators = users.Where(u => u.Role == UserRole.Spectator && u.IsActive).ToList();
                 foreach (var s in spectators)
                 {
-                    await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                    try
                     {
-                        UserId = s.Id,
-                        Title = "Giải đấu mới",
-                        Message = $"Giải đấu \"{tournament.Name}\" vừa được tạo. Đặt cược ngay!",
-                        Type = NotificationType.InApp,
-                        Category = NotificationCategory.TournamentCreated,
-                        ActionUrl = $"/tournaments/{tournament.Id}",
-                        RelatedEntityId = tournament.Id,
-                        RelatedEntityType = "Tournament"
-                    });
+                        await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                        {
+                            UserId = s.Id,
+                            Title = "Giải đấu mới",
+                            Message = $"Giải đấu \"{tournament.Name}\" vừa được tạo. Đặt cược ngay!",
+                            Type = NotificationType.InApp,
+                            Category = NotificationCategory.TournamentCreated,
+                            ActionUrl = $"/tournaments/{tournament.Id}",
+                            RelatedEntityId = tournament.Id,
+                            RelatedEntityType = "Tournament"
+                        });
+                    }
+                    catch { /* skip failed notification for individual user */ }
                 }
             }
-            catch { /* non-critical */ }
+            catch (Exception ex)
+            {
+                // Log but don't fail tournament creation
+                System.Console.WriteLine($"Failed to send tournament notifications: {ex.Message}");
+            }
 
             return new ServiceResult<TournamentResponse>(201, ApiResult<TournamentResponse>.Ok(new TournamentResponse
             {

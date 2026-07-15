@@ -20,13 +20,15 @@ public class RefereesController : ControllerBase
     private readonly IRefereeRepository _refereeRepo;
     private readonly IRefereeAssignmentRepository _assignmentRepo;
     private readonly IRaceEntryRepository _entryRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RefereesController(IRefereeService refereeService, IRefereeRepository refereeRepo, IRefereeAssignmentRepository assignmentRepo, IRaceEntryRepository entryRepo)
+    public RefereesController(IRefereeService refereeService, IRefereeRepository refereeRepo, IRefereeAssignmentRepository assignmentRepo, IRaceEntryRepository entryRepo, IUnitOfWork unitOfWork)
     {
         _refereeService = refereeService;
         _refereeRepo = refereeRepo;
         _assignmentRepo = assignmentRepo;
         _entryRepo = entryRepo;
+        _unitOfWork = unitOfWork;
     }
 
     // ── Referee CRUD ──
@@ -148,10 +150,11 @@ public class RefereesController : ControllerBase
         var entries = await _entryRepo.GetByRaceAsync(raceId);
 
         // Auto-recalculate if all odds are at default (1.0)
-        if (entries.Count > 1 && entries.All(e => e.Odds == 1.0m))
+        if (entries.Count > 0 && entries.All(e => e.Odds == 1.0m))
         {
             OddsCalculator.Recalculate(entries);
             await _entryRepo.UpdateRangeAsync(entries);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         return Ok(entries.Select(e => new

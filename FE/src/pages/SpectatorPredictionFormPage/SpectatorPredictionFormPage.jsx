@@ -11,9 +11,9 @@ import { getRaceEntries } from "../../services/refereeApi";
 import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
-const formatCountdown = (value) => {
-
 const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy" };
+
+const formatCountdown = (value) => {
   if (!value) return "--:--";
   const target = new Date(value);
   if (Number.isNaN(target.getTime())) return "--:--";

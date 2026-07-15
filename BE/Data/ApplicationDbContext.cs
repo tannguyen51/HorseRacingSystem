@@ -441,9 +441,6 @@ public class ApplicationDbContext : DbContext
             .HasConversion<string>();
 
         // ── Unique constraints ──
-        modelBuilder.Entity<Prediction>()
-            .HasIndex(p => new { p.RaceId, p.SpectatorUserId })
-            .IsUnique();
 
         modelBuilder.Entity<RaceEntry>()
             .HasIndex(e => new { e.RaceId, e.HorseId })

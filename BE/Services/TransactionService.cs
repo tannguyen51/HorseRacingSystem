@@ -173,7 +173,7 @@ public class TransactionService : ITransactionService
                 Category = NotificationCategory.DepositSuccess
             });
         }
-        catch { /* non-critical */ }
+        catch { /* non-critical: notification failure doesn't affect deposit */ }
 
         return ServiceResult<object>.Ok(new { message = "Transaction completed.", userId = tx.UserId });
     }

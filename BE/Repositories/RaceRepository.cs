@@ -25,7 +25,7 @@ public class RaceRepository : IRaceRepository
 
     public Task<List<Race>> GetAllAsync()
     {
-        return _db.Races.ToListAsync();
+        return _db.Races.Include(r => r.Entries).ToListAsync();
     }
 
     public Task<Race?> GetByIdAsync(Guid raceId)

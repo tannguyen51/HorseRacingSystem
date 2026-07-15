@@ -136,12 +136,27 @@ public class PredictionService : IPredictionService
 
         // Now load winners to pay them
         var winners = await _predictions.GetWinnersByRaceAsync(raceId);
+        var failed = new List<Guid>();
 
         foreach (var w in winners)
         {
             var payout = w.PayoutAmount ?? w.PotentialPayout;
             if (payout <= 0) payout = w.BetAmount * 2;
-            await _walletService.AddFundsAsync(w.SpectatorUserId, payout, $"win_{w.Id}");
+
+            try
+            {
+                await _walletService.AddFundsAsync(w.SpectatorUserId, payout, $"win_{w.Id}");
+            }
+            catch (Exception ex)
+            {
+                failed.Add(w.Id);
+                // Revert winner status back to Pending so it can be retried
+                w.Status = PredictionStatus.Pending;
+                w.PayoutAmount = null;
+                w.SettledAt = null;
+                Console.WriteLine($"Failed to pay winner {w.Id}: {ex.Message}");
+                continue;
+            }
 
             // Notify winner
             try
@@ -157,7 +172,7 @@ public class PredictionService : IPredictionService
                     RelatedEntityType = "Race"
                 });
             }
-            catch { /* non-critical */ }
+            catch { /* non-critical: notification failure doesn't affect payout */ }
         }
 
         return ServiceResult<object>.Ok(new
