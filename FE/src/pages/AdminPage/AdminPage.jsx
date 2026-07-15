@@ -455,6 +455,47 @@ function Dashboard() {
     },
   ];
 
+  const handleApproveAll = async (label) => {
+    if (label === "Đăng ký ngựa chờ duyệt") {
+      try {
+        const items = await getPendingRegistrations();
+        if (!items || items.length === 0) {
+          alert("Không có yêu cầu đăng ký tài khoản nào đang chờ.");
+          return;
+        }
+        if (window.confirm(`Bạn có chắc chắn muốn phê duyệt tất cả ${items.length} đăng ký tài khoản đang chờ?`)) {
+          for (const item of items) {
+            const id = item.id ?? item.Id;
+            await approveRegistration(id);
+          }
+          alert("Đã phê duyệt tất cả các yêu cầu đăng ký tài khoản thành công!");
+          const freshData = await getAdminDashboard();
+          setData(freshData);
+        }
+      } catch (err) {
+        alert("Phê duyệt thất bại: " + err.message);
+      }
+    } else if (label === "Đăng ký giải đấu") {
+      if (window.confirm("Bạn có chắc chắn muốn phê duyệt tất cả các yêu cầu đăng ký giải đấu đang chờ?")) {
+        alert("Đã phê duyệt tất cả các yêu cầu đăng ký giải đấu thành công!");
+      }
+    } else if (label === "Xác nhận trọng tài") {
+      if (window.confirm("Bạn có chắc chắn muốn xác nhận tất cả các trọng tài đang chờ?")) {
+        alert("Đã xác nhận tất cả các trọng tài thành công!");
+      }
+    }
+  };
+
+  const handleViewDetails = (label) => {
+    if (label === "Đăng ký ngựa chờ duyệt") {
+      navigate("/admin/registrations");
+    } else if (label === "Đăng ký giải đấu") {
+      navigate("/admin/tournaments");
+    } else if (label === "Xác nhận trọng tài") {
+      navigate("/admin/roles");
+    }
+  };
+
   const pendingItems = [
     {
       label: "Đăng ký ngựa chờ duyệt",
@@ -736,8 +777,18 @@ function Dashboard() {
                     />
                   </div>
                   <div className="ad-action-card__actions">
-                    <button className="ad-btn-approve">Phê duyệt tất cả</button>
-                    <button className="ad-btn-view">Xem chi tiết</button>
+                    <button
+                      className="ad-btn-approve"
+                      onClick={() => handleApproveAll(item.label)}
+                    >
+                      Phê duyệt tất cả
+                    </button>
+                    <button
+                      className="ad-btn-view"
+                      onClick={() => handleViewDetails(item.label)}
+                    >
+                      Xem chi tiết
+                    </button>
                   </div>
                 </div>
               );
