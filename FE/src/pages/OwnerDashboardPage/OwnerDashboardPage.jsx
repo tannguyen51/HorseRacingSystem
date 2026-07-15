@@ -17,7 +17,7 @@ function OwnerDashboardPage() {
       try { const p = await getOwnerProfile(); if (!cancelled) setOwner(p); } catch (e) { if (!cancelled) setProfileError(e.message); }
       try { const p = await getOwnerTournaments(); if (!cancelled) setTournaments(Array.isArray(p) ? p.slice(0, 4) : []); } catch { if (!cancelled) setTournaments([]); }
       try { const p = await getOwnerEntries(); if (!cancelled) setEntries(Array.isArray(p) ? p : []); } catch { if (!cancelled) setEntries([]); }
-      try { const p = await getOwnerPerformance(); if (!cancelled) setPerformance(p?.data ?? p); } catch { if (!cancelled) {} }
+      try { const p = await getOwnerPerformance(); if (!cancelled) setPerformance(p?.data ?? p); } catch { /* ignore */ }
     };
     load();
     return () => { cancelled = true; };

@@ -1,6 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
+using HorseRacing.Models;
+using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +16,14 @@ namespace HorseRacing.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
+    private readonly IRaceEntryRepository _entryRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AdminController(IAdminService adminService)
+    public AdminController(IAdminService adminService, IRaceEntryRepository entryRepo, IUnitOfWork unitOfWork)
     {
         _adminService = adminService;
+        _entryRepo = entryRepo;
+        _unitOfWork = unitOfWork;
     }
 
     // Dashboard
@@ -144,4 +151,52 @@ public class AdminController : ControllerBase
         var result = await _adminService.PublishRaceResultAsync(raceId, request);
         return StatusCode(result.StatusCode, result.Result);
     }
+
+    // Race Entry Management
+    [HttpGet("race-entries/pending")]
+    public async Task<ActionResult> GetPendingRaceEntries()
+    {
+        var entries = await _entryRepo.GetPendingWithDetailsAsync();
+        var result = entries.Select(e => new
+        {
+            EntryId = e.Id,
+            RaceId = e.RaceId,
+            RaceName = e.Race?.Name ?? "",
+            TournamentName = e.Race?.Tournament?.Name ?? "",
+            HorseId = e.HorseId,
+            HorseName = e.Horse?.Name ?? "",
+            OwnerName = e.Horse?.Owner?.User?.FullName ?? "",
+            JockeyName = e.Jockey?.User?.FullName,
+            Status = e.Status.ToString(),
+            OwnerConfirmed = e.OwnerConfirmed,
+            JockeyConfirmed = e.JockeyConfirmed
+        });
+        return Ok(ApiResult<object>.Ok(result));
+    }
+
+    [HttpPost("race-entries/{entryId:guid}/approve")]
+    public async Task<ActionResult> ApproveRaceEntry(Guid entryId)
+    {
+        var entry = await _entryRepo.GetByIdAsync(entryId);
+        if (entry == null) return NotFound(new { message = "Entry not found." });
+        entry.Status = RegistrationStatus.Approved;
+        await _entryRepo.UpdateAsync(entry);
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new { message = "Đã phê duyệt." });
+    }
+
+    [HttpPost("race-entries/{entryId:guid}/reject")]
+    public async Task<ActionResult> RejectRaceEntry(Guid entryId, [FromBody] EntryRejectRequest request)
+    {
+        var entry = await _entryRepo.GetByIdAsync(entryId);
+        if (entry == null) return NotFound(new { message = "Entry not found." });
+        entry.Status = RegistrationStatus.Rejected;
+        entry.ScratchedAt = DateTime.UtcNow;
+        entry.ScratchReason = request?.Reason ?? "Bị từ chối bởi admin";
+        await _entryRepo.UpdateAsync(entry);
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new { message = "Đã từ chối." });
+    }
 }
+
+public class EntryRejectRequest { public string? Reason { get; set; } }

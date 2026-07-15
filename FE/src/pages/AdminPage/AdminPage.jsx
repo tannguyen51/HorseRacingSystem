@@ -18,13 +18,15 @@ import {
   getOwnerHorse,
   getOwnerHorses,
   getPendingRegistrations,
-  getRegistrationDetail,
   getTournamentRaces,
   getTournamentRounds,
   publishRaceResult,
   getActiveReferees,
   getRaceRefereeAssignments,
   assignRefereeToRace,
+  getPendingRaceEntries,
+  approveRaceEntry,
+  rejectRaceEntry,
   rejectJockey,
   rejectRegistration,
   setUserActive,
@@ -115,6 +117,14 @@ const formatDate = (value) =>
     : "-";
 
 const inputDate = (days = 0) => {
+
+const tabStyle = (active) => ({
+  padding: "5px 14px", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600,
+  cursor: "pointer", fontFamily: "inherit",
+  background: active ? "#fff" : "transparent",
+  color: active ? "#1a1d23" : "#64748b",
+  boxShadow: active ? "0 1px 3px rgba(0,0,0,0.06)" : "none"
+});
   const date = new Date();
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 16);
@@ -243,59 +253,20 @@ function Dashboard() {
     { label: "Sắp tới", value: data?.upcomingRaces ?? data?.UpcomingRaces ?? "-", trend: "+2 hôm nay", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", color: "#6366f1" },
   ];
 
-  const recentActivities = [
-    { action: "Đăng ký ngựa", subject: "Thunder Strike", user: "John Whitfield", time: "5 phút trước", type: "registration" },
-    { action: "Phê duyệt", subject: "Giải đấu Spring Cup", user: "Admin", time: "15 phút trước", type: "approval" },
-    { action: "Hoàn thành", subject: "Cuộc đua #24 - Coastal Derby", user: "Hệ thống", time: "1 giờ trước", type: "race" },
-    { action: "Chuyển nhượng", subject: "Silver Comet", user: "Marcus Lee", time: "2 giờ trước", type: "transfer" },
-    { action: "Khiếu nại mới", subject: "Vòng 2 - Bán kết", user: "Trần Văn B", time: "3 giờ trước", type: "protest" },
-  ];
-
-  const handleApproveAll = async (label) => {
-    if (label === "Đăng ký ngựa chờ duyệt") {
-      try {
-        const items = await getPendingRegistrations();
-        if (!items || items.length === 0) {
-          alert("Không có yêu cầu đăng ký tài khoản nào đang chờ.");
-          return;
-        }
-        if (window.confirm(`Bạn có chắc chắn muốn phê duyệt tất cả ${items.length} đăng ký tài khoản đang chờ?`)) {
-          for (const item of items) {
-            const id = item.id ?? item.Id;
-            await approveRegistration(id);
-          }
-          alert("Đã phê duyệt tất cả các yêu cầu đăng ký tài khoản thành công!");
-          const freshData = await getAdminDashboard();
-          setData(freshData);
-        }
-      } catch (err) {
-        alert("Phê duyệt thất bại: " + err.message);
-      }
-    } else if (label === "Đăng ký giải đấu") {
-      if (window.confirm("Bạn có chắc chắn muốn phê duyệt tất cả các yêu cầu đăng ký giải đấu đang chờ?")) {
-        alert("Đã phê duyệt tất cả các yêu cầu đăng ký giải đấu thành công!");
-      }
-    } else if (label === "Xác nhận trọng tài") {
-      if (window.confirm("Bạn có chắc chắn muốn xác nhận tất cả các trọng tài đang chờ?")) {
-        alert("Đã xác nhận tất cả các trọng tài thành công!");
-      }
-    }
-  };
-
-  const handleViewDetails = (label) => {
-    if (label === "Đăng ký ngựa chờ duyệt") {
-      navigate("/admin/registrations");
-    } else if (label === "Đăng ký giải đấu") {
-      navigate("/admin/tournaments");
-    } else if (label === "Xác nhận trọng tài") {
-      navigate("/admin/roles");
-    }
-  };
+  const recentActivities = (() => {
+    const list = data?.recentActivity ?? data?.RecentActivity;
+    if (!list || !Array.isArray(list) || list.length === 0) return [];
+    return list.map(a => ({
+      action: a.action ?? a.Action ?? "",
+      subject: a.subject ?? a.Subject ?? "",
+      time: a.createdAt ?? a.CreatedAt ? formatDate(a.createdAt ?? a.CreatedAt) : "",
+      type: "registration"
+    }));
+  })();
 
   const pendingItems = [
-    { label: "Đăng ký ngựa chờ duyệt", count: data?.pendingRegistrations ?? data?.PendingRegistrations ?? 0, priority: "high" },
-    { label: "Đăng ký giải đấu", count: 3, priority: "medium" },
-    { label: "Xác nhận trọng tài", count: data?.totalReferees ?? data?.TotalReferees ?? 0, priority: "low" },
+    { label: "Đăng ký chờ duyệt", count: data?.pendingRegistrations ?? data?.PendingRegistrations ?? 0, priority: "high", path: "/admin/registrations" },
+    { label: "Phân công trọng tài", count: data?.totalReferees ?? data?.TotalReferees ?? 0, priority: "medium", path: "/admin/referee-assign" },
   ];
 
   return (
@@ -389,14 +360,29 @@ function Dashboard() {
       <section className="ad-grid-cols">
         <div className="ad-card">
           <div className="ad-card__header">
-            <h3>Cuộc đua trực tiếp</h3>
-            <span className="ad-badge ad-badge--live">● LIVE</span>
+            <h3>Cuộc đua trực tiếp & sắp tới</h3>
           </div>
           <div className="ad-card__body">
-            <div className="ad-race-item"><div className="ad-race-dot ad-race-dot--live" /><div><strong>Spring Championship</strong><span>Vòng 3 · 8 ngựa tham gia</span></div><span className="ad-chip ad-chip--live">Đang đua</span></div>
-            <div className="ad-race-item"><div className="ad-race-dot ad-race-dot--live" /><div><strong>Desert Cup</strong><span>Vòng 1 · 6 ngựa tham gia</span></div><span className="ad-chip ad-chip--live">Đang đua</span></div>
-            <div className="ad-race-item"><div className="ad-race-dot ad-race-dot--upcoming" /><div><strong>Night Derby</strong><span>Bắt đầu sau 30 phút</span></div><span className="ad-chip ad-chip--upcoming">Sắp tới</span></div>
-            <div className="ad-race-item"><div className="ad-race-dot ad-race-dot--upcoming" /><div><strong>Golden Mile</strong><span>Bắt đầu sau 2 giờ</span></div><span className="ad-chip ad-chip--upcoming">Sắp tới</span></div>
+            {(() => {
+              const activeRaces = data?.activeRaces ?? data?.ActiveRaces;
+              if (!activeRaces || !Array.isArray(activeRaces) || activeRaces.length === 0) {
+                return <p style={{ color: "#657086", padding: 20, textAlign: "center" }}>Không có cuộc đua nào đang diễn ra hoặc sắp tới.</p>;
+              }
+              return activeRaces.map((r, i) => {
+                const status = (r.status ?? r.Status ?? "").toLowerCase();
+                const isLive = status === "inprogress";
+                return (
+                  <div key={r.id ?? r.Id ?? i} className="ad-race-item">
+                    <div className={`ad-race-dot ${isLive ? "ad-race-dot--live" : "ad-race-dot--upcoming"}`} />
+                    <div>
+                      <strong>{r.name ?? r.Name}</strong>
+                      <span>{r.entryCount ?? r.EntryCount ?? 0} ngựa tham gia · {formatDate(r.scheduledAt ?? r.ScheduledAt)}</span>
+                    </div>
+                    <span className={`ad-chip ${isLive ? "ad-chip--live" : "ad-chip--upcoming"}`}>{isLive ? "Đang đua" : "Sắp tới"}</span>
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 
@@ -420,18 +406,9 @@ function Dashboard() {
                   </div>
                   <div className="ad-action-card__bar"><div style={{ width: `${Math.min((item.count||0)*20, 100)}%`, background: p.bar }} /></div>
                   <div className="ad-action-card__actions">
-                    <button
-                      className="ad-btn-approve"
-                      onClick={() => handleApproveAll(item.label)}
-                    >
-                      Phê duyệt tất cả
-                    </button>
-                    <button
-                      className="ad-btn-view"
-                      onClick={() => handleViewDetails(item.label)}
-                    >
-                      Xem chi tiết
-                    </button>
+                  <div className="ad-action-card__actions">
+                    <button className="ad-btn-approve" onClick={() => navigate(item.path)}>Xem chi tiết</button>
+                  </div>
                   </div>
                 </div>
               );
@@ -447,12 +424,14 @@ function Dashboard() {
         </div>
         <div className="ad-card__body">
           <div className="ad-feed">
-            {recentActivities.map((a, i) => (
+            {recentActivities.length === 0 ? (
+              <p style={{ color: "#657086", textAlign: "center", padding: 20 }}>Chưa có hoạt động nào.</p>
+            ) : recentActivities.map((a, i) => (
               <div key={i} className="ad-feed-item">
-                <div className={`ad-feed-dot ${a.type === "registration" ? "ad-feed-dot--green" : a.type === "approval" ? "ad-feed-dot--gold" : a.type === "race" ? "ad-feed-dot--blue" : "ad-feed-dot--gray"}`} />
+                <div className="ad-feed-dot ad-feed-dot--green" />
                 <div className="ad-feed-content">
                   <strong>{a.action}: {a.subject}</strong>
-                  <span>{a.user} · {a.time}</span>
+                  <span>{a.time}</span>
                 </div>
               </div>
             ))}
@@ -1070,7 +1049,7 @@ function ScheduleManagement({ type }) {
             <input type="file" accept="image/*" onChange={async (e) => {
               const f = e.target.files?.[0]; if (!f) return;
               const fd = new FormData(); fd.append("file", f);
-              try { const r = await request("/api/auth/upload-document", { method: "POST", body: fd }); const d = r?.data ?? r; setForm((p) => ({ ...p, imageUrl: d?.url ?? "" })); } catch {}
+              try { const r = await request("/api/auth/upload-document", { method: "POST", body: fd }); const d = r?.data ?? r; setForm((p) => ({ ...p, imageUrl: d?.url ?? "" })); } catch { /* ignore */ }
             }} style={{ display: "block", marginTop: 4 }} />
           </label>
           {form.imageUrl && <img src={form.imageUrl} alt="preview" style={{ width: 120, borderRadius: 8 }} />}
@@ -1175,16 +1154,23 @@ function ScheduleManagement({ type }) {
 
 function RegistrationManagement() {
   const [items, setItems] = useState([]);
+  const [entryItems, setEntryItems] = useState([]);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [regTab, setRegTab] = useState("pending");
 
   const load = () => {
+    if (regTab === "entries") {
+      getPendingRaceEntries()
+        .then((data) => setEntryItems(Array.isArray(data) ? data : []))
+        .catch((err) => setMessage(err.message));
+      return;
+    }
     const api = regTab === "all" ? getAllRegistrations() : getPendingRegistrations();
     api.then((data) => setItems(Array.isArray(data) ? data : [])).catch((err) => setMessage(err.message));
   };
 
-  useEffect(() => { load(); }, [regTab]);
+  useEffect(() => { load(); }, [regTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() =>
     items.filter((item) => {
@@ -1213,47 +1199,101 @@ function RegistrationManagement() {
     } catch (err) { setMessage(err.message); }
   };
 
+  const approveEntry = async (entry) => {
+    const id = entry.entryId ?? entry.EntryId;
+    try {
+      await approveRaceEntry(id);
+      setMessage("Đã phê duyệt đăng ký ngựa vào giải đấu.");
+      load();
+    } catch (err) { setMessage(err.message); }
+  };
+
+  const rejectEntry = async (entry) => {
+    const id = entry.entryId ?? entry.EntryId;
+    const reason = window.prompt("Lý do từ chối (tùy chọn):");
+    if (reason === null) return;
+    try {
+      await rejectRaceEntry(id, reason || "Bị từ chối bởi admin");
+      setMessage("Đã từ chối đăng ký.");
+      load();
+    } catch (err) { setMessage(err.message); }
+  };
+
   return (
     <>
-      <PageTitle eyebrow="Quản lý người dùng" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký người dùng mới trước khi họ có thể truy cập nền tảng." />
+      <PageTitle eyebrow="Quản lý người dùng" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký người dùng và ngựa vào giải đấu." />
       <div className="admin-toolbar">
         <input placeholder="Tìm kiếm theo tên, email hoặc vai trò..." value={query} onChange={(e) => setQuery(e.target.value)} />
         <div style={{display:"flex",gap:4,background:"rgba(0,0,0,0.03)",padding:3,borderRadius:8}}>
-          <button style={{padding:"5px 14px",border:"none",borderRadius:6,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:regTab==="pending"?"#fff":"transparent",color:regTab==="pending"?"#1a1d23":"#64748b",boxShadow:regTab==="pending"?"0 1px 3px rgba(0,0,0,0.06)":"none"}} onClick={() => setRegTab("pending")}>Đang chờ</button>
-          <button style={{padding:"5px 14px",border:"none",borderRadius:6,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:regTab==="all"?"#fff":"transparent",color:regTab==="all"?"#1a1d23":"#64748b",boxShadow:regTab==="all"?"0 1px 3px rgba(0,0,0,0.06)":"none"}} onClick={() => setRegTab("all")}>Tất cả</button>
+          <button style={tabStyle(regTab==="pending")} onClick={() => setRegTab("pending")}>Người dùng chờ</button>
+          <button style={tabStyle(regTab==="all")} onClick={() => setRegTab("all")}>Tất cả ND</button>
+          <button style={tabStyle(regTab==="entries")} onClick={() => setRegTab("entries")}>Ngựa vào giải</button>
         </div>
-        <span>{filtered.length} {regTab === "pending" ? "đang chờ" : "bản ghi"}</span>
+        <span>{regTab === "entries" ? entryItems.length : filtered.length} {regTab === "pending" ? "đang chờ" : regTab === "entries" ? "đăng ký" : "bản ghi"}</span>
       </div>
       <Notice message={message} />
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
-          <tbody>
-            {filtered.map((item) => {
-              const id = item.id ?? item.Id;
-              const status = item.status ?? item.Status ?? "Pending";
-              return (
-                <tr key={id}>
-                  <td><strong>{item.fullName ?? item.FullName ?? "N/A"}</strong></td>
-                  <td>{item.email ?? item.Email}</td>
-                  <td>{item.requestedRole ?? item.RequestedRole}</td>
-                  <td><span className={`status status--${status.toLowerCase()}`}>{status}</span></td>
-                  <td>{formatDate(item.createdAt ?? item.CreatedAt)}</td>
-                  <td>
-                    <div className="admin-actions">
-                      <button disabled={status !== "Pending"} onClick={() => approve(item)}>Phê duyệt</button>
-                      <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Từ chối</button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr><td colSpan={6}>Không tìm thấy đăng ký đang chờ nào.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+
+      {regTab === "entries" ? (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead><tr><th>Ngựa</th><th>Chủ ngựa</th><th>Kỵ sĩ</th><th>Giải đấu</th><th>Cuộc đua</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+              {entryItems.map((item) => {
+                const id = item.entryId ?? item.EntryId;
+                return (
+                  <tr key={id}>
+                    <td><strong>{item.horseName ?? item.HorseName ?? "N/A"}</strong></td>
+                    <td>{item.ownerName ?? item.OwnerName ?? "-"}</td>
+                    <td>{item.jockeyName ?? item.JockeyName ?? "Chưa có"}</td>
+                    <td>{item.tournamentName ?? item.TournamentName ?? "-"}</td>
+                    <td>{item.raceName ?? item.RaceName ?? "-"}</td>
+                    <td><span className="status status--pending">Pending</span></td>
+                    <td>
+                      <div className="admin-actions">
+                        <button onClick={() => approveEntry(item)}>Phê duyệt</button>
+                        <button className="admin-danger" onClick={() => rejectEntry(item)}>Từ chối</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {entryItems.length === 0 && (
+                <tr><td colSpan={7}>Không có đăng ký ngựa nào đang chờ.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+            <tbody>
+              {filtered.map((item) => {
+                const id = item.id ?? item.Id;
+                const status = item.status ?? item.Status ?? "Pending";
+                return (
+                  <tr key={id}>
+                    <td><strong>{item.fullName ?? item.FullName ?? "N/A"}</strong></td>
+                    <td>{item.email ?? item.Email}</td>
+                    <td>{item.requestedRole ?? item.RequestedRole}</td>
+                    <td><span className={`status status--${status.toLowerCase()}`}>{status}</span></td>
+                    <td>{formatDate(item.createdAt ?? item.CreatedAt)}</td>
+                    <td>
+                      <div className="admin-actions">
+                        <button disabled={status !== "Pending"} onClick={() => approve(item)}>Phê duyệt</button>
+                        <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Từ chối</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={6}>Không tìm thấy đăng ký đang chờ nào.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }
@@ -1320,7 +1360,7 @@ function RefereeAssignmentManagement() {
     setLoading(false);
   };
 
-  useEffect(() => { loadAssignments(); }, [selectedRace]);
+  useEffect(() => { loadAssignments(); }, [selectedRace]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAssign = async (e) => {
     e.preventDefault();
@@ -1446,7 +1486,7 @@ function WithdrawalManagement() {
       const res = await request("/api/withdrawal/admin/pending");
       const d = res?.data ?? res;
       setList(Array.isArray(d) ? d : []);
-    } catch {}
+    } catch { /* ignore */ }
     setLoading(false);
   };
 

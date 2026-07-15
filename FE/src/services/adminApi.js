@@ -126,3 +126,16 @@ export const assignRefereeToRace = (payload) =>
     method: "POST",
     body: JSON.stringify(payload),
   });
+
+// Tournament race entry management
+export const getPendingRaceEntries = async () =>
+  unwrap(await request("/api/admin/race-entries/pending"));
+
+export const approveRaceEntry = (entryId) =>
+  request(`/api/admin/race-entries/${entryId}/approve`, { method: "POST" });
+
+export const rejectRaceEntry = (entryId, reason) =>
+  request(`/api/admin/race-entries/${entryId}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });

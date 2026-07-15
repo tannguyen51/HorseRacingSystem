@@ -12,11 +12,15 @@ namespace HorseRacing.Services;
 public class TournamentService : ITournamentService
 {
     private readonly ITournamentRepository _tournamentRepo;
+    private readonly INotificationService _notificationService;
+    private readonly IUserRepository _userRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public TournamentService(ITournamentRepository tournamentRepo, IUnitOfWork unitOfWork)
+    public TournamentService(ITournamentRepository tournamentRepo, INotificationService notificationService, IUserRepository userRepo, IUnitOfWork unitOfWork)
     {
         _tournamentRepo = tournamentRepo;
+        _notificationService = notificationService;
+        _userRepo = userRepo;
         _unitOfWork = unitOfWork;
     }
 
@@ -38,6 +42,28 @@ public class TournamentService : ITournamentService
 
             await _tournamentRepo.AddAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
+
+            // Notify all spectators about new tournament
+            try
+            {
+                var users = await _userRepo.GetAllAsync();
+                var spectators = users.Where(u => u.Role == UserRole.Spectator && u.IsActive).ToList();
+                foreach (var s in spectators)
+                {
+                    await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                    {
+                        UserId = s.Id,
+                        Title = "Giải đấu mới",
+                        Message = $"Giải đấu \"{tournament.Name}\" vừa được tạo. Đặt cược ngay!",
+                        Type = NotificationType.InApp,
+                        Category = NotificationCategory.TournamentCreated,
+                        ActionUrl = $"/tournaments/{tournament.Id}",
+                        RelatedEntityId = tournament.Id,
+                        RelatedEntityType = "Tournament"
+                    });
+                }
+            }
+            catch { /* non-critical */ }
 
             return new ServiceResult<TournamentResponse>(201, ApiResult<TournamentResponse>.Ok(new TournamentResponse
             {

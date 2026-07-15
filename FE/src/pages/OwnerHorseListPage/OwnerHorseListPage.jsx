@@ -121,6 +121,7 @@ function OwnerHorseListPage() {
             const gender = h.gender ?? h.Gender ?? "";
             const totalRaces = h.totalRaces ?? h.TotalRaces ?? 0;
             const totalWins = h.totalWins ?? h.TotalWins ?? 0;
+            // eslint-disable-next-line no-unused-vars
             const winRate = totalRaces > 0 ? Math.round((totalWins / totalRaces) * 100) : 0;
             const approvalStatus = h.approvalStatus ?? h.ApprovalStatus ?? 0;
             const statusLabel = approvalStatusMap[approvalStatus] ?? "Chưa xác định";

@@ -17,7 +17,7 @@ export function RefereeNotificationsPanel() {
    * Handle when referee responds to an assignment
    */
   const handleAssignmentResponse = (responseData) => {
-    const { id, response, status } = responseData;
+    const { id, status } = responseData;
 
     // Update the assignment status in state
     updateAssignment(id, {

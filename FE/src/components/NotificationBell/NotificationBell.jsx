@@ -22,7 +22,7 @@ export default function NotificationBell() {
   }, [open]);
 
   const handleMark = async (id) => {
-    try { await markNotificationRead(id); load(); } catch {}
+    try { await markNotificationRead(id); load(); } catch { /* ignore */ }
   };
 
   return (

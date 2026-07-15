@@ -89,6 +89,7 @@ export default function RefereeRaceReportPage() {
   const [chartData, setChartData] = useState(() => {
     const now = new Date();
     return Array.from({ length: 6 }, (_, i) => {
+      // eslint-disable-next-line no-unused-vars
       const m = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
       return {
         month: MONTH_LABELS[i],

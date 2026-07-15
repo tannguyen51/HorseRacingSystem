@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
 
 export const detailBox = { padding: 16, border: "1px solid rgba(231,198,120,.1)", borderRadius: 12, background: "rgba(255, 255, 255, 0.88)" };
 export const profileLabel = { display: "block", color: "#657086", fontSize: 11, textTransform: "uppercase", marginBottom: 6 };

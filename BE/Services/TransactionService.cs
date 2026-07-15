@@ -18,6 +18,7 @@ public class TransactionService : ITransactionService
     private readonly ITransactionRepository _transactionRepo;
     private readonly IUserRepository _userRepo;
     private readonly IWalletService _walletService;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _config;
     private readonly ILogger<TransactionService> _logger;
@@ -26,6 +27,7 @@ public class TransactionService : ITransactionService
         ITransactionRepository transactionRepo,
         IUserRepository userRepo,
         IWalletService walletService,
+        INotificationService notificationService,
         IUnitOfWork unitOfWork,
         IConfiguration config,
         ILogger<TransactionService> logger)
@@ -33,6 +35,7 @@ public class TransactionService : ITransactionService
         _transactionRepo = transactionRepo;
         _userRepo = userRepo;
         _walletService = walletService;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
         _config = config;
         _logger = logger;
@@ -157,6 +160,21 @@ public class TransactionService : ITransactionService
         }
 
         _logger.LogInformation("Deposit completed: ref={Ref}, userId={UserId}, amount={Amount}", reference, tx.UserId, tx.Amount);
+
+        // Notify user of successful deposit
+        try
+        {
+            await _notificationService.CreateNotificationAsync(new Dtos.CreateNotificationDto
+            {
+                UserId = tx.UserId,
+                Title = "Nạp tiền thành công",
+                Message = $"Bạn vừa nạp thành công {tx.Amount:N0} VNĐ vào ví. Số dư đã được cập nhật.",
+                Type = NotificationType.InApp,
+                Category = NotificationCategory.DepositSuccess
+            });
+        }
+        catch { /* non-critical */ }
+
         return ServiceResult<object>.Ok(new { message = "Transaction completed.", userId = tx.UserId });
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatJockeyDate, getJockeyAssignedRaces } from "../../services/jockeyApi";
+import { getJockeyAssignedRaces } from "../../services/jockeyApi";
 import "./JockeyPerformancePage.css";
 
 const fallbackRaces = [

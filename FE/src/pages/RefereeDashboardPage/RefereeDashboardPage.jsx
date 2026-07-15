@@ -95,6 +95,7 @@ function SortArrow({ dir }) {
    Page Component
    ================================================================== */
 export default function RefereeDashboardPage() {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);

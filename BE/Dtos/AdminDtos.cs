@@ -51,6 +51,24 @@ public class AdminDashboardResponse
     public int UpcomingRaces { get; set; }
     public int PendingRegistrations { get; set; }
     public int OngoingRaces { get; set; }
+    public List<ActiveRaceItem> ActiveRaces { get; set; } = new();
+    public List<RecentActivityItem> RecentActivity { get; set; } = new();
+}
+
+public class ActiveRaceItem
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public int EntryCount { get; set; }
+    public DateTime ScheduledAt { get; set; }
+}
+
+public class RecentActivityItem
+{
+    public string Action { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
 
 public class UserManagementResponse

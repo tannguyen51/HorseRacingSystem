@@ -56,6 +56,7 @@ const TOP_OWNERS = [
   { name: "Michael Torres", horses: 2, wins: 8, entries: 18, rank: "#3" },
 ];
 
+/* eslint-disable no-unused-vars */
 const RECENT_RESULTS = [
   { race: "Opening Sprint", horse: "Silver Comet", jockey: "Marcus Chen", time: "1:11.24", position: 1 },
   { race: "Opening Sprint", horse: "Golden Arrow", jockey: "Elena Rodriguez", time: "1:11.89", position: 2 },

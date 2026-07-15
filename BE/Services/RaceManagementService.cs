@@ -427,45 +427,7 @@ public class RaceManagementService : IRaceManagementService
     {
         var entries = await _entryRepo.GetByRaceAsync(raceId);
         if (!entries.Any()) return;
-
-        // Calculate score for each entry
-        var scores = new List<(Guid entryId, decimal score)>();
-        foreach (var e in entries)
-        {
-            var horse = e.Horse ?? await _horseRepo.GetByIdAsync(e.HorseId);
-            var jockey = e.Jockey;
-
-            decimal winRate = horse != null && horse.TotalRaces > 0
-                ? (decimal)horse.TotalWins / horse.TotalRaces
-                : 0.10m;
-
-            decimal jockeyRate = jockey != null && jockey.WinRate > 0
-                ? jockey.WinRate / 100m
-                : 0.10m;
-
-            decimal experienceBonus = horse != null
-                ? Math.Min(horse.TotalRaces * 0.002m, 0.10m)
-                : 0m;
-
-            // Weighted score: base 0.05 ensures every horse has a minimum chance
-            decimal score = winRate * 0.50m + jockeyRate * 0.30m + experienceBonus + 0.05m;
-            scores.Add((e.Id, score));
-        }
-
-        decimal totalScore = scores.Sum(s => s.score);
-
-        // Convert scores to odds
-        foreach (var (entryId, score) in scores)
-        {
-            decimal probability = score / totalScore;
-            decimal odds = Math.Round(1m / probability, 2);
-            if (odds < 1.01m) odds = 1.01m; // minimum odds
-            if (odds > 99m) odds = 99m;     // maximum odds
-
-            var entry = entries.First(e => e.Id == entryId);
-            entry.Odds = odds;
-        }
-
+        OddsCalculator.Recalculate(entries);
         await _unitOfWork.SaveChangesAsync();
     }
 }
