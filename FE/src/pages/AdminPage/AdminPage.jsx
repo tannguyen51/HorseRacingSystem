@@ -117,6 +117,10 @@ const formatDate = (value) =>
     : "-";
 
 const inputDate = (days = 0) => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 16);
+};
 
 const tabStyle = (active) => ({
   padding: "5px 14px", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600,
@@ -125,10 +129,6 @@ const tabStyle = (active) => ({
   color: active ? "#1a1d23" : "#64748b",
   boxShadow: active ? "0 1px 3px rgba(0,0,0,0.06)" : "none"
 });
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 16);
-};
 
 const isGuid = (value) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
