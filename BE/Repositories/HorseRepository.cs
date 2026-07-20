@@ -29,6 +29,7 @@ public class HorseRepository : IHorseRepository
                     .ThenInclude(j => j!.User)
             .Include(h => h.RaceEntries)
                 .ThenInclude(e => e.Race)
+                    .ThenInclude(r => r.Tournament)
             .Where(h => h.OwnerId == ownerId)
             .ToListAsync();
 
@@ -53,6 +54,7 @@ public class HorseRepository : IHorseRepository
                     .ThenInclude(j => j!.User)
             .Include(h => h.RaceEntries)
                 .ThenInclude(e => e.Race)
+                    .ThenInclude(r => r.Tournament)
             .FirstOrDefaultAsync(h => h.Id == horseId);
 
         if (horse != null)
@@ -74,6 +76,7 @@ public class HorseRepository : IHorseRepository
                     .ThenInclude(j => j!.User)
             .Include(h => h.RaceEntries)
                 .ThenInclude(e => e.Race)
+                    .ThenInclude(r => r.Tournament)
             .FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
 
         if (horse != null)
