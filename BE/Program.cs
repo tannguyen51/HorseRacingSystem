@@ -152,7 +152,7 @@ builder.Services.AddScoped<ITournamentService, TournamentService>();
 builder.Services.AddScoped<IRoundService, RoundService>();
 builder.Services.AddScoped<IRaceManagementService, RaceManagementService>();
 builder.Services.AddScoped<IRefereeService, RefereeService>();
-builder.Services.AddScoped<IRefereeHtmlCheckService, RefereeHealthCheckService>();
+builder.Services.AddScoped<IRefereeHealthCheckService, RefereeHealthCheckService>();
 builder.Services.AddScoped<IViolationRecordService, ViolationRecordService>();
 builder.Services.AddScoped<IRaceReportService, RaceReportService>();
 builder.Services.AddScoped<IAdminService, AdminService>();

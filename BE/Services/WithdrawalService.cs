@@ -65,23 +65,23 @@ public class WithdrawalService : IWithdrawalService
 
     public async Task<ServiceResult<object>> CreateWithdrawalAsync(Guid userId, WithdrawalRequestDto request)
     {
-        // Use repository directly instead of reflection
         var wallet = await _walletRepo.GetByUserIdAsync(userId);
         var balance = wallet?.Balance ?? 0;
 
         if (balance < request.Amount)
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Số dư không đủ.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Số điểm không đủ.");
 
         var bankAccount = await _bankAccountRepo.GetByIdAsync(request.BankAccountId);
         if (bankAccount == null || bankAccount.UserId != userId)
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Tài khoản ngân hàng không hợp lệ.");
 
+        // request.Amount is in points
         var withdrawal = new WithdrawalRequest
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             BankAccountId = request.BankAccountId,
-            Amount = request.Amount,
+            Amount = request.Amount, // points
             Status = "pending",
             CreatedAt = DateTime.UtcNow
         };
@@ -91,12 +91,13 @@ public class WithdrawalService : IWithdrawalService
         var deductResult = await _walletService.DeductFundsAsync(userId, request.Amount, $"withdrawal_{withdrawal.Id}");
         if (!deductResult.IsSuccess)
         {
-            return deductResult; // Don't save withdrawal if deduction failed
+            return deductResult;
         }
 
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<object>.Ok(new { withdrawal.Id, withdrawal.Amount, withdrawal.Status, withdrawal.CreatedAt });
+        var vndAmount = request.Amount * _walletService.GetPointsPerVnd();
+        return ServiceResult<object>.Ok(new { withdrawal.Id, points = withdrawal.Amount, vndAmount, withdrawal.Status, withdrawal.CreatedAt });
     }
 
     public async Task<ServiceResult<object>> GetHistoryAsync(Guid userId)
@@ -168,10 +169,9 @@ public class WithdrawalService : IWithdrawalService
         withdrawal.ProcessedByUserId = adminId;
         withdrawal.Note = request.Note;
 
-        // If rejected, refund to wallet
         if (request.Status == "rejected")
         {
-            await _walletService.AddFundsAsync(withdrawal.UserId, withdrawal.Amount, $"refund_{withdrawal.Id}");
+            await _walletService.AddPointsAsync(withdrawal.UserId, withdrawal.Amount, $"refund_{withdrawal.Id}");
         }
 
         await _withdrawalRepo.UpdateAsync(withdrawal);

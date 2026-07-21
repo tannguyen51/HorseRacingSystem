@@ -17,6 +17,8 @@ public class RaceManagementService : IRaceManagementService
     private readonly IJockeyRepository _jockeyRepo;
     private readonly ITournamentRepository _tournamentRepo;
     private readonly IRoundRepository _roundRepo;
+    private readonly IPredictionRepository _predictionRepo;
+    private readonly IWalletService _walletService;
     private readonly IUnitOfWork _unitOfWork;
 
     public RaceManagementService(
@@ -26,6 +28,8 @@ public class RaceManagementService : IRaceManagementService
         IJockeyRepository jockeyRepo,
         ITournamentRepository tournamentRepo,
         IRoundRepository roundRepo,
+        IPredictionRepository predictionRepo,
+        IWalletService walletService,
         IUnitOfWork unitOfWork)
     {
         _raceRepo = raceRepo;
@@ -34,6 +38,8 @@ public class RaceManagementService : IRaceManagementService
         _jockeyRepo = jockeyRepo;
         _tournamentRepo = tournamentRepo;
         _roundRepo = roundRepo;
+        _predictionRepo = predictionRepo;
+        _walletService = walletService;
         _unitOfWork = unitOfWork;
     }
 
@@ -44,7 +50,7 @@ public class RaceManagementService : IRaceManagementService
             var tournament = await _tournamentRepo.GetByIdAsync(request.TournamentId);
             if (tournament == null)
             {
-                return ServiceResult<RaceDetailResponse>.Error("Tournament not found", 404);
+                return ServiceResult<RaceDetailResponse>.Error("Không tìm thấy giải đấu", 404);
             }
 
             var race = new Race
@@ -69,7 +75,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Error creating race: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi tạo cuộc đua: {ex.Message}");
         }
     }
 
@@ -80,14 +86,14 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<RaceDetailResponse>.Fail(404, "Race not found");
+                return ServiceResult<RaceDetailResponse>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
             return ServiceResult<RaceDetailResponse>.Ok(MapToDetailResponse(race));
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Error retrieving race: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi truy xuất cuộc đua: {ex.Message}");
         }
     }
 
@@ -98,17 +104,13 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<RaceDetailResponse>.Fail(404, "Race not found");
+                return ServiceResult<RaceDetailResponse>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
             if (!string.IsNullOrEmpty(request.Name))
                 race.Name = request.Name;
             if (request.ScheduledAt.HasValue)
                 race.ScheduledAt = request.ScheduledAt.Value;
-            if (request.ActualStartTime.HasValue)
-                race.ActualStartTime = request.ActualStartTime.Value;
-            if (request.ActualEndTime.HasValue)
-                race.ActualEndTime = request.ActualEndTime.Value;
             if (!string.IsNullOrEmpty(request.Location))
                 race.Location = request.Location;
             if (!string.IsNullOrEmpty(request.Description))
@@ -126,7 +128,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Error updating race: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi cập nhật cuộc đua: {ex.Message}");
         }
     }
 
@@ -141,7 +143,7 @@ public class RaceManagementService : IRaceManagementService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RaceDetailResponse>>.Fail(
-                500, $"Error retrieving races: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách cuộc đua: {ex.Message}");
         }
     }
 
@@ -156,7 +158,7 @@ public class RaceManagementService : IRaceManagementService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RaceDetailResponse>>.Fail(
-                500, $"Error retrieving races: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách cuộc đua: {ex.Message}");
         }
     }
 
@@ -164,13 +166,20 @@ public class RaceManagementService : IRaceManagementService
     {
         try
         {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.Cancelled)
+                return ServiceResult<bool>.Fail(400, $"Không thể xóa cuộc đua với trạng thái '{race.Status}'. Chỉ có thể xóa cuộc đua đã lên lịch hoặc đã hủy.");
+
             await _raceRepo.DeleteAsync(raceId);
             await _unitOfWork.SaveChangesAsync();
             return ServiceResult<bool>.Ok(true);
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error deleting race: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa cuộc đua: {ex.Message}");
         }
     }
 
@@ -181,16 +190,43 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
+
+            if (race.Status != RaceStatus.Scheduled)
+            {
+                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+            }
+
+            var currentCount = await _entryRepo.GetByRaceAsync(raceId);
+            if (currentCount.Count >= race.MaxParticipants)
+            {
+                return ServiceResult<bool>.Fail(400, $"Cuộc đua đã đạt số lượng người tham gia tối đa ({race.MaxParticipants}).");
+            }
+
             var horse = await _horseRepo.GetByIdAsync(request.HorseId);
             if (horse == null)
             {
-                return ServiceResult<bool>.Fail(404, "Horse not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy ngựa");
             }
             if (horse.ApprovalStatus != ApprovalStatus.Approved)
             {
-                return ServiceResult<bool>.Fail(400, "Horse is not approved by admin");
+                return ServiceResult<bool>.Fail(400, "Ngựa chưa được admin phê duyệt");
+            }
+
+            var alreadyInActiveRace = await _entryRepo.IsHorseInActiveRaceAsync(request.HorseId);
+            if (alreadyInActiveRace)
+            {
+                var busyEntry = (await _entryRepo.GetByHorseAsync(request.HorseId))
+                    .FirstOrDefault(e => e.Race != null && e.Race.Status != RaceStatus.Finished && e.Race.Status != RaceStatus.Cancelled);
+                var busyRaceName = busyEntry?.Race?.Name ?? "cuộc đua khác";
+                return ServiceResult<bool>.Fail(400, $"Ngựa này đã được đăng ký trong \"{busyRaceName}\". Không thể thêm vào nhiều cuộc đua cùng lúc.");
+            }
+
+            var existsInThisRace = await _entryRepo.ExistsAsync(raceId, request.HorseId);
+            if (existsInThisRace)
+            {
+                return ServiceResult<bool>.Fail(400, "Ngựa đã được thêm vào cuộc đua này.");
             }
 
             var activeJockeyInvitation = horse.JockeyInvitations
@@ -212,7 +248,7 @@ public class RaceManagementService : IRaceManagementService
             {
                 return ServiceResult<bool>.Fail(
                     400,
-                    $"Horse is already assigned to jockey {assignedJockey.User?.FullName ?? assignedJockey.Id.ToString()}");
+                    $"Ngựa đã được phân công cho kỵ sĩ {assignedJockey.User?.FullName ?? assignedJockey.Id.ToString()}");
             }
 
             if (assignedJockey != null)
@@ -225,11 +261,11 @@ public class RaceManagementService : IRaceManagementService
                 var jockey = await _jockeyRepo.GetByIdAsync(request.JockeyId.Value);
                 if (jockey == null)
                 {
-                    return ServiceResult<bool>.Fail(404, "Jockey not found");
+                    return ServiceResult<bool>.Fail(404, "Không tìm thấy kỵ sĩ");
                 }
                 if (jockey.ApprovalStatus != ApprovalStatus.Approved)
                 {
-                    return ServiceResult<bool>.Fail(400, "Jockey is not approved by admin");
+                    return ServiceResult<bool>.Fail(400, "Kỵ sĩ chưa được admin phê duyệt");
                 }
             }
 
@@ -245,14 +281,13 @@ public class RaceManagementService : IRaceManagementService
             await _entryRepo.AddAsync(entry);
             await _unitOfWork.SaveChangesAsync();
 
-            // Recalculate odds for all entries in this race
             await RecalculateOddsAsync(raceId);
 
             return new ServiceResult<bool>(201, ApiResult<bool>.Ok(true));
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error assigning horse: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi phân công ngựa: {ex.Message}");
         }
     }
 
@@ -263,11 +298,55 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
+            if (race.Status != RaceStatus.Scheduled)
+            {
+                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+            }
+
+            var currentCount = await _entryRepo.GetByRaceAsync(raceId);
+            if (currentCount.Count >= race.MaxParticipants)
+            {
+                return ServiceResult<bool>.Fail(400, $"Cuộc đua đã đạt số lượng người tham gia tối đa ({race.MaxParticipants}).");
+            }
+
+            var errors = new List<string>();
+            var added = 0;
             foreach (var horseId in request.HorseIds)
             {
+                if (added + currentCount.Count >= race.MaxParticipants)
+                {
+                    errors.Add($"Đã đạt số lượng tối đa ({race.MaxParticipants}), bỏ qua các ngựa còn lại.");
+                    break;
+                }
+                var horse = await _horseRepo.GetByIdAsync(horseId);
+                if (horse == null)
+                {
+                    errors.Add($"Không tìm thấy ngựa {horseId}");
+                    continue;
+                }
+                if (horse.ApprovalStatus != ApprovalStatus.Approved)
+                {
+                    errors.Add($"Ngựa \"{horse.Name}\" chưa được phê duyệt");
+                    continue;
+                }
+
+                var alreadyInActiveRace = await _entryRepo.IsHorseInActiveRaceAsync(horseId);
+                if (alreadyInActiveRace)
+                {
+                    errors.Add($"Ngựa \"{horse.Name}\" đã đăng ký trong cuộc đua khác");
+                    continue;
+                }
+
+                var existsInThisRace = await _entryRepo.ExistsAsync(raceId, horseId);
+                if (existsInThisRace)
+                {
+                    errors.Add($"Ngựa \"{horse.Name}\" đã được thêm vào cuộc đua này");
+                    continue;
+                }
+
                 var entry = new RaceEntry
                 {
                     Id = Guid.NewGuid(),
@@ -276,15 +355,23 @@ public class RaceManagementService : IRaceManagementService
                     Status = RegistrationStatus.Pending
                 };
                 await _entryRepo.AddAsync(entry);
+                added++;
             }
 
             await _unitOfWork.SaveChangesAsync();
             await RecalculateOddsAsync(raceId);
+
+            if (errors.Count > 0 && errors.Count == request.HorseIds.Length)
+                return ServiceResult<bool>.Fail(400, $"Không thể thêm tất cả ngựa: {string.Join("; ", errors)}");
+
+            if (errors.Count > 0)
+                return new ServiceResult<bool>(207, ApiResult<bool>.Ok(true, $"Đã thêm với cảnh báo: {string.Join("; ", errors)}"));
+
             return new ServiceResult<bool>(201, ApiResult<bool>.Ok(true));
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error bulk assigning horses: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi thêm hàng loạt ngựa: {ex.Message}");
         }
     }
 
@@ -292,10 +379,17 @@ public class RaceManagementService : IRaceManagementService
     {
         try
         {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.Scheduled)
+                return ServiceResult<bool>.Fail(400, "Không thể xóa ngựa sau khi cuộc đua đã bắt đầu.");
+
             var entry = await _entryRepo.GetByRaceAndHorseAsync(raceId, horseId);
             if (entry == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race entry not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy đăng ký tham gia");
             }
 
             await _entryRepo.DeleteAsync(entry.Id);
@@ -305,7 +399,20 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error removing horse: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa ngựa khỏi cuộc đua: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<List<Guid>>> GetBusyHorseIdsAsync()
+    {
+        try
+        {
+            var ids = await _entryRepo.GetHorseIdsInActiveRacesAsync();
+            return ServiceResult<List<Guid>>.Ok(ids);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<List<Guid>>.Fail(500, $"Lỗi lấy danh sách ngựa bận: {ex.Message}");
         }
     }
 
@@ -316,12 +423,18 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
             if (race.Status != RaceStatus.Scheduled)
             {
-                return ServiceResult<bool>.Fail(400, $"Cannot start race with status '{race.Status}'. Race must be Scheduled.");
+                return ServiceResult<bool>.Fail(400, $"Không thể bắt đầu cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+            }
+
+            var entries = await _entryRepo.GetByRaceAsync(raceId);
+            if (entries.Count == 0)
+            {
+                return ServiceResult<bool>.Fail(400, "Không thể bắt đầu cuộc đua khi chưa có ngựa tham gia.");
             }
 
             race.Status = RaceStatus.InProgress;
@@ -334,7 +447,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error starting race: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi bắt đầu cuộc đua: {ex.Message}");
         }
     }
 
@@ -345,15 +458,21 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
             if (race.Status != RaceStatus.InProgress)
             {
-                return ServiceResult<bool>.Fail(400, $"Cannot end race with status '{race.Status}'. Race must be InProgress.");
+                return ServiceResult<bool>.Fail(400, $"Không thể kết thúc cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải đang diễn ra.");
             }
 
-            race.Status = RaceStatus.Finished;
+            var entries = await _entryRepo.GetByRaceAsync(raceId);
+            if (entries.Count == 0)
+            {
+                return ServiceResult<bool>.Fail(400, "Không thể kết thúc cuộc đua khi chưa có ngựa tham gia.");
+            }
+
+            race.Status = RaceStatus.AwaitingResult;
             race.ActualEndTime = DateTime.UtcNow;
             race.UpdatedAt = DateTime.UtcNow;
 
@@ -363,7 +482,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error ending race: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi kết thúc cuộc đua: {ex.Message}");
         }
     }
 
@@ -374,12 +493,30 @@ public class RaceManagementService : IRaceManagementService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Fail(404, "Race not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
-            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.InProgress)
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.InProgress && race.Status != RaceStatus.AwaitingResult && race.Status != RaceStatus.ResultPendingApproval)
             {
-                return ServiceResult<bool>.Fail(400, $"Cannot cancel race with status '{race.Status}'.");
+                return ServiceResult<bool>.Fail(400, $"Không thể hủy cuộc đua với trạng thái '{race.Status}'.");
+            }
+
+            // Refund all pending predictions
+            var pendingPredictions = await _predictionRepo.GetByRaceAsync(raceId);
+            var refunded = 0;
+            foreach (var p in pendingPredictions.Where(p => p.Status == PredictionStatus.Pending))
+            {
+                try
+                {
+                    await _walletService.AddPointsAsync(p.SpectatorUserId, p.BetAmount, $"refund_{raceId}");
+                    p.Status = PredictionStatus.Lost; // Use Lost as "refunded/cancelled"
+                    p.SettledAt = DateTime.UtcNow;
+                    refunded++;
+                }
+                catch
+                {
+                    // If refund fails, keep prediction as Pending for manual resolution
+                }
             }
 
             race.Status = RaceStatus.Cancelled;
@@ -391,7 +528,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error cancelling race: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi hủy cuộc đua: {ex.Message}");
         }
     }
 
@@ -416,13 +553,6 @@ public class RaceManagementService : IRaceManagementService
         };
     }
 
-    /// <summary>
-    /// Tính toán tỉ lệ cược (odds) cho tất cả ngựa trong một cuộc đua dựa trên:
-    /// - Tỉ lệ thắng của ngựa (50% trọng số)
-    /// - Tỉ lệ thắng của kỵ sĩ (30% trọng số)
-    /// - Kinh nghiệm thi đấu (số trận đã tham gia)
-    /// Odds = 1 / probability, làm tròn 2 chữ số.
-    /// </summary>
     private async Task RecalculateOddsAsync(Guid raceId)
     {
         var entries = await _entryRepo.GetByRaceAsync(raceId);

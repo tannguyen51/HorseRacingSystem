@@ -42,10 +42,10 @@ function SpectatorDashboardPage() {
   }, []);
 
   const liveRaces = races.filter(
-    (r) => getField(r, "status", "Status") === "InProgress"
+    (r) => (getField(r, "status", "Status") ?? "").toLowerCase() === "inprogress"
   );
   const upcomingRaces = races.filter(
-    (r) => getField(r, "status", "Status") === "Scheduled"
+    (r) => (getField(r, "status", "Status") ?? "").toLowerCase() === "scheduled"
   );
 
   // --- Loading state ---

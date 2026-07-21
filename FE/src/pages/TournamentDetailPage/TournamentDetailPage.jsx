@@ -223,15 +223,15 @@ function fmtDate(v) {
 }
 
 function statusBg(s) {
-  const m = { scheduled: "rgba(37,99,235,0.1)", inprogress: "rgba(245,158,11,0.1)", finished: "rgba(16,185,129,0.1)", cancelled: "rgba(239,68,68,0.1)" };
+  const m = { scheduled: "rgba(37,99,235,0.1)", inprogress: "rgba(245,158,11,0.1)", finished: "rgba(16,185,129,0.1)", cancelled: "rgba(239,68,68,0.1)", awaitingresult: "rgba(139,92,246,0.1)", resultpendingapproval: "rgba(245,158,11,0.1)" };
   return m[(s || "").toLowerCase()] || "rgba(100,116,139,0.1)";
 }
 function statusColor(s) {
-  const m = { scheduled: "#2563eb", inprogress: "#f59e0b", finished: "#10b981", cancelled: "#ef4444" };
+  const m = { scheduled: "#2563eb", inprogress: "#f59e0b", finished: "#10b981", cancelled: "#ef4444", awaitingresult: "#8b5cf6", resultpendingapproval: "#f59e0b" };
   return m[(s || "").toLowerCase()] || "#64748b";
 }
 function statusLabel_(s) {
-  const m = { scheduled: "Sắp diễn ra", inprogress: "Đang đua", finished: "Đã kết thúc", cancelled: "Đã hủy" };
+  const m = { scheduled: "Sắp diễn ra", inprogress: "Đang đua", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt" };
   return m[(s || "").toLowerCase()] || s || "Không xác định";
 }
 

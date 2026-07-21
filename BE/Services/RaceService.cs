@@ -40,7 +40,7 @@ public class RaceService : IRaceService
         var race = await _races.GetByIdWithEntriesAsync(raceId);
         if (race == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Race not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
         return ServiceResult<object>.Ok(race);
@@ -51,7 +51,7 @@ public class RaceService : IRaceService
         var result = await _results.GetByRaceIdAsync(raceId);
         if (result == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Result not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kết quả");
         }
 
         return ServiceResult<object>.Ok(result);

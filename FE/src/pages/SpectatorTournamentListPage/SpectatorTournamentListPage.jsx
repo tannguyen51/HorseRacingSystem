@@ -32,9 +32,9 @@ const formatDate = (value) => {
 const formatPrizePool = (value) => {
   if (value == null || value === 0) return "Đang cập nhật";
   const num = Number(value);
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M USD`;
-  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K USD`;
-  return `${num.toLocaleString("en-US")} USD`;
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M VNĐ`;
+  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K VNĐ`;
+  return `${num.toLocaleString("vi-VN")} VNĐ`;
 };
 
 const getTournamentStatus = (t) => {

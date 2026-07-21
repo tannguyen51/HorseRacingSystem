@@ -75,6 +75,26 @@ public class RaceEntryRepository : IRaceEntryRepository
             .ToListAsync();
     }
 
+    public Task<List<Guid>> GetHorseIdsInActiveRacesAsync()
+    {
+        var finishedOrCancelled = new[] { RaceStatus.Finished, RaceStatus.Cancelled };
+        return _db.RaceEntries
+            .Where(e => !finishedOrCancelled.Contains(e.Race!.Status))
+            .Select(e => e.HorseId)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public Task<bool> IsHorseInActiveRaceAsync(Guid horseId, Guid? excludeRaceId = null)
+    {
+        var finishedOrCancelled = new[] { RaceStatus.Finished, RaceStatus.Cancelled };
+        var query = _db.RaceEntries
+            .Where(e => e.HorseId == horseId && !finishedOrCancelled.Contains(e.Race!.Status));
+        if (excludeRaceId.HasValue)
+            query = query.Where(e => e.RaceId != excludeRaceId.Value);
+        return query.AnyAsync();
+    }
+
     public async Task<RaceEntry?> GetByIdAsync(Guid id)
     {
         return await _db.RaceEntries

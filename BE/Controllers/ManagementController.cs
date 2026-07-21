@@ -100,7 +100,7 @@ public class ManagementController : ControllerBase
     [HttpPost("transfers/{id:guid}/reject")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> RejectTransfer(Guid id, [FromBody] RejectRequest r)
-        => OkR(await _transfer.RejectAsync(id, r.Reason ?? "Rejected", GetUserId()));
+        => OkR(await _transfer.RejectAsync(id, r.Reason ?? "Đã từ chối", GetUserId()));
 
     // ── Contracts (Owner creates, Owner/Jockey sign) ──
 

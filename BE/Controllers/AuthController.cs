@@ -82,7 +82,7 @@ public class AuthController : ControllerBase
 
         var user = await _userRepo.GetByIdAsync(userId);
         if (user is null) return NotFound();
-        if (!user.IsActive) return StatusCode(403, new { message = "User is deactivated." });
+        if (!user.IsActive) return StatusCode(403, new { message = "Tài khoản đã bị vô hiệu hóa" });
 
         return Ok(user.Role switch
         {
@@ -184,7 +184,7 @@ public class AuthController : ControllerBase
             }
         }
 
-        return Ok(new { message = "If the email exists, a reset link has been sent." });
+        return Ok(new { message = "Nếu email tồn tại, liên kết đặt lại mật khẩu đã được gửi" });
     }
 
     [EnableRateLimiting("auth")]
@@ -200,14 +200,14 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> UploadDocument(IFormFile file)
     {
         if (file is null || file.Length == 0)
-            return BadRequest(new { message = "No file uploaded." });
+            return BadRequest(new { message = "Không có file nào được tải lên" });
 
         if (file.Length > 10 * 1024 * 1024)
-            return BadRequest(new { message = "File size must not exceed 10MB." });
+            return BadRequest(new { message = "Dung lượng file không được vượt quá 10MB" });
 
         var allowedTypes = new[] { "application/pdf", "image/jpeg", "image/png", "image/jpg" };
         if (!allowedTypes.Contains(file.ContentType.ToLower()))
-            return BadRequest(new { message = "Only PDF, JPG, and PNG files are allowed." });
+            return BadRequest(new { message = "Chỉ cho phép file PDF, JPG và PNG" });
 
         try
         {

@@ -12,8 +12,8 @@ namespace HorseRacing.Controllers;
 [Route("api/referees")]
 public class HealthChecksController : ControllerBase
 {
-    private readonly IRefereeHtmlCheckService _service;
-    public HealthChecksController(IRefereeHtmlCheckService service) => _service = service;
+    private readonly IRefereeHealthCheckService _service;
+    public HealthChecksController(IRefereeHealthCheckService service) => _service = service;
 
     [HttpPost("health-checks")]
     [Authorize(Roles = "Referee")]
@@ -51,7 +51,7 @@ public class HealthChecksController : ControllerBase
     [HttpPost("health-checks/{id:guid}/reject")]
     [Authorize(Roles = "Referee,Admin")]
     public async Task<ActionResult> Reject(Guid id, [FromBody] RejectHealthCheckRequest r)
-        => OkR(await _service.RejectHorseForRaceAsync(id, r.Reason ?? "Health check failed"));
+        => OkR(await _service.RejectHorseForRaceAsync(id, r.Reason ?? "Không đạt kiểm tra sức khỏe"));
 
     private ActionResult OkR<T>(ServiceResult<T> r) => StatusCode(r.StatusCode, r.Result);
 }

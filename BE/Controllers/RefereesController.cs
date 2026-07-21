@@ -20,14 +20,22 @@ public class RefereesController : ControllerBase
     private readonly IRefereeRepository _refereeRepo;
     private readonly IRefereeAssignmentRepository _assignmentRepo;
     private readonly IRaceEntryRepository _entryRepo;
+    private readonly ILiveResultService _liveResultService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public RefereesController(IRefereeService refereeService, IRefereeRepository refereeRepo, IRefereeAssignmentRepository assignmentRepo, IRaceEntryRepository entryRepo, IUnitOfWork unitOfWork)
+    public RefereesController(
+        IRefereeService refereeService,
+        IRefereeRepository refereeRepo,
+        IRefereeAssignmentRepository assignmentRepo,
+        IRaceEntryRepository entryRepo,
+        ILiveResultService liveResultService,
+        IUnitOfWork unitOfWork)
     {
         _refereeService = refereeService;
         _refereeRepo = refereeRepo;
         _assignmentRepo = assignmentRepo;
         _entryRepo = entryRepo;
+        _liveResultService = liveResultService;
         _unitOfWork = unitOfWork;
     }
 
@@ -94,11 +102,11 @@ public class RefereesController : ControllerBase
     {
         var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (uid is null || !Guid.TryParse(uid, out var userId))
-            return Unauthorized(new { message = "Invalid token." });
+            return Unauthorized(new { message = "Token không hợp lệ" });
 
         var referee = await _refereeRepo.GetByUserIdAsync(userId);
         if (referee is null)
-            return NotFound(new { message = "Referee profile not found." });
+            return NotFound(new { message = "Không tìm thấy hồ sơ trọng tài" });
 
         var result = await _refereeService.GetRefereeAssignmentsAsync(referee.Id);
         if (result.StatusCode != 200)
@@ -120,11 +128,11 @@ public class RefereesController : ControllerBase
     public async Task<ActionResult> Respond(Guid assignmentId, [FromBody] RespondToAssignmentRequest r)
     {
         if (string.IsNullOrWhiteSpace(r.Response) || r.Response is not ("Accept" or "Reject"))
-            return BadRequest(new { message = "Response must be 'Accept' or 'Reject'." });
+            return BadRequest(new { message = "Phản hồi phải là 'Accept' hoặc 'Reject'." });
 
         var assignment = await _assignmentRepo.GetByIdAsync(assignmentId);
         if (assignment is null)
-            return NotFound(new { message = "Assignment not found." });
+            return NotFound(new { message = "Không tìm thấy phân công trọng tài." });
 
         if (string.Equals(r.Response, "Accept", StringComparison.OrdinalIgnoreCase))
         {
@@ -136,11 +144,12 @@ public class RefereesController : ControllerBase
         {
             assignment.Status = RefereeAssignmentStatus.Cancelled;
             assignment.CompletedAt = DateTime.UtcNow;
-            assignment.Notes = r.Notes ?? "Rejected by referee";
+            assignment.Notes = r.Notes ?? "Từ chối bởi trọng tài";
         }
 
         await _assignmentRepo.UpdateAsync(assignment);
-        return Ok(new { message = $"Assignment {r.Response.ToLowerInvariant()}ed." });
+        await _unitOfWork.SaveChangesAsync();
+        return Ok(new { message = $"Đã {r.Response.ToLowerInvariant()} phân công." });
     }
 
     [HttpGet("race/{raceId:guid}/entries")]
@@ -172,6 +181,28 @@ public class RefereesController : ControllerBase
             Odds = e.Odds,
             Status = e.Status.ToString()
         }));
+    }
+
+    [HttpPost("race/{raceId:guid}/submit-result")]
+    [Authorize(Roles = "Referee")]
+    public async Task<ActionResult> SubmitRaceResult(Guid raceId, [FromBody] RaceResultRequest request)
+    {
+        var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (uid is null || !Guid.TryParse(uid, out var userId))
+            return Unauthorized(new { message = "Token không hợp lệ" });
+
+        var referee = await _refereeRepo.GetByUserIdAsync(userId);
+        if (referee is null)
+            return NotFound(new { message = "Không tìm thấy hồ sơ trọng tài" });
+
+        // Verify referee is assigned to this race
+        var assignments = await _assignmentRepo.GetByRefereeAsync(referee.Id);
+        var isAssigned = assignments.Any(a => a.RaceId == raceId);
+        if (!isAssigned)
+            return Forbid();
+
+        var result = await _liveResultService.UpdateRaceResultAsync(raceId, request);
+        return StatusCode(result.StatusCode, result.Result);
     }
 
     private ActionResult OkR<T>(ServiceResult<T> r) => StatusCode(r.StatusCode, r.Result);

@@ -47,7 +47,7 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horses = await _horses.GetByOwnerAsync(owner.Id);
@@ -59,13 +59,13 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
         return ServiceResult<object>.Ok(horse);
@@ -76,7 +76,7 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var validationError = ValidateHorseStats(request.DateOfBirth, request.Age, request.TotalRaces, request.TotalWins);
@@ -114,13 +114,13 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
         var validationError = ValidateHorseStats(request.DateOfBirth, request.Age, request.TotalRaces, request.TotalWins);
@@ -150,20 +150,20 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
-            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
         await RemoveHorseRelatedDataAsync(horse);
         await _horses.RemoveAsync(horse);
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<string>.Ok("Deleted");
+        return ServiceResult<string>.Ok("Đã xóa");
     }
 
     public async Task<ServiceResult<object>> InviteJockeyAsync(Guid userId, Guid horseId, JockeyInvitationCreateRequest request)
@@ -171,13 +171,13 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
         var existingInvitation = await _invitations.GetByHorseAndJockeyAsync(horseId, request.JockeyId);
@@ -189,18 +189,18 @@ public class HorseService : IHorseService
             }
             else
             {
-                var jockeyName = existingInvitation.Jockey?.User?.FullName ?? "another jockey";
+                var jockeyName = existingInvitation.Jockey?.User?.FullName ?? "kỵ sĩ khác";
                 var status = existingInvitation.Status.ToString().ToLowerInvariant();
                 return ServiceResult<object>.Fail(
                     StatusCodes.Status409Conflict,
-                    $"This horse already has a {status} jockey assignment with {jockeyName}.");
+                    $"Ngựa này đã có kỵ sĩ {jockeyName} với trạng thái {status}");
             }
         }
 
         var jockeyExists = await _jockeys.ExistsAsync(request.JockeyId);
         if (!jockeyExists)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Jockey not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kỵ sĩ");
         }
 
         var invitation = new JockeyInvitation
@@ -224,32 +224,46 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
         if (horse == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Horse not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
         if (horse.ApprovalStatus != ApprovalStatus.Approved)
         {
             return ServiceResult<object>.Fail(
                 StatusCodes.Status400BadRequest,
-                "Only approved horses can be registered for a race.");
+                "Chỉ ngựa đã được phê duyệt mới có thể đăng ký tham gia");
         }
 
         var raceExists = await _races.ExistsAsync(raceId);
         if (!raceExists)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Race not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
+        }
+
+        // Check race is still open for registration
+        var race = await _races.GetByIdAsync(raceId);
+        if (race != null && race.Status != RaceStatus.Scheduled)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+        }
+
+        // Check horse is not already in another active race
+        var isBusy = await _raceEntries.IsHorseInActiveRaceAsync(horseId);
+        if (isBusy)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Ngựa này đã được đăng ký trong cuộc đua khác. Không thể thêm vào nhiều cuộc đua cùng lúc.");
         }
 
         var exists = await _raceEntries.ExistsAsync(raceId, horseId);
         if (exists)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Horse already registered.");
+            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Ngựa đã được đăng ký");
         }
 
         var entry = new RaceEntry
@@ -273,13 +287,13 @@ public class HorseService : IHorseService
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Owner profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var entry = await _raceEntries.GetByIdWithHorseAsync(entryId, raceId);
         if (entry?.Horse == null || entry.Horse.OwnerId != owner.Id)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Entry not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy đăng ký tham gia");
         }
 
         entry.OwnerConfirmed = true;
@@ -332,11 +346,7 @@ public class HorseService : IHorseService
             _db.HorseTransfers.RemoveRange(horseTransfers);
         }
 
-        var raceResults = await _db.RaceResults.Where(r => r.WinningHorseId == horse.Id).ToListAsync();
-        if (raceResults.Count > 0)
-        {
-            _db.RaceResults.RemoveRange(raceResults);
-        }
+        // Keep RaceResults for historical integrity — WinningHorseId will become orphaned but preserves history
     }
 
     private Task<Owner?> GetOwnerProfileAsync(Guid userId) => _owners.GetByUserIdAsync(userId);
@@ -349,7 +359,7 @@ public class HorseService : IHorseService
             var today = DateTime.Today;
             if (birthDate > today)
             {
-                return "Date of birth cannot be in the future.";
+                return "Ngày sinh không thể ở tương lai";
             }
 
             var expectedAge = today.Year - birthDate.Year;
@@ -360,13 +370,13 @@ public class HorseService : IHorseService
 
             if (age != expectedAge)
             {
-                return $"Age must be {expectedAge} based on the date of birth.";
+                return $"Tuổi phải là {expectedAge} dựa trên ngày sinh";
             }
         }
 
         if (totalWins > totalRaces)
         {
-            return "Total wins cannot be greater than total races.";
+            return "Tổng số trận thắng không thể lớn hơn tổng số trận đua";
         }
 
         return null;

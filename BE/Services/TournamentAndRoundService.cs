@@ -89,7 +89,7 @@ public class TournamentService : ITournamentService
         }
         catch (Exception ex)
         {
-            return ServiceResult<TournamentResponse>.Fail(500, $"Error creating tournament: {ex.Message}");
+            return ServiceResult<TournamentResponse>.Fail(500, $"Lỗi tạo giải đấu: {ex.Message}");
         }
     }
 
@@ -100,14 +100,14 @@ public class TournamentService : ITournamentService
             var tournament = await _tournamentRepo.GetByIdAsync(id);
             if (tournament == null)
             {
-                return ServiceResult<TournamentResponse>.Fail(404, "Tournament not found");
+                return ServiceResult<TournamentResponse>.Fail(404, "Không tìm thấy giải đấu");
             }
 
             return ServiceResult<TournamentResponse>.Ok(MapToResponse(tournament));
         }
         catch (Exception ex)
         {
-            return ServiceResult<TournamentResponse>.Fail(500, $"Error retrieving tournament: {ex.Message}");
+            return ServiceResult<TournamentResponse>.Fail(500, $"Lỗi truy xuất giải đấu: {ex.Message}");
         }
     }
 
@@ -122,7 +122,7 @@ public class TournamentService : ITournamentService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<TournamentResponse>>.Fail(
-                500, $"Error retrieving tournaments: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách giải đấu: {ex.Message}");
         }
     }
 
@@ -137,7 +137,7 @@ public class TournamentService : ITournamentService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<TournamentResponse>>.Fail(
-                500, $"Error retrieving active tournaments: {ex.Message}");
+                500, $"Lỗi truy xuất giải đấu đang hoạt động: {ex.Message}");
         }
     }
 
@@ -148,7 +148,7 @@ public class TournamentService : ITournamentService
             var tournament = await _tournamentRepo.GetByIdAsync(id);
             if (tournament == null)
             {
-                return ServiceResult<TournamentResponse>.Fail(404, "Tournament not found");
+                return ServiceResult<TournamentResponse>.Fail(404, "Không tìm thấy giải đấu");
             }
 
             if (!string.IsNullOrEmpty(request.Name))
@@ -171,7 +171,7 @@ public class TournamentService : ITournamentService
         }
         catch (Exception ex)
         {
-            return ServiceResult<TournamentResponse>.Fail(500, $"Error updating tournament: {ex.Message}");
+            return ServiceResult<TournamentResponse>.Fail(500, $"Lỗi cập nhật giải đấu: {ex.Message}");
         }
     }
 
@@ -185,7 +185,7 @@ public class TournamentService : ITournamentService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error deleting tournament: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa giải đấu: {ex.Message}");
         }
     }
 
@@ -228,7 +228,7 @@ public class RoundService : IRoundService
             var tournament = await _tournamentRepo.GetByIdAsync(request.TournamentId);
             if (tournament == null)
             {
-                return ServiceResult<RoundResponse>.Fail(404, "Tournament not found");
+                return ServiceResult<RoundResponse>.Fail(404, "Không tìm thấy giải đấu");
             }
 
             var round = new Round
@@ -249,7 +249,7 @@ public class RoundService : IRoundService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RoundResponse>.Fail(500, $"Error creating round: {ex.Message}");
+            return ServiceResult<RoundResponse>.Fail(500, $"Lỗi tạo vòng đấu: {ex.Message}");
         }
     }
 
@@ -260,14 +260,14 @@ public class RoundService : IRoundService
             var round = await _roundRepo.GetByIdAsync(id);
             if (round == null)
             {
-                return ServiceResult<RoundResponse>.Fail(404, "Round not found");
+                return ServiceResult<RoundResponse>.Fail(404, "Không tìm thấy vòng đấu");
             }
 
             return ServiceResult<RoundResponse>.Ok(MapToResponse(round));
         }
         catch (Exception ex)
         {
-            return ServiceResult<RoundResponse>.Fail(500, $"Error retrieving round: {ex.Message}");
+            return ServiceResult<RoundResponse>.Fail(500, $"Lỗi truy xuất vòng đấu: {ex.Message}");
         }
     }
 
@@ -282,7 +282,7 @@ public class RoundService : IRoundService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RoundResponse>>.Fail(
-                500, $"Error retrieving rounds: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách vòng đấu: {ex.Message}");
         }
     }
 
@@ -293,7 +293,7 @@ public class RoundService : IRoundService
             var round = await _roundRepo.GetByIdAsync(id);
             if (round == null)
             {
-                return ServiceResult<RoundResponse>.Fail(404, "Round not found");
+                return ServiceResult<RoundResponse>.Fail(404, "Không tìm thấy vòng đấu");
             }
 
             if (!string.IsNullOrEmpty(request.Name))
@@ -318,7 +318,7 @@ public class RoundService : IRoundService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RoundResponse>.Fail(500, $"Error updating round: {ex.Message}");
+            return ServiceResult<RoundResponse>.Fail(500, $"Lỗi cập nhật vòng đấu: {ex.Message}");
         }
     }
 
@@ -332,7 +332,7 @@ public class RoundService : IRoundService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error deleting round: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa vòng đấu: {ex.Message}");
         }
     }
 

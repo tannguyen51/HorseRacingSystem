@@ -138,13 +138,14 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> RejectJockey(Guid jockeyId, [FromBody] RejectJockeyRequest request)
     {
         var reason = string.IsNullOrWhiteSpace(request?.Reason)
-            ? "No reason provided"
+            ? "Không có lý do"
             : request.Reason.Trim();
         var result = await _adminService.RejectJockeyAsync(jockeyId, reason);
         return StatusCode(result.StatusCode, result.Result);
     }
 
     // Operations
+    [Obsolete("Use referee submit-result + admin approve-result flow instead.")]
     [HttpPost("races/{raceId:guid}/publish-result")]
     public async Task<ActionResult> PublishRaceResult(Guid raceId, [FromBody] RaceResultRequest request)
     {
@@ -152,6 +153,23 @@ public class AdminController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpPost("races/{raceId:guid}/approve-result")]
+    public async Task<ActionResult> ApproveRaceResult(Guid raceId)
+    {
+        var result = await _adminService.ApproveRaceResultAsync(raceId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("races/{raceId:guid}/reject-result")]
+    public async Task<ActionResult> RejectRaceResult(Guid raceId, [FromBody] RejectResultRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Reason))
+            return BadRequest(new { message = "Cần nhập lý do." });
+        var result = await _adminService.RejectRaceResultAsync(raceId, request.Reason);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [Obsolete("Use approve-result flow instead — settlement is now automatic on approval.")]
     [HttpPost("races/{raceId:guid}/settle-predictions")]
     public async Task<ActionResult> SettlePredictions(Guid raceId, [FromBody] RaceResultRequest request)
     {
@@ -185,7 +203,7 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> ApproveRaceEntry(Guid entryId)
     {
         var entry = await _entryRepo.GetByIdAsync(entryId);
-        if (entry == null) return NotFound(new { message = "Entry not found." });
+        if (entry == null) return NotFound(new { message = "Không tìm thấy đăng ký tham gia" });
         entry.Status = RegistrationStatus.Approved;
         await _entryRepo.UpdateAsync(entry);
         await _unitOfWork.SaveChangesAsync();
@@ -196,7 +214,7 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> RejectRaceEntry(Guid entryId, [FromBody] EntryRejectRequest request)
     {
         var entry = await _entryRepo.GetByIdAsync(entryId);
-        if (entry == null) return NotFound(new { message = "Entry not found." });
+        if (entry == null) return NotFound(new { message = "Không tìm thấy đăng ký tham gia" });
         entry.Status = RegistrationStatus.Rejected;
         entry.ScratchedAt = DateTime.UtcNow;
         entry.ScratchReason = request?.Reason ?? "Bị từ chối bởi admin";

@@ -14,6 +14,8 @@ public interface IRaceEntryRepository
     Task<List<RaceEntry>> GetByJockeyAsync(Guid jockeyId);
     Task<List<RaceEntry>> GetByHorseAsync(Guid horseId);
     Task<List<RaceEntry>> GetByRaceAsync(Guid raceId);
+    Task<List<Guid>> GetHorseIdsInActiveRacesAsync();
+    Task<bool> IsHorseInActiveRaceAsync(Guid horseId, Guid? excludeRaceId = null);
     Task AddAsync(RaceEntry entry);
     Task UpdateAsync(RaceEntry entry);
     Task UpdateRangeAsync(IEnumerable<RaceEntry> entries);

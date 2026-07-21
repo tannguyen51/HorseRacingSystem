@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { request } from "../../services/apiClient";
 
-const fDate = (v) => v ? new Date(v).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "-";
+const fDate = (v) => v ? new Date(v).toLocaleString("vi-VN", { dateStyle: "medium", timeStyle: "short" }) : "-";
 const PAGE_SIZE = 20;
 
 export function AuditLogViewer() {

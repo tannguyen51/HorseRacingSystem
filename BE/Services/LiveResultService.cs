@@ -47,7 +47,7 @@ public class LiveResultService : ILiveResultService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<LiveRaceResultResponse>.Error("Race not found", 404);
+                return ServiceResult<LiveRaceResultResponse>.Error("Không tìm thấy cuộc đua", 404);
             }
 
             var entries = await _raceManagementRepo.GetRaceEntriesAsync(raceId);
@@ -73,7 +73,7 @@ public class LiveResultService : ILiveResultService
                 {
                     Position = i + 1,
                     HorseId = e.HorseId,
-                    HorseName = e.Horse?.Name ?? "Unknown",
+                    HorseName = e.Horse?.Name ?? "Không xác định",
                     JockeyId = e.JockeyId,
                     JockeyName = e.Jockey?.User?.FullName,
                     Status = e.Status.ToString(),
@@ -85,7 +85,7 @@ public class LiveResultService : ILiveResultService
         }
         catch (Exception ex)
         {
-            return ServiceResult<LiveRaceResultResponse>.Error($"Error getting live results: {ex.Message}", 500);
+            return ServiceResult<LiveRaceResultResponse>.Error($"Lỗi lấy kết quả trực tiếp: {ex.Message}", 500);
         }
     }
 
@@ -96,7 +96,7 @@ public class LiveResultService : ILiveResultService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<RaceRankingResponse>.Error("Race not found", 404);
+                return ServiceResult<RaceRankingResponse>.Error("Không tìm thấy cuộc đua", 404);
             }
 
             var entries = await _raceManagementRepo.GetRaceEntriesAsync(raceId);
@@ -107,7 +107,7 @@ public class LiveResultService : ILiveResultService
                 {
                     Position = i + 1,
                     HorseId = e.HorseId,
-                    HorseName = e.Horse?.Name ?? "Unknown",
+                    HorseName = e.Horse?.Name ?? "Không xác định",
                     JockeyId = e.JockeyId,
                     JockeyName = e.Jockey?.User?.FullName,
                     TimeTaken = null, // Calculate from tracking
@@ -129,7 +129,7 @@ public class LiveResultService : ILiveResultService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceRankingResponse>.Error($"Error getting rankings: {ex.Message}", 500);
+            return ServiceResult<RaceRankingResponse>.Error($"Lỗi lấy bảng xếp hạng: {ex.Message}", 500);
         }
     }
 
@@ -144,7 +144,7 @@ public class LiveResultService : ILiveResultService
                 {
                     Position = i + 1,
                     HorseId = e.HorseId,
-                    HorseName = e.Horse?.Name ?? "Unknown",
+                    HorseName = e.Horse?.Name ?? "Không xác định",
                     JockeyId = e.JockeyId,
                     JockeyName = e.Jockey?.User?.FullName,
                     Status = e.Status.ToString(),
@@ -157,7 +157,7 @@ public class LiveResultService : ILiveResultService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<CurrentPositionData>>.Error(
-                $"Error getting current positions: {ex.Message}", 500);
+                $"Lỗi lấy vị trí hiện tại: {ex.Message}", 500);
         }
     }
 
@@ -168,19 +168,36 @@ public class LiveResultService : ILiveResultService
             var race = await _raceRepo.GetByIdAsync(raceId);
             if (race == null)
             {
-                return ServiceResult<bool>.Error("Race not found", 404);
+                return ServiceResult<bool>.Error("Không tìm thấy cuộc đua", 404);
+            }
+
+            // Validate that the winning horse is actually in this race
+            var isHorseInRace = await _entryRepo.ExistsAsync(raceId, request.WinningHorseId);
+            if (!isHorseInRace)
+            {
+                return ServiceResult<bool>.Error("Ngựa thắng không có trong danh sách tham gia cuộc đua này", 400);
+            }
+
+            if (race.Status != RaceStatus.AwaitingResult && race.Status != RaceStatus.ResultPendingApproval)
+            {
+                return ServiceResult<bool>.Error($"Không thể cập nhật kết quả cho cuộc đua với trạng thái '{race.Status}'.", 400);
             }
 
             var existingResult = await _raceResultRepo.GetByRaceIdAsync(raceId);
-            
+
             if (existingResult != null)
             {
                 existingResult.WinningHorseId = request.WinningHorseId;
                 existingResult.Notes = request.Notes;
                 existingResult.RecordedAt = DateTime.UtcNow;
+                existingResult.ApprovalStatus = ApprovalStatus.Pending;
+                existingResult.IsOfficial = false;
+                existingResult.RejectedReason = null;
                 await _raceResultRepo.UpdateAsync(existingResult);
+                race.Status = RaceStatus.ResultPendingApproval;
+                race.UpdatedAt = DateTime.UtcNow;
+                await _raceRepo.UpdateAsync(race);
                 await _unitOfWork.SaveChangesAsync();
-                await _predictionService.SettlePredictionAsync(raceId, request.WinningHorseId);
                 return ServiceResult<bool>.Success(true);
             }
 
@@ -191,20 +208,21 @@ public class LiveResultService : ILiveResultService
                 RaceId = raceId,
                 WinningHorseId = request.WinningHorseId,
                 RecordedAt = DateTime.UtcNow,
+                ApprovalStatus = ApprovalStatus.Pending,
                 Notes = request.Notes
             };
 
             await _raceResultRepo.AddAsync(result);
+            race.Status = RaceStatus.ResultPendingApproval;
+            race.UpdatedAt = DateTime.UtcNow;
+            await _raceRepo.UpdateAsync(race);
             await _unitOfWork.SaveChangesAsync();
-
-            // Settle predictions — pay winners and mark losers
-            await _predictionService.SettlePredictionAsync(raceId, request.WinningHorseId);
 
             return ServiceResult<bool>.Success(true);
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Error($"Error updating race result: {ex.Message}", 500);
+            return ServiceResult<bool>.Error($"Lỗi cập nhật kết quả cuộc đua: {ex.Message}", 500);
         }
     }
 
@@ -215,7 +233,7 @@ public class LiveResultService : ILiveResultService
             var entry = await _entryRepo.GetByRaceAndHorseAsync(raceId, horseId);
             if (entry == null)
             {
-                return ServiceResult<bool>.Error("Race entry not found", 404);
+                return ServiceResult<bool>.Error("Không tìm thấy đăng ký tham gia", 404);
             }
 
             entry.Status = Enum.Parse<RegistrationStatus>(status);
@@ -226,7 +244,7 @@ public class LiveResultService : ILiveResultService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Error($"Error updating participant status: {ex.Message}", 500);
+            return ServiceResult<bool>.Error($"Lỗi cập nhật trạng thái người tham gia: {ex.Message}", 500);
         }
     }
 }

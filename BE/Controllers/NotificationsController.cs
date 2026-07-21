@@ -44,7 +44,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting user notifications: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving notifications" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất thông báo" });
         }
     }
 
@@ -67,7 +67,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting unread notifications: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving notifications" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất thông báo" });
         }
     }
 
@@ -90,7 +90,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error filtering notifications: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error filtering notifications" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi lọc thông báo" });
         }
     }
 
@@ -115,7 +115,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting notification: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving notification" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất thông báo" });
         }
     }
 
@@ -139,8 +139,8 @@ public class NotificationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error marking notification as read: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error marking notification as read" });
+            _logger.LogError($"Lỗi đánh dấu thông báo đã đọc: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi đánh dấu đã đọc" });
         }
     }
 
@@ -161,8 +161,8 @@ public class NotificationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error marking notifications as read: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error marking notifications as read" });
+            _logger.LogError($"Lỗi đánh dấu thông báo đã đọc: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi đánh dấu đã đọc" });
         }
     }
 
@@ -186,8 +186,8 @@ public class NotificationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error deleting notification: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error deleting notification" });
+            _logger.LogError($"Lỗi xóa thông báo: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi xóa thông báo" });
         }
     }
 
@@ -210,7 +210,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting unread count: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving unread count" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi lấy số lượng chưa đọc" });
         }
     }
 
@@ -233,7 +233,7 @@ public class NotificationsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting notification stats: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving stats" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất thống kê" });
         }
     }
 
@@ -255,8 +255,8 @@ public class NotificationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error creating notification: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error creating notification" });
+            _logger.LogError($"Lỗi tạo thông báo: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi tạo thông báo" });
         }
     }
 
@@ -278,8 +278,8 @@ public class NotificationsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error sending bulk notifications: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error sending bulk notifications" });
+            _logger.LogError($"Lỗi gửi thông báo hàng loạt: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi gửi thông báo hàng loạt" });
         }
     }
 }

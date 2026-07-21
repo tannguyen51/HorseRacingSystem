@@ -11,7 +11,7 @@ import { getRaceEntries } from "../../services/refereeApi";
 import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
-const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy" };
+const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt" };
 
 const formatCountdown = (value) => {
   if (!value) return "--:--";
@@ -365,7 +365,7 @@ function SpectatorPredictionFormPage() {
             Số tiền cược
             {walletBalance !== null && (
               <span style={{ fontSize: 12, fontWeight: 400, color: "#657086", marginLeft: 8 }}>
-                (Số dư: <strong style={{ color: walletBalance >= (parseFloat(betAmount) || 0) ? "#1a7d1a" : "#c41e1e" }}>{Number(walletBalance).toLocaleString()}đ</strong>)
+                (Số dư: <strong style={{ color: walletBalance >= (parseFloat(betAmount) || 0) ? "#1a7d1a" : "#c41e1e" }}>{Number(walletBalance).toLocaleString()} điểm</strong>)
               </span>
             )}
           </label>

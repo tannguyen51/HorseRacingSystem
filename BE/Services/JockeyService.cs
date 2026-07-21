@@ -38,7 +38,7 @@ public class JockeyService : IJockeyService
         {
             Id = jockey.Id,
             UserId = jockey.UserId,
-            FullName = jockey.User?.FullName ?? "Unnamed jockey",
+            FullName = jockey.User?.FullName ?? "Ky sĩ chưa đặt tên",
             Email = jockey.User?.Email ?? string.Empty,
             LicenseNumber = jockey.LicenseNumber,
             Nationality = jockey.Nationality,
@@ -74,7 +74,7 @@ public class JockeyService : IJockeyService
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                Status = "Active",
+                Status = "Đang hoạt động",
                 ApprovalStatus = ApprovalStatus.Pending,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -89,7 +89,7 @@ public class JockeyService : IJockeyService
         var jockey = await _jockeys.GetByUserIdAsync(userId);
         if (jockey == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Jockey profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
         }
 
         var invitations = await _invitations.GetByJockeyAsync(jockey.Id);
@@ -101,13 +101,13 @@ public class JockeyService : IJockeyService
         var jockey = await _jockeys.GetByUserIdAsync(userId);
         if (jockey == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Jockey profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
         }
 
         var invitation = await _invitations.GetByIdAsync(invitationId, jockey.Id);
         if (invitation == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Invitation not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy lời mời");
         }
 
         invitation.Status = request.Accept ? JockeyInvitationStatus.Accepted : JockeyInvitationStatus.Declined;
@@ -117,7 +117,7 @@ public class JockeyService : IJockeyService
             var entry = await _raceEntries.GetByRaceHorseAsync(invitation.RaceId.Value, invitation.HorseId);
             if (entry == null)
             {
-                return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Race entry not found for this horse.");
+                return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy đăng ký tham gia cho ngựa này");
             }
 
             entry.JockeyId = jockey.Id;
@@ -134,7 +134,7 @@ public class JockeyService : IJockeyService
         var jockey = await _jockeys.GetByUserIdAsync(userId);
         if (jockey == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Jockey profile not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
         }
 
         var races = await _raceEntries.GetByJockeyAsync(jockey.Id);

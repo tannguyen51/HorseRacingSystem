@@ -57,7 +57,7 @@ public class RefereeService : IRefereeService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RefereeResponse>.Fail(500, $"Error creating referee: {ex.Message}");
+            return ServiceResult<RefereeResponse>.Fail(500, $"Lỗi tạo trọng tài: {ex.Message}");
         }
     }
 
@@ -68,14 +68,14 @@ public class RefereeService : IRefereeService
             var referee = await _refereeRepo.GetByIdAsync(id);
             if (referee == null)
             {
-                return ServiceResult<RefereeResponse>.Fail(404, "Referee not found");
+                return ServiceResult<RefereeResponse>.Fail(404, "Không tìm thấy trọng tài");
             }
 
             return ServiceResult<RefereeResponse>.Ok(MapToResponse(referee));
         }
         catch (Exception ex)
         {
-            return ServiceResult<RefereeResponse>.Fail(500, $"Error retrieving referee: {ex.Message}");
+            return ServiceResult<RefereeResponse>.Fail(500, $"Lỗi truy xuất trọng tài: {ex.Message}");
         }
     }
 
@@ -90,7 +90,7 @@ public class RefereeService : IRefereeService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RefereeResponse>>.Fail(
-                500, $"Error retrieving referees: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách trọng tài: {ex.Message}");
         }
     }
 
@@ -105,7 +105,7 @@ public class RefereeService : IRefereeService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RefereeResponse>>.Fail(
-                500, $"Error retrieving active referees: {ex.Message}");
+                500, $"Lỗi truy xuất trọng tài đang hoạt động: {ex.Message}");
         }
     }
 
@@ -116,7 +116,7 @@ public class RefereeService : IRefereeService
             var referee = await _refereeRepo.GetByIdAsync(id);
             if (referee == null)
             {
-                return ServiceResult<RefereeResponse>.Fail(404, "Referee not found");
+                return ServiceResult<RefereeResponse>.Fail(404, "Không tìm thấy trọng tài");
             }
 
             if (!string.IsNullOrEmpty(request.LicenseNumber))
@@ -136,7 +136,7 @@ public class RefereeService : IRefereeService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RefereeResponse>.Fail(500, $"Error updating referee: {ex.Message}");
+            return ServiceResult<RefereeResponse>.Fail(500, $"Lỗi cập nhật trọng tài: {ex.Message}");
         }
     }
 
@@ -150,7 +150,7 @@ public class RefereeService : IRefereeService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error deleting referee: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa trọng tài: {ex.Message}");
         }
     }
 
@@ -162,13 +162,13 @@ public class RefereeService : IRefereeService
             var race = await _raceRepo.GetByIdAsync(request.RaceId);
             if (race == null)
             {
-                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Race not found");
+                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
             var referee = await _refereeRepo.GetByIdAsync(request.RefereeId);
             if (referee == null)
             {
-                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Referee not found");
+                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Không tìm thấy trọng tài");
             }
 
             var assignment = new RefereeAssignment
@@ -189,7 +189,7 @@ public class RefereeService : IRefereeService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RefereeAssignmentResponse>.Fail(500, $"Error assigning referee: {ex.Message}");
+            return ServiceResult<RefereeAssignmentResponse>.Fail(500, $"Lỗi phân công trọng tài: {ex.Message}");
         }
     }
 
@@ -212,7 +212,7 @@ public class RefereeService : IRefereeService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RefereeAssignmentResponse>>.Fail(
-                500, $"Error retrieving assignments: {ex.Message}");
+                500, $"Lỗi truy xuất phân công: {ex.Message}");
         }
     }
 
@@ -235,7 +235,7 @@ public class RefereeService : IRefereeService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RefereeAssignmentResponse>>.Fail(
-                500, $"Error retrieving assignments: {ex.Message}");
+                500, $"Lỗi truy xuất phân công: {ex.Message}");
         }
     }
 
@@ -246,7 +246,7 @@ public class RefereeService : IRefereeService
             var assignment = await _assignmentRepo.GetByIdAsync(request.AssignmentId);
             if (assignment == null)
             {
-                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Assignment not found");
+                return ServiceResult<RefereeAssignmentResponse>.Fail(404, "Không tìm thấy phân công");
             }
 
             assignment.Status = RefereeAssignmentStatus.Confirmed;
@@ -264,7 +264,7 @@ public class RefereeService : IRefereeService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RefereeAssignmentResponse>.Fail(500, $"Error confirming assignment: {ex.Message}");
+            return ServiceResult<RefereeAssignmentResponse>.Fail(500, $"Lỗi xác nhận phân công: {ex.Message}");
         }
     }
 

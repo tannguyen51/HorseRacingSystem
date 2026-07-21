@@ -79,7 +79,7 @@ public class ProtestService : IProtestService
     public async Task<ServiceResult<ProtestResponse>> RuleAsync(Guid id, RuleProtestRequest r, Guid ruledByUserId)
     {
         var protest = await _repo.GetByIdAsync(id);
-        if (protest == null) return ServiceResult<ProtestResponse>.Fail(404, "Protest not found");
+        if (protest == null) return ServiceResult<ProtestResponse>.Fail(404, "Không tìm thấy khiếu nại");
 
         protest.Status = r.Ruling.Contains("Upheld", StringComparison.OrdinalIgnoreCase) ? ProtestStatus.Upheld : ProtestStatus.Rejected;
         protest.Ruling = r.Ruling;
@@ -129,7 +129,7 @@ public class HorseTransferService : IHorseTransferService
     public async Task<ServiceResult<HorseTransferResponse>> ApproveAsync(Guid id, ApproveHorseTransferRequest r, Guid approvedByUserId)
     {
         var t = await _repo.GetByIdAsync(id);
-        if (t == null) return ServiceResult<HorseTransferResponse>.Fail(404, "Transfer not found");
+        if (t == null) return ServiceResult<HorseTransferResponse>.Fail(404, "Không tìm thấy chuyển nhượng");
         t.Status = TransferStatus.Approved;
         t.ApprovedByUserId = approvedByUserId;
         t.ApprovedAt = DateTime.UtcNow;
@@ -143,7 +143,7 @@ public class HorseTransferService : IHorseTransferService
     public async Task<ServiceResult<HorseTransferResponse>> RejectAsync(Guid id, string reason, Guid approvedByUserId)
     {
         var t = await _repo.GetByIdAsync(id);
-        if (t == null) return ServiceResult<HorseTransferResponse>.Fail(404, "Transfer not found");
+        if (t == null) return ServiceResult<HorseTransferResponse>.Fail(404, "Không tìm thấy chuyển nhượng");
         t.Status = TransferStatus.Rejected;
         t.ApprovedByUserId = approvedByUserId;
         t.ApprovedAt = DateTime.UtcNow;
@@ -186,7 +186,7 @@ public class ContractService : IContractService
     public async Task<ServiceResult<ContractResponse>> SignByOwnerAsync(Guid id, Guid ownerId)
     {
         var c = await _repo.GetByIdAsync(id);
-        if (c == null || c.OwnerId != ownerId) return ServiceResult<ContractResponse>.Fail(404, "Contract not found");
+        if (c == null || c.OwnerId != ownerId) return ServiceResult<ContractResponse>.Fail(404, "Không tìm thấy hợp đồng");
         c.SignedByOwnerAt = DateTime.UtcNow;
         if (c.SignedByJockeyAt != null) c.Status = ContractStatus.Active;
         await _repo.UpdateAsync(c);
@@ -197,7 +197,7 @@ public class ContractService : IContractService
     public async Task<ServiceResult<ContractResponse>> SignByJockeyAsync(Guid id, Guid jockeyId)
     {
         var c = await _repo.GetByIdAsync(id);
-        if (c == null || c.JockeyId != jockeyId) return ServiceResult<ContractResponse>.Fail(404, "Contract not found");
+        if (c == null || c.JockeyId != jockeyId) return ServiceResult<ContractResponse>.Fail(404, "Không tìm thấy hợp đồng");
         c.SignedByJockeyAt = DateTime.UtcNow;
         if (c.SignedByOwnerAt != null) c.Status = ContractStatus.Active;
         await _repo.UpdateAsync(c);
@@ -256,7 +256,7 @@ public class InjuryRecordService : IInjuryRecordService
     public async Task<ServiceResult<InjuryRecordResponse>> MarkRecoveredAsync(Guid id)
     {
         var r = await _repo.GetByIdAsync(id);
-        if (r == null) return ServiceResult<InjuryRecordResponse>.Fail(404, "Record not found");
+        if (r == null) return ServiceResult<InjuryRecordResponse>.Fail(404, "Không tìm thấy bản ghi");
         r.Status = InjuryStatus.Recovered;
         r.RecoveredAt = DateTime.UtcNow;
         await _repo.UpdateAsync(r);
@@ -267,7 +267,7 @@ public class InjuryRecordService : IInjuryRecordService
     public async Task<ServiceResult<InjuryRecordResponse>> ClearToRaceAsync(Guid id)
     {
         var r = await _repo.GetByIdAsync(id);
-        if (r == null) return ServiceResult<InjuryRecordResponse>.Fail(404, "Record not found");
+        if (r == null) return ServiceResult<InjuryRecordResponse>.Fail(404, "Không tìm thấy bản ghi");
         r.ClearedToRace = true;
         r.ClearedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(r);

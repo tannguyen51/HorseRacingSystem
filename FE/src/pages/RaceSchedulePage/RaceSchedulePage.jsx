@@ -4,11 +4,16 @@ import "./RaceSchedulePage.css";
 
 const fDate = (v) =>
   v
-    ? new Date(v).toLocaleString("en-US", {
+    ? new Date(v).toLocaleString("vi-VN", {
         dateStyle: "medium",
         timeStyle: "short",
       })
     : "Chưa xác định";
+
+const statusLabel = (s) => {
+  const m = { scheduled: "Đã lên lịch", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt" };
+  return m[(s ?? "").toLowerCase()] ?? s ?? "Đã lên lịch";
+};
 
 function RaceSchedulePage() {
   const [races, setRaces] = useState([]);
@@ -38,7 +43,7 @@ function RaceSchedulePage() {
           {races.map((r) => (
             <div key={r.id ?? r.Id} className="race-card">
               <div>
-                <span className="badge">{r.status ?? r.Status ?? "Đã lên lịch"}</span>
+                <span className="badge">{statusLabel(r.status ?? r.Status)}</span>
                 <h3>{r.name ?? r.Name}</h3>
               </div>
               <div className="race-meta">

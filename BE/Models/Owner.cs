@@ -28,7 +28,7 @@ public class Owner
     public string? BusinessLicenseNumber { get; set; }
 
     [MaxLength(50)]
-    public string OwnerType { get; set; } = "Individual";
+    public string OwnerType { get; set; } = "Cá nhân";
 
     [MaxLength(20)]
     public string? Phone { get; set; }
@@ -39,7 +39,7 @@ public class Owner
     public DateTime JoinDate { get; set; } = DateTime.UtcNow;
 
     [MaxLength(50)]
-    public string Status { get; set; } = "Active";
+    public string Status { get; set; } = "Đang hoạt động";
 
     [MaxLength(2000)]
     public string? Notes { get; set; }

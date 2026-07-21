@@ -145,3 +145,12 @@ export const settlePredictions = (raceId, winningHorseId) =>
     method: "POST",
     body: JSON.stringify({ winningHorseId }),
   });
+
+export const approveRaceResult = (raceId) =>
+  request(`/api/admin/races/${raceId}/approve-result`, { method: "POST" });
+
+export const rejectRaceResult = (raceId, reason) =>
+  request(`/api/admin/races/${raceId}/reject-result`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });

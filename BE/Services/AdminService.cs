@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
@@ -23,6 +24,7 @@ public class AdminService : IAdminService
     private readonly IRefereeService _refereeService;
     private readonly ILiveResultService _liveResultService;
     private readonly IPredictionService _predictionService;
+    private readonly IRaceResultRepository _raceResultRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public AdminService(
@@ -36,6 +38,7 @@ public class AdminService : IAdminService
         IRefereeService refereeService,
         ILiveResultService liveResultService,
         IPredictionService predictionService,
+        IRaceResultRepository raceResultRepo,
         IUnitOfWork unitOfWork)
     {
         _userRepo = userRepo;
@@ -48,6 +51,7 @@ public class AdminService : IAdminService
         _refereeService = refereeService;
         _liveResultService = liveResultService;
         _predictionService = predictionService;
+        _raceResultRepo = raceResultRepo;
         _unitOfWork = unitOfWork;
     }
 
@@ -96,7 +100,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<AdminDashboardResponse>.Fail(500, $"Error loading dashboard: {ex.Message}");
+            return ServiceResult<AdminDashboardResponse>.Fail(500, $"Lỗi tải dashboard: {ex.Message}");
         }
     }
 
@@ -120,7 +124,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<IEnumerable<UserManagementResponse>>.Fail(500, $"Error retrieving users: {ex.Message}");
+            return ServiceResult<IEnumerable<UserManagementResponse>>.Fail(500, $"Lỗi truy xuất người dùng: {ex.Message}");
         }
     }
 
@@ -131,7 +135,7 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<UserManagementResponse>.Fail(404, "User not found");
+                return ServiceResult<UserManagementResponse>.Fail(404, "Không tìm thấy người dùng");
             }
 
             var response = new UserManagementResponse
@@ -149,7 +153,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<UserManagementResponse>.Fail(500, $"Error retrieving user: {ex.Message}");
+            return ServiceResult<UserManagementResponse>.Fail(500, $"Lỗi truy xuất người dùng: {ex.Message}");
         }
     }
 
@@ -160,7 +164,7 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<bool>.Fail(404, "User not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy người dùng");
             }
 
             user.IsActive = false;
@@ -170,7 +174,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error deactivating user: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi hủy kích hoạt người dùng: {ex.Message}");
         }
     }
 
@@ -181,7 +185,7 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<bool>.Fail(404, "User not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy người dùng");
             }
 
             user.IsActive = true;
@@ -191,7 +195,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error reactivating user: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi kích hoạt lại người dùng: {ex.Message}");
         }
     }
 
@@ -202,18 +206,18 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "User not found");
+                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "Không tìm thấy người dùng");
             }
 
-            if (user.Role != UserRole.HorseOwner)
+            if (user.Role != UserRole.HorseOwner && user.Role != UserRole.Jockey)
             {
                 return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(
-                    400, "Only users with the HorseOwner role have horses.");
+                    400, "Chỉ người dùng có vai trò Chủ sở hữu mới có ngựa");
             }
 
             if (user.OwnerProfile == null)
             {
-                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "Owner profile not found");
+                return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(404, "Không tìm thấy hồ sơ chủ sở hữu");
             }
 
             var horses = await _horseRepo.GetByOwnerAsync(user.OwnerProfile.Id);
@@ -223,7 +227,7 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<AdminHorseResponse>>.Fail(
-                500, $"Error retrieving owner horses: {ex.Message}");
+                500, $"Lỗi truy xuất ngựa của chủ sở hữu: {ex.Message}");
         }
     }
 
@@ -234,25 +238,25 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<AdminHorseResponse>.Fail(404, "User not found");
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Không tìm thấy người dùng");
             }
 
-            if (user.Role != UserRole.HorseOwner)
+            if (user.Role != UserRole.HorseOwner && user.Role != UserRole.Jockey)
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    400, "Only users with the HorseOwner role have horses.");
+                    400, "Chỉ người dùng có vai trò Chủ sở hữu mới có ngựa");
             }
 
             if (user.OwnerProfile == null)
             {
-                return ServiceResult<AdminHorseResponse>.Fail(404, "Owner profile not found");
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Không tìm thấy hồ sơ chủ sở hữu");
             }
 
             var horse = await _horseRepo.GetOwnedHorseAsync(horseId, user.OwnerProfile.Id);
             if (horse == null)
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    404, "Horse not found for this owner.");
+                    404, "Không tìm thấy ngựa của chủ sở hữu này");
             }
 
             return ServiceResult<AdminHorseResponse>.Ok(MapHorseResponse(horse, user));
@@ -260,7 +264,7 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<AdminHorseResponse>.Fail(
-                500, $"Error retrieving horse detail: {ex.Message}");
+                500, $"Lỗi truy xuất chi tiết ngựa: {ex.Message}");
         }
     }
 
@@ -274,38 +278,38 @@ public class AdminService : IAdminService
             var user = await _userRepo.GetByIdAsync(userId);
             if (user == null)
             {
-                return ServiceResult<AdminHorseResponse>.Fail(404, "User not found");
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Không tìm thấy người dùng");
             }
 
-            if (user.Role != UserRole.HorseOwner)
+            if (user.Role != UserRole.HorseOwner && user.Role != UserRole.Jockey)
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    400, "Only users with the HorseOwner role have horses.");
+                    400, "Chỉ người dùng có vai trò Chủ sở hữu mới có ngựa");
             }
 
             if (user.OwnerProfile == null)
             {
-                return ServiceResult<AdminHorseResponse>.Fail(404, "Owner profile not found");
+                return ServiceResult<AdminHorseResponse>.Fail(404, "Không tìm thấy hồ sơ chủ sở hữu");
             }
 
             if (!Enum.TryParse<ApprovalStatus>(request.Status, true, out var status) ||
                 !Enum.IsDefined(status))
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    400, "Status must be Pending, Approved, or Rejected.");
+                    400, "Trạng thái phải là Pending, Approved hoặc Rejected");
             }
 
             if (status == ApprovalStatus.Rejected && string.IsNullOrWhiteSpace(request.Note))
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    400, "A rejection note is required when rejecting a horse.");
+                    400, "Cần ghi lý do khi từ chối ngựa");
             }
 
             var horse = await _horseRepo.GetOwnedHorseAsync(horseId, user.OwnerProfile.Id);
             if (horse == null)
             {
                 return ServiceResult<AdminHorseResponse>.Fail(
-                    404, "Horse not found for this owner.");
+                    404, "Không tìm thấy ngựa của chủ sở hữu này");
             }
 
             horse.ApprovalStatus = status;
@@ -321,7 +325,7 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<AdminHorseResponse>.Fail(
-                500, $"Error updating horse status: {ex.Message}");
+                500, $"Lỗi cập nhật trạng thái ngựa: {ex.Message}");
         }
     }
 
@@ -332,14 +336,14 @@ public class AdminService : IAdminService
             var registration = await _registrationRepo.GetByIdAsync(id);
             if (registration == null)
             {
-                return ServiceResult<UserRegistrationResponse>.Fail(404, "Registration not found");
+                return ServiceResult<UserRegistrationResponse>.Fail(404, "Không tìm thấy đăng ký");
             }
 
             return ServiceResult<UserRegistrationResponse>.Ok(MapToResponse(registration));
         }
         catch (Exception ex)
         {
-            return ServiceResult<UserRegistrationResponse>.Fail(500, $"Error retrieving registration: {ex.Message}");
+            return ServiceResult<UserRegistrationResponse>.Fail(500, $"Lỗi truy xuất thông tin đăng ký: {ex.Message}");
         }
     }
 
@@ -354,7 +358,7 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<UserRegistrationResponse>>.Fail(
-                500, $"Error retrieving pending registrations: {ex.Message}");
+                500, $"Lỗi truy xuất đăng ký đang chờ: {ex.Message}");
         }
     }
 
@@ -369,7 +373,7 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<UserRegistrationResponse>>.Fail(
-                500, $"Error retrieving registrations: {ex.Message}");
+                500, $"Lỗi truy xuất danh sách đăng ký: {ex.Message}");
         }
     }
 
@@ -380,7 +384,7 @@ public class AdminService : IAdminService
             var registration = await _registrationRepo.GetByIdAsync(request.RegistrationId);
             if (registration == null)
             {
-                return ServiceResult<bool>.Fail(404, "Registration not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy đăng ký");
             }
 
             // Create new user
@@ -411,7 +415,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error approving registration: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi phê duyệt đăng ký: {ex.Message}");
         }
     }
 
@@ -422,7 +426,7 @@ public class AdminService : IAdminService
             var registration = await _registrationRepo.GetByIdAsync(request.RegistrationId);
             if (registration == null)
             {
-                return ServiceResult<bool>.Fail(404, "Registration not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy đăng ký");
             }
 
             registration.Status = RegistrationStatus.Rejected;
@@ -437,7 +441,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error rejecting registration: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi từ chối đăng ký: {ex.Message}");
         }
     }
 
@@ -448,7 +452,7 @@ public class AdminService : IAdminService
             var jockey = await _jockeyRepo.GetByIdAsync(jockeyId);
             if (jockey == null)
             {
-                return ServiceResult<bool>.Fail(404, "Jockey not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy kỵ sĩ");
             }
             jockey.ApprovalStatus = ApprovalStatus.Approved;
             jockey.ApprovalNote = null;
@@ -458,7 +462,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error approving jockey: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi phê duyệt kỵ sĩ: {ex.Message}");
         }
     }
 
@@ -469,7 +473,7 @@ public class AdminService : IAdminService
             var jockey = await _jockeyRepo.GetByIdAsync(jockeyId);
             if (jockey == null)
             {
-                return ServiceResult<bool>.Fail(404, "Jockey not found");
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy kỵ sĩ");
             }
             jockey.ApprovalStatus = ApprovalStatus.Rejected;
             jockey.ApprovalNote = reason;
@@ -479,7 +483,7 @@ public class AdminService : IAdminService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Error rejecting jockey: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, $"Lỗi từ chối kỵ sĩ: {ex.Message}");
         }
     }
 
@@ -503,6 +507,85 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<bool>.Fail(500, $"Lỗi thanh toán: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> ApproveRaceResultAsync(Guid raceId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.ResultPendingApproval)
+                return ServiceResult<bool>.Fail(400, "Cuộc đua không ở trạng thái chờ duyệt kết quả");
+
+            var raceResult = await _raceResultRepo.GetByRaceIdAsync(raceId);
+            if (raceResult == null)
+                return ServiceResult<bool>.Fail(404, "Chưa có kết quả cuộc đua. Trọng tài phải nộp kết quả trước.");
+
+            // Wrap in transaction: if settlement fails, race + result roll back
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                raceResult.ApprovalStatus = ApprovalStatus.Approved;
+                raceResult.IsOfficial = true;
+                raceResult.ApprovedAt = DateTime.UtcNow;
+                await _raceResultRepo.UpdateAsync(raceResult);
+
+                race.Status = RaceStatus.Finished;
+                race.UpdatedAt = DateTime.UtcNow;
+                await _raceRepo.UpdateAsync(race);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await _predictionService.SettlePredictionAsync(raceId, raceResult.WinningHorseId);
+
+                scope.Complete();
+                return ServiceResult<bool>.Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Fail(500, $"Lỗi phê duyệt kết quả: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi phê duyệt kết quả: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> RejectRaceResultAsync(Guid raceId, string reason)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.ResultPendingApproval)
+                return ServiceResult<bool>.Fail(400, "Cuộc đua không ở trạng thái chờ duyệt kết quả");
+
+            var raceResult = await _raceResultRepo.GetByRaceIdAsync(raceId);
+            if (raceResult == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy kết quả cuộc đua");
+
+            raceResult.ApprovalStatus = ApprovalStatus.Rejected;
+            raceResult.RejectedReason = reason;
+            await _raceResultRepo.UpdateAsync(raceResult);
+
+            race.Status = RaceStatus.AwaitingResult;
+            race.UpdatedAt = DateTime.UtcNow;
+            await _raceRepo.UpdateAsync(race);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi từ chối kết quả: {ex.Message}");
         }
     }
 
@@ -573,7 +656,7 @@ public class AdminService : IAdminService
             AssignedJockeyId = assignedJockey?.Id,
             AssignedJockeyName = assignedJockey?.User?.FullName,
             JockeyAssignmentStatus = activeJockeyInvitation?.Status.ToString() ??
-                (raceAssignedJockey != null ? "RaceAssigned" : null),
+                (raceAssignedJockey != null ? "Đã phân công cuộc đua" : null),
             AssignedJockeyIds = assignedJockeyIds
         };
     }

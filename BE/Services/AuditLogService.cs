@@ -52,7 +52,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = MapToDto(auditLog),
-                    Message = "Audit log created successfully"
+                    Message = "Đã tạo nhật ký"
                 }
             };
         }
@@ -64,7 +64,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<AuditLogDto>
                 {
                     Success = false,
-                    Message = $"Error creating audit log: {ex.Message}"
+                    Message = $"Lỗi tạo nhật ký: {ex.Message}"
                 }
             };
         }
@@ -83,7 +83,7 @@ public class AuditLogService : IAuditLogService
                     Result = new ApiResult<AuditLogDetailDto>
                     {
                         Success = false,
-                        Message = "Audit log not found"
+                        Message = "Không tìm thấy nhật ký"
                     }
                 };
             }
@@ -95,7 +95,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = MapToDetailDto(auditLog),
-                    Message = "Audit log retrieved successfully"
+                    Message = "Đã lấy nhật ký"
                 }
             };
         }
@@ -107,7 +107,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<AuditLogDetailDto>
                 {
                     Success = false,
-                    Message = $"Error retrieving audit log: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký: {ex.Message}"
                 }
             };
         }
@@ -127,7 +127,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Audit logs retrieved successfully"
+                    Message = "Đã lấy danh sách nhật ký"
                 }
             };
         }
@@ -139,7 +139,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký: {ex.Message}"
                 }
             };
         }
@@ -159,7 +159,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Entity audit logs retrieved successfully"
+                    Message = "Đã lấy nhật ký đối tượng"
                 }
             };
         }
@@ -171,7 +171,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving entity audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký đối tượng: {ex.Message}"
                 }
             };
         }
@@ -191,7 +191,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Filtered audit logs retrieved successfully"
+                    Message = "Đã lọc nhật ký"
                 }
             };
         }
@@ -203,7 +203,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký: {ex.Message}"
                 }
             };
         }
@@ -223,7 +223,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Date range audit logs retrieved successfully"
+                    Message = "Đã lấy nhật ký theo khoảng thời gian"
                 }
             };
         }
@@ -235,7 +235,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký: {ex.Message}"
                 }
             };
         }
@@ -255,7 +255,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "User audit logs retrieved successfully"
+                    Message = "Đã lấy nhật ký người dùng"
                 }
             };
         }
@@ -267,7 +267,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving user audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký người dùng: {ex.Message}"
                 }
             };
         }
@@ -293,7 +293,7 @@ public class AuditLogService : IAuditLogService
                     .GroupBy(l => l.EntityType)
                     .ToDictionary(g => g.Key, g => g.Count()),
                 ByAdmin = allLogs
-                    .GroupBy(l => l.Admin?.Email ?? "Unknown")
+                    .GroupBy(l => l.Admin?.Email ?? "Không xác định")
                     .ToDictionary(g => g.Key, g => g.Count()),
                 LastWeekCount = allLogs.Count(l => l.CreatedAt >= oneWeekAgo),
                 LastMonthCount = allLogs.Count(l => l.CreatedAt >= oneMonthAgo)
@@ -306,7 +306,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = stats,
-                    Message = "Audit stats retrieved successfully"
+                    Message = "Đã lấy thống kê nhật ký"
                 }
             };
         }
@@ -318,7 +318,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<AuditLogStatsDto>
                 {
                     Success = false,
-                    Message = $"Error retrieving audit stats: {ex.Message}"
+                    Message = $"Lỗi truy xuất thống kê nhật ký: {ex.Message}"
                 }
             };
         }
@@ -338,7 +338,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = true,
-                    Message = $"Audit logs older than {daysOlder} days deleted successfully"
+                    Message = $"Đã xóa nhật ký cũ hơn {daysOlder} ngày"
                 }
             };
         }
@@ -350,7 +350,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<bool>
                 {
                     Success = false,
-                    Message = $"Error deleting old audit logs: {ex.Message}"
+                    Message = $"Lỗi xóa nhật ký cũ: {ex.Message}"
                 }
             };
         }
@@ -372,7 +372,7 @@ public class AuditLogService : IAuditLogService
                     {
                         Success = true,
                         Data = csv,
-                        Message = "Audit logs exported as CSV successfully"
+                        Message = "Đã xuất nhật ký dạng CSV"
                     }
                 };
             }
@@ -386,7 +386,7 @@ public class AuditLogService : IAuditLogService
                     {
                         Success = true,
                         Data = json,
-                        Message = "Audit logs exported as JSON successfully"
+                        Message = "Đã xuất nhật ký dạng JSON"
                     }
                 };
             }
@@ -399,7 +399,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<string>
                 {
                     Success = false,
-                    Message = $"Error exporting audit logs: {ex.Message}"
+                    Message = $"Lỗi xuất nhật ký: {ex.Message}"
                 }
             };
         }
@@ -419,7 +419,7 @@ public class AuditLogService : IAuditLogService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Latest audit logs retrieved successfully"
+                    Message = "Đã lấy nhật ký mới nhất"
                 }
             };
         }
@@ -431,7 +431,7 @@ public class AuditLogService : IAuditLogService
                 Result = new ApiResult<List<AuditLogDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving latest audit logs: {ex.Message}"
+                    Message = $"Lỗi truy xuất nhật ký mới nhất: {ex.Message}"
                 }
             };
         }
@@ -515,7 +515,7 @@ public class AuditLogService : IAuditLogService
             }
             catch
             {
-                summary.Add("Value changed");
+                summary.Add("Giá trị đã thay đổi");
             }
         }
 

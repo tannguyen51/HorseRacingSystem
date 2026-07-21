@@ -118,6 +118,11 @@ public class RejectJockeyRequest
     public string? Reason { get; set; }
 }
 
+public class RejectResultRequest
+{
+    public string Reason { get; set; } = string.Empty;
+}
+
 // Live Race Result DTOs
 public class LiveRaceResultResponse
 {

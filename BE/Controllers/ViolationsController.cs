@@ -22,7 +22,7 @@ public class ViolationsController : ControllerBase
     {
         var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(uid, out var userId))
-            return Unauthorized(new { message = "Invalid token." });
+            return Unauthorized(new { message = "Token không hợp lệ" });
         return OkR(await _service.RecordViolationAsync(r, userId));
     }
 

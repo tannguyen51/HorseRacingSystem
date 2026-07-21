@@ -17,7 +17,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/horses")]
-[Authorize(Roles = "HorseOwner")]
+[Authorize(Roles = "HorseOwner,Jockey")]
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
@@ -116,7 +116,7 @@ public class HorsesController : ControllerBase
     public async Task<ActionResult> UploadImage(IFormFile file)
     {
         if (file is null || file.Length == 0)
-            return BadRequest(new { message = "No file uploaded." });
+            return BadRequest(new { message = "Không có file nào được tải lên" });
 
         try
         {
