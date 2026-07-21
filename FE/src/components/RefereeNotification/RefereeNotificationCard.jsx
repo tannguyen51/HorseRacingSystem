@@ -72,7 +72,7 @@ export function RefereeNotificationCard({ assignment, onResponse, onRemove }) {
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "TBD";
     const date = new Date(dateTimeString);
-    return date.toLocaleString("en-US", {
+    return date.toLocaleString("vi-VN", {
       month: "short",
       day: "numeric",
       year: "numeric",

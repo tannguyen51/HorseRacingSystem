@@ -57,6 +57,9 @@ const STATUS_META = {
   InProgress: { label: "Đang diễn ra", className: "srs-badge--live" },
   Finished: { label: "Đã kết thúc", className: "srs-badge--completed" },
   Canceled: { label: "Đã hủy", className: "srs-badge--canceled" },
+  Cancelled: { label: "Đã hủy", className: "srs-badge--canceled" },
+  AwaitingResult: { label: "Chờ kết quả", className: "srs-badge--awaiting" },
+  ResultPendingApproval: { label: "Chờ duyệt", className: "srs-badge--pending-approval" },
 };
 
 const getStatusMeta = (status) => {

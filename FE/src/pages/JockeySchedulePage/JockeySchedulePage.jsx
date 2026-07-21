@@ -58,7 +58,7 @@ export default function JockeySchedulePage() {
   const calendarGroups = useMemo(() =>
     sortedRaces.reduce((acc, race) => {
       const d = new Date(race.scheduledAt);
-      const key = Number.isNaN(d.getTime()) ? "unknown" : new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" }).format(d);
+      const key = Number.isNaN(d.getTime()) ? "unknown" : new Intl.DateTimeFormat("vi-VN", { month: "short", day: "2-digit" }).format(d);
       if (!acc[key]) acc[key] = [];
       acc[key].push(race);
       return acc;

@@ -26,7 +26,7 @@ export const formatJockeyDate = (value, fallback = "TBD") => {
   if (!value) return fallback;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("vi-VN", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",

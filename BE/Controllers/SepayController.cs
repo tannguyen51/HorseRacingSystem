@@ -94,13 +94,13 @@ public class SepayController : ControllerBase
         if (string.IsNullOrEmpty(apiKey))
         {
             _logger.LogError("Sepay:ApiKey not configured — webhook verification failed");
-            return StatusCode(500, new { message = "Webhook not configured." });
+            return StatusCode(500, new { message = "Webhook chưa được cấu hình" });
         }
 
         if (!VerifyRequest(rawBody, apiKey))
         {
             _logger.LogWarning("Sepay webhook verification failed");
-            return Unauthorized(new { message = "Verification failed." });
+            return Unauthorized(new { message = "Xác minh thất bại" });
         }
 
         // ── Parse JSON ──
@@ -115,12 +115,12 @@ public class SepayController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to parse Sepay webhook body");
-            return BadRequest(new { message = "Invalid JSON." });
+            return BadRequest(new { message = "JSON không hợp lệ" });
         }
 
         if (request == null)
         {
-            return BadRequest(new { message = "Empty body." });
+            return BadRequest(new { message = "Nội dung rỗng" });
         }
 
         var result = await _transactionService.HandleWebhookAsync(request);

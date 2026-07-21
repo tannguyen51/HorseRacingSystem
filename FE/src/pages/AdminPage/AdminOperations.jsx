@@ -8,7 +8,7 @@ import {
 } from "../../services/managementApi";
 import { getAdminTournaments } from "../../services/adminApi";
 
-const fDate = (v) => v ? new Date(v).toLocaleDateString("en-US", { dateStyle: "medium" }) : "-";
+const fDate = (v) => v ? new Date(v).toLocaleDateString("vi-VN", { dateStyle: "medium" }) : "-";
 
 // ── Reusable Modal ──
 function Modal({ title, children, onClose }) {

@@ -40,13 +40,13 @@ public class AuthService : IAuthService
 
         if (request.Role is not (UserRole.HorseOwner or UserRole.Jockey or UserRole.Spectator))
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Unsupported role.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Vai trò không được hỗ trợ");
         }
 
         var exists = await _users.EmailExistsAsync(request.Email);
         if (exists)
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status409Conflict, "Email already exists.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status409Conflict, "Email đã tồn tại");
         }
 
         var user = new User
@@ -71,11 +71,11 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
                 OwnerCode = GenerateOwnerCode(),
-                OwnerType = "Individual",
+                OwnerType = "Cá nhân",
                 Phone = request.Phone,
                 Address = request.Address,
                 JoinDate = now,
-                Status = "Active",
+                Status = "Đang hoạt động",
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -97,11 +97,27 @@ public class AuthService : IAuthService
                 Weight = request.Weight,
                 IdCardNumber = request.IdCardNumber,
                 ApprovalStatus = ApprovalStatus.Pending,
-                Status = "Active",
+                Status = "Đang hoạt động",
                 CreatedAt = now,
                 UpdatedAt = now
             };
             await _jockeys.AddAsync(jockey);
+
+            // Jockeys also get an Owner profile so they can own horses
+            var jockeyOwner = new Owner
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                OwnerCode = GenerateOwnerCode(),
+                OwnerType = "Cá nhân",
+                Phone = request.Phone,
+                Address = request.Address,
+                JoinDate = now,
+                Status = "Đang hoạt động",
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+            await _owners.AddAsync(jockeyOwner);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -131,25 +147,25 @@ public class AuthService : IAuthService
         var email = request.Email.Trim();
         if (string.IsNullOrWhiteSpace(email))
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Thông tin đăng nhập không chính xác");
         }
 
         var user = await _users.GetByEmailAsync(email);
         if (user == null)
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Thông tin đăng nhập không chính xác");
         }
 
         var password = request.Password?.Trim() ?? string.Empty;
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         if (result == PasswordVerificationResult.Failed)
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid credentials.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Thông tin đăng nhập không chính xác");
         }
 
         if (!user.IsActive)
         {
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status403Forbidden, "User is deactivated.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status403Forbidden, "Tài khoản đã bị vô hiệu hóa");
         }
 
         user.LastLoginAt = DateTime.UtcNow;
@@ -181,14 +197,14 @@ public class AuthService : IAuthService
         {
             return ServiceResult<OwnerProfileResponse>.Fail(
                 StatusCodes.Status404NotFound,
-                "User not found.");
+                "Không tìm thấy người dùng");
         }
 
         if (user.Role != UserRole.HorseOwner || user.OwnerProfile == null)
         {
             return ServiceResult<OwnerProfileResponse>.Fail(
                 StatusCodes.Status404NotFound,
-                "Owner profile not found.");
+                "Không tìm thấy hồ sơ chủ sở hữu");
         }
 
         var owner = user.OwnerProfile;
@@ -225,7 +241,7 @@ public class AuthService : IAuthService
         var user = await _users.GetByIdAsync(userId);
         if (user == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "User not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy người dùng");
         }
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
@@ -247,7 +263,7 @@ public class AuthService : IAuthService
         var user = await _users.GetByIdAsync(userId);
         if (user == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "User not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy người dùng");
         }
 
         if (!string.IsNullOrWhiteSpace(request.FullName))
@@ -280,7 +296,7 @@ public class AuthService : IAuthService
         if (user == null)
         {
             // Return OK even if email not found to prevent enumeration
-            return ServiceResult<object>.Ok(new { message = "If the email exists, a reset link has been sent." });
+            return ServiceResult<object>.Ok(new { message = "Nếu email tồn tại, liên kết đặt lại mật khẩu đã được gửi" });
         }
 
         var resetToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
@@ -289,7 +305,7 @@ public class AuthService : IAuthService
         await _users.UpdateAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
-        return ServiceResult<object>.Ok(new { message = "If the email exists, a reset link has been sent.", resetToken });
+        return ServiceResult<object>.Ok(new { message = "Nếu email tồn tại, liên kết đặt lại mật khẩu đã được gửi", resetToken });
     }
 
     public async Task<ServiceResult<object>> ResetPasswordAsync(ResetPasswordRequest request)
@@ -323,13 +339,13 @@ public class AuthService : IAuthService
     public async Task<ServiceResult<AuthResponse>> RefreshTokenAsync(string refreshToken)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Refresh token is required.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status400BadRequest, "Cần có refresh token");
 
         var hash = HashToken(refreshToken);
         var user = await _users.GetByRefreshTokenHashAsync(hash);
 
         if (user == null || user.RefreshTokenExpiry == null || user.RefreshTokenExpiry < DateTime.UtcNow)
-            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Invalid or expired refresh token.");
+            return ServiceResult<AuthResponse>.Fail(StatusCodes.Status401Unauthorized, "Refresh token không hợp lệ hoặc đã hết hạn");
 
         var newToken = _jwtTokenService.CreateToken(user);
         var newRefreshToken = _jwtTokenService.CreateRefreshToken();

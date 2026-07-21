@@ -90,8 +90,8 @@ public static class DemoSeeder
         await db.SaveChangesAsync();
 
         // ── OWNERS ──
-        var ownerProfile1 = new Owner { Id = Guid.NewGuid(), UserId = owner1.Id, OwnerCode = "OWN-A1B2C3D4", OwnerType = "Individual", OrganizationName = "Whitfield Stables", JoinDate = now.AddMonths(-12), Status = "Active", CreatedAt = now, UpdatedAt = now };
-        var ownerProfile2 = new Owner { Id = Guid.NewGuid(), UserId = owner2.Id, OwnerCode = "OWN-E5F6G7H8", OwnerType = "Organization", OrganizationName = "O'Brien Racing Ltd", BusinessLicenseNumber = "BL-2024-001", JoinDate = now.AddMonths(-8), Status = "Active", CreatedAt = now, UpdatedAt = now };
+        var ownerProfile1 = new Owner { Id = Guid.NewGuid(), UserId = owner1.Id, OwnerCode = "OWN-A1B2C3D4", OwnerType = "Cá nhân", OrganizationName = "Whitfield Stables", JoinDate = now.AddMonths(-12), Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
+        var ownerProfile2 = new Owner { Id = Guid.NewGuid(), UserId = owner2.Id, OwnerCode = "OWN-E5F6G7H8", OwnerType = "Organization", OrganizationName = "O'Brien Racing Ltd", BusinessLicenseNumber = "BL-2024-001", JoinDate = now.AddMonths(-8), Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
         db.Owners.AddRange(ownerProfile1, ownerProfile2);
         await db.SaveChangesAsync();
 
@@ -109,8 +109,8 @@ public static class DemoSeeder
         await db.SaveChangesAsync();
 
         // ── JOCKEYS ──
-        var jockeyProfile1 = new Jockey { Id = Guid.NewGuid(), UserId = jockey1.Id, LicenseNumber = "JKY-001-2024", Nationality = "USA", Gender = "Male", DateOfBirth = Utc(1995, 4, 12), Height = 1.70m, Weight = 54m, ExperienceYears = 8, TotalRaces = 340, TotalWins = 82, WinRate = 24.12m, Rank = 5, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
-        var jockeyProfile2 = new Jockey { Id = Guid.NewGuid(), UserId = jockey2.Id, LicenseNumber = "JKY-002-2024", Nationality = "UK", Gender = "Female", DateOfBirth = Utc(1998, 9, 25), Height = 1.62m, Weight = 50m, ExperienceYears = 5, TotalRaces = 210, TotalWins = 48, WinRate = 22.86m, Rank = 8, Status = "Active", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
+        var jockeyProfile1 = new Jockey { Id = Guid.NewGuid(), UserId = jockey1.Id, LicenseNumber = "JKY-001-2024", Nationality = "USA", Gender = "Male", DateOfBirth = Utc(1995, 4, 12), Height = 1.70m, Weight = 54m, ExperienceYears = 8, TotalRaces = 340, TotalWins = 82, WinRate = 24.12m, Rank = 5, Status = "Đang hoạt động", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
+        var jockeyProfile2 = new Jockey { Id = Guid.NewGuid(), UserId = jockey2.Id, LicenseNumber = "JKY-002-2024", Nationality = "UK", Gender = "Female", DateOfBirth = Utc(1998, 9, 25), Height = 1.62m, Weight = 50m, ExperienceYears = 5, TotalRaces = 210, TotalWins = 48, WinRate = 22.86m, Rank = 8, Status = "Đang hoạt động", ApprovalStatus = ApprovalStatus.Approved, CreatedAt = now, UpdatedAt = now };
         db.Jockeys.AddRange(jockeyProfile1, jockeyProfile2);
         await db.SaveChangesAsync();
 
@@ -155,7 +155,7 @@ public static class DemoSeeder
         await db.SaveChangesAsync();
 
         // ── RACE RESULT ──
-        var result1 = new RaceResult { Id = Guid.NewGuid(), RaceId = race1.Id, WinningHorseId = horses[0].Id, TotalParticipants = 3, WinnerFinishTime = 71.24m, RecordedAt = now.AddDays(-2).AddHours(15), PublishedAt = now.AddDays(-2).AddHours(16), IsOfficial = true, WinnerPurse = 15000m, RankingsJson = "[{\"position\":1,\"horseName\":\"Silver Comet\",\"jockeyName\":\"Marcus Chen\",\"time\":71.24,\"margin\":\"-\"},{\"position\":2,\"horseName\":\"Golden Arrow\",\"jockeyName\":\"Elena Rodriguez\",\"time\":71.89,\"margin\":\"0.65s\"},{\"position\":3,\"horseName\":\"Thunder Strike\",\"jockeyName\":\"Marcus Chen\",\"time\":72.45,\"margin\":\"1.21s\"}]", Notes = "Clean race, no incidents" };
+        var result1 = new RaceResult { Id = Guid.NewGuid(), RaceId = race1.Id, WinningHorseId = horses[0].Id, TotalParticipants = 3, WinnerFinishTime = 71.24m, RecordedAt = now.AddDays(-2).AddHours(15), PublishedAt = now.AddDays(-2).AddHours(16), ApprovedAt = now.AddDays(-2).AddHours(16), ApprovalStatus = ApprovalStatus.Approved, IsOfficial = true, WinnerPurse = 15000m, RankingsJson = "[{\"position\":1,\"horseName\":\"Silver Comet\",\"jockeyName\":\"Marcus Chen\",\"time\":71.24,\"margin\":\"-\"},{\"position\":2,\"horseName\":\"Golden Arrow\",\"jockeyName\":\"Elena Rodriguez\",\"time\":71.89,\"margin\":\"0.65s\"},{\"position\":3,\"horseName\":\"Thunder Strike\",\"jockeyName\":\"Marcus Chen\",\"time\":72.45,\"margin\":\"1.21s\"}]", Notes = "Clean race, no incidents" };
         db.RaceResults.Add(result1);
         await db.SaveChangesAsync();
 

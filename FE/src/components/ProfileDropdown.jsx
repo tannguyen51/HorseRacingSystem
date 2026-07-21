@@ -85,7 +85,7 @@ export default function ProfileDropdown({ profileUrl }) {
               <div style={{ padding: "8px 10px", marginBottom: 8, borderRadius: 8, background: "rgba(143,100,32,0.08)", border: "1px solid rgba(143,100,32,0.12)" }}>
                 <p style={{ margin: 0, fontSize: 11, color: "#657086", textTransform: "uppercase" }}>Số dư ví</p>
                 <p style={{ margin: "2px 0 0", fontSize: 15, fontWeight: 700, color: "#8f6420" }}>
-                  {Number(balance).toLocaleString()} VNĐ
+                  {Number(balance).toLocaleString()} điểm
                 </p>
               </div>
             )}

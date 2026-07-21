@@ -29,6 +29,13 @@ public class RaceResult
 
     public DateTime? PublishedAt { get; set; }
 
+    public DateTime? ApprovedAt { get; set; }
+
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+
+    [MaxLength(1000)]
+    public string? RejectedReason { get; set; }
+
     public bool IsDisputed { get; set; } = false;
 
     public bool IsOfficial { get; set; } = false;

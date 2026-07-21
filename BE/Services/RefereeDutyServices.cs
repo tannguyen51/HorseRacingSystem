@@ -9,7 +9,7 @@ using HorseRacing.Services.Interfaces;
 
 namespace HorseRacing.Services;
 
-public class RefereeHealthCheckService : IRefereeHtmlCheckService
+public class RefereeHealthCheckService : IRefereeHealthCheckService
 {
     private readonly IHealthCheckRepository _healthCheckRepo;
     private readonly IRaceRepository _raceRepo;
@@ -59,7 +59,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         }
         catch (Exception ex)
         {
-            return ServiceResult<HealthCheckResponse>.Error($"Error creating health check: {ex.Message}", 500);
+            return ServiceResult<HealthCheckResponse>.Error($"Lỗi tạo kiểm tra sức khỏe: {ex.Message}", 500);
         }
     }
 
@@ -70,7 +70,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
             var healthCheck = await _healthCheckRepo.GetByIdAsync(request.HealthCheckId);
             if (healthCheck == null)
             {
-                return ServiceResult<HealthCheckResponse>.Error("Health check not found", 404);
+                return ServiceResult<HealthCheckResponse>.Error("Không tìm thấy kiểm tra sức khỏe", 404);
             }
 
             healthCheck.Status = Enum.Parse<HealthCheckStatus>(request.Status);
@@ -89,7 +89,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         }
         catch (Exception ex)
         {
-            return ServiceResult<HealthCheckResponse>.Error($"Error completing health check: {ex.Message}", 500);
+            return ServiceResult<HealthCheckResponse>.Error($"Lỗi hoàn thành kiểm tra sức khỏe: {ex.Message}", 500);
         }
     }
 
@@ -100,7 +100,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
             var healthCheck = await _healthCheckRepo.GetByIdAsync(id);
             if (healthCheck == null)
             {
-                return ServiceResult<HealthCheckResponse>.Error("Health check not found", 404);
+                return ServiceResult<HealthCheckResponse>.Error("Không tìm thấy kiểm tra sức khỏe", 404);
             }
 
             var horse = await _horseRepo.GetByIdAsync(healthCheck.HorseId);
@@ -112,7 +112,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         }
         catch (Exception ex)
         {
-            return ServiceResult<HealthCheckResponse>.Error($"Error retrieving health check: {ex.Message}", 500);
+            return ServiceResult<HealthCheckResponse>.Error($"Lỗi truy xuất kiểm tra sức khỏe: {ex.Message}", 500);
         }
     }
 
@@ -136,7 +136,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<HealthCheckResponse>>.Error(
-                $"Error retrieving health checks: {ex.Message}", 500);
+                $"Lỗi truy xuất danh sách kiểm tra: {ex.Message}", 500);
         }
     }
 
@@ -160,7 +160,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<HealthCheckResponse>>.Error(
-                $"Error retrieving health check history: {ex.Message}", 500);
+                $"Lỗi truy xuất lịch sử kiểm tra: {ex.Message}", 500);
         }
     }
 
@@ -171,7 +171,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
             var healthCheck = await _healthCheckRepo.GetByIdAsync(healthCheckId);
             if (healthCheck == null)
             {
-                return ServiceResult<bool>.Error("Health check not found", 404);
+                return ServiceResult<bool>.Error("Không tìm thấy kiểm tra sức khỏe", 404);
             }
 
             healthCheck.ApprovedToRace = true;
@@ -184,7 +184,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Error($"Error approving horse: {ex.Message}", 500);
+            return ServiceResult<bool>.Error($"Lỗi phê duyệt ngựa: {ex.Message}", 500);
         }
     }
 
@@ -195,7 +195,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
             var healthCheck = await _healthCheckRepo.GetByIdAsync(healthCheckId);
             if (healthCheck == null)
             {
-                return ServiceResult<bool>.Error("Health check not found", 404);
+                return ServiceResult<bool>.Error("Không tìm thấy kiểm tra sức khỏe", 404);
             }
 
             healthCheck.ApprovedToRace = false;
@@ -209,7 +209,7 @@ public class RefereeHealthCheckService : IRefereeHtmlCheckService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Error($"Error rejecting horse: {ex.Message}", 500);
+            return ServiceResult<bool>.Error($"Lỗi từ chối ngựa: {ex.Message}", 500);
         }
     }
 
@@ -269,14 +269,14 @@ public class ViolationRecordService : IViolationRecordService
             var entry = await _entryRepo.GetByRaceAndHorseAsync(request.RaceId, request.HorseId);
             if (entry == null)
             {
-                return ServiceResult<ViolationResponse>.Error("Horse not found in this race.", 404);
+                return ServiceResult<ViolationResponse>.Error("Không tìm thấy ngựa trong cuộc đua này", 404);
             }
 
             // Resolve RefereeId from the authenticated user
             var referee = await _refereeRepo.GetByUserIdAsync(refereeUserId);
             if (referee == null)
             {
-                return ServiceResult<ViolationResponse>.Error("Referee profile not found.", 404);
+                return ServiceResult<ViolationResponse>.Error("Không tìm thấy hồ sơ trọng tài", 404);
             }
 
             var violation = new ViolationRecord
@@ -327,7 +327,7 @@ public class ViolationRecordService : IViolationRecordService
         }
         catch (Exception ex)
         {
-            return ServiceResult<ViolationResponse>.Error($"Error recording violation: {ex.Message}", 500);
+            return ServiceResult<ViolationResponse>.Error($"Lỗi ghi nhận vi phạm: {ex.Message}", 500);
         }
     }
 
@@ -338,7 +338,7 @@ public class ViolationRecordService : IViolationRecordService
             var violation = await _violationRepo.GetByIdAsync(id);
             if (violation == null)
             {
-                return ServiceResult<ViolationResponse>.Error("Violation not found", 404);
+                return ServiceResult<ViolationResponse>.Error("Không tìm thấy vi phạm", 404);
             }
 
             var race = await _raceRepo.GetByIdAsync(violation.RaceId);
@@ -350,7 +350,7 @@ public class ViolationRecordService : IViolationRecordService
         }
         catch (Exception ex)
         {
-            return ServiceResult<ViolationResponse>.Error($"Error retrieving violation: {ex.Message}", 500);
+            return ServiceResult<ViolationResponse>.Error($"Lỗi truy xuất vi phạm: {ex.Message}", 500);
         }
     }
 
@@ -374,7 +374,7 @@ public class ViolationRecordService : IViolationRecordService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<ViolationResponse>>.Error(
-                $"Error retrieving violations: {ex.Message}", 500);
+                $"Lỗi truy xuất danh sách vi phạm: {ex.Message}", 500);
         }
     }
 
@@ -405,7 +405,7 @@ public class ViolationRecordService : IViolationRecordService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<ViolationResponse>>.Error(
-                $"Error retrieving horse violations: {ex.Message}", 500);
+                $"Lỗi truy xuất vi phạm của ngựa: {ex.Message}", 500);
         }
     }
 
@@ -476,7 +476,7 @@ public class RaceReportService : IRaceReportService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceReportResponse>.Error($"Error creating report: {ex.Message}", 500);
+            return ServiceResult<RaceReportResponse>.Error($"Lỗi tạo báo cáo: {ex.Message}", 500);
         }
     }
 
@@ -487,7 +487,7 @@ public class RaceReportService : IRaceReportService
             var report = await _reportRepo.GetByIdAsync(id);
             if (report == null)
             {
-                return ServiceResult<RaceReportResponse>.Error("Report not found", 404);
+                return ServiceResult<RaceReportResponse>.Error("Không tìm thấy báo cáo", 404);
             }
 
             var race = await _raceRepo.GetByIdAsync(report.RaceId);
@@ -498,7 +498,7 @@ public class RaceReportService : IRaceReportService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceReportResponse>.Error($"Error retrieving report: {ex.Message}", 500);
+            return ServiceResult<RaceReportResponse>.Error($"Lỗi truy xuất báo cáo: {ex.Message}", 500);
         }
     }
 
@@ -509,7 +509,7 @@ public class RaceReportService : IRaceReportService
             var report = await _reportRepo.GetByRaceAsync(raceId);
             if (report == null)
             {
-                return ServiceResult<RaceReportResponse>.Error("Report not found", 404);
+                return ServiceResult<RaceReportResponse>.Error("Không tìm thấy báo cáo", 404);
             }
 
             var race = await _raceRepo.GetByIdAsync(raceId);
@@ -520,7 +520,7 @@ public class RaceReportService : IRaceReportService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceReportResponse>.Error($"Error retrieving race report: {ex.Message}", 500);
+            return ServiceResult<RaceReportResponse>.Error($"Lỗi truy xuất báo cáo cuộc đua: {ex.Message}", 500);
         }
     }
 
@@ -543,7 +543,7 @@ public class RaceReportService : IRaceReportService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RaceReportResponse>>.Error(
-                $"Error retrieving reports: {ex.Message}", 500);
+                $"Lỗi truy xuất danh sách báo cáo: {ex.Message}", 500);
         }
     }
 
@@ -554,7 +554,7 @@ public class RaceReportService : IRaceReportService
             var report = await _reportRepo.GetByIdAsync(id);
             if (report == null)
             {
-                return ServiceResult<RaceReportResponse>.Error("Report not found", 404);
+                return ServiceResult<RaceReportResponse>.Error("Không tìm thấy báo cáo", 404);
             }
 
             report.Details = request.Details;
@@ -573,7 +573,7 @@ public class RaceReportService : IRaceReportService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceReportResponse>.Error($"Error updating report: {ex.Message}", 500);
+            return ServiceResult<RaceReportResponse>.Error($"Lỗi cập nhật báo cáo: {ex.Message}", 500);
         }
     }
 
@@ -584,7 +584,7 @@ public class RaceReportService : IRaceReportService
             var report = await _reportRepo.GetByIdAsync(id);
             if (report == null)
             {
-                return ServiceResult<bool>.Error("Report not found", 404);
+                return ServiceResult<bool>.Error("Không tìm thấy báo cáo", 404);
             }
 
             report.IsOfficialReport = true;
@@ -597,7 +597,7 @@ public class RaceReportService : IRaceReportService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Error($"Error publishing report: {ex.Message}", 500);
+            return ServiceResult<bool>.Error($"Lỗi xuất bản báo cáo: {ex.Message}", 500);
         }
     }
 

@@ -57,7 +57,7 @@ public class LiveResultsController : ControllerBase
     [Authorize(Roles = "Admin,Referee")]
     public async Task<ActionResult> UpdateParticipantStatus(Guid raceId, Guid horseId, [FromBody] dynamic request)
     {
-        string status = request?.status?.ToString() ?? "Unknown";
+        string status = request?.status?.ToString() ?? "Không xác định";
         var result = await _liveResultService.UpdateParticipantStatusAsync(raceId, horseId, status);
         return StatusCode(result.StatusCode, result.Result);
     }

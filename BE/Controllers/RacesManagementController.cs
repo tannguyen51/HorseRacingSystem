@@ -66,6 +66,14 @@ public class RacesManagementController : ControllerBase
     }
 
     // Horse Assignment
+    [HttpGet("busy-horses")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetBusyHorseIds()
+    {
+        var result = await _raceService.GetBusyHorseIdsAsync();
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpPost("{raceId:guid}/assign-horse")]
     public async Task<ActionResult> AssignHorseToRace(Guid raceId, [FromBody] AssignHorseToRaceRequest request)
     {

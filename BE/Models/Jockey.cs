@@ -57,7 +57,7 @@ public class Jockey
     public int? Rank { get; set; }
 
     [MaxLength(50)]
-    public string Status { get; set; } = "Active";
+    public string Status { get; set; } = "Đang hoạt động";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

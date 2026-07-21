@@ -21,6 +21,8 @@ import {
   getTournamentRaces,
   getTournamentRounds,
   publishRaceResult,
+  approveRaceResult,
+  rejectRaceResult,
   getActiveReferees,
   getRaceRefereeAssignments,
   assignRefereeToRace,
@@ -113,7 +115,7 @@ const roleCards = [
 
 const formatDate = (value) =>
   value
-    ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(value))
+    ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value))
     : "-";
 
 const inputDate = (days = 0) => {
@@ -807,9 +809,6 @@ function TournamentManagement() {
     }
     setUploading(false);
   };
-  useEffect(() => {
-    load();
-  }, []);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -884,6 +883,17 @@ function ScheduleManagement({ type }) {
   const [raceReferees, setRaceReferees] = useState([]);
   const [raceViolations, setRaceViolations] = useState([]);
   const [assignedHorseIds, setAssignedHorseIds] = useState(new Set());
+  const [busyHorseIdsAll, setBusyHorseIdsAll] = useState(new Set());
+
+  const refreshBusyHorses = async () => {
+    try {
+      const res = await request("/api/races/management/busy-horses");
+      const ids = Array.isArray(res) ? res : res?.data ?? [];
+      setBusyHorseIdsAll(new Set(ids));
+    } catch { /* non-critical */ }
+  };
+
+  useEffect(() => { refreshBusyHorses(); }, [type]);
 
   useEffect(() => {
     if (!assignment.raceId) { setAssignedHorseIds(new Set()); return; }
@@ -1037,12 +1047,34 @@ function ScheduleManagement({ type }) {
       setMessage("Đã phân công ngựa vào cuộc đua thành công.");
       setAssignment({ raceId: "", horseId: "", jockeyId: "" });
       setItems(await getTournamentRaces(selected));
+      refreshBusyHorses();
     } catch (err) { setMessage(err.message); }
   };
 
   const handleRaceAction = async (raceId, action) => {
-    const labels = { start: "bắt đầu", end: "kết thúc", cancel: "hủy", publish: "công bố kết quả" };
+    const labels = { start: "bắt đầu", end: "kết thúc", cancel: "hủy", publish: "công bố kết quả", approve: "duyệt kết quả", reject: "từ chối kết quả" };
     if (action === "publish") { setPublishRaceId(raceId); setPublishWinnerId(""); return; }
+    if (action === "approve") {
+      if (!window.confirm("Duyệt kết quả này? Dự đoán sẽ được thanh toán ngay sau khi duyệt.")) return;
+      try {
+        await approveRaceResult(raceId);
+        setMessage("Kết quả đã được duyệt và thanh toán thành công.");
+        setItems(await getTournamentRaces(selected));
+        refreshBusyHorses();
+      } catch (err) { setMessage(err.message); }
+      return;
+    }
+    if (action === "reject") {
+      const reason = window.prompt("Lý do từ chối kết quả:");
+      if (!reason) return;
+      try {
+        await rejectRaceResult(raceId, reason);
+        setMessage("Kết quả đã bị từ chối. Trọng tài cần nộp lại.");
+        setItems(await getTournamentRaces(selected));
+        refreshBusyHorses();
+      } catch (err) { setMessage(err.message); }
+      return;
+    }
     if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} cuộc đua này?`)) return;
     try {
       if (action === "start") await startRace(raceId);
@@ -1050,6 +1082,7 @@ function ScheduleManagement({ type }) {
       else if (action === "cancel") await cancelRace(raceId);
       setMessage(`Cuộc đua đã ${labels[action]} thành công.`);
       setItems(await getTournamentRaces(selected));
+      refreshBusyHorses();
     } catch (err) { setMessage(err.message); }
   };
 
@@ -1090,14 +1123,17 @@ function ScheduleManagement({ type }) {
           <option value="">Chọn ngựa đã được phê duyệt</option>
           {visibleHorses.map((horse) => {
             const horseId = horse.id ?? horse.Id;
-            const isAssigned = assignedHorseIds.has(horseId);
+            const isInThisRace = assignedHorseIds.has(horseId);
+            const isBusyElsewhere = busyHorseIdsAll.has(horseId) && !isInThisRace;
+            const isDisabled = isInThisRace || isBusyElsewhere;
             const jockeyName =
               horse.assignedJockeyName ?? horse.AssignedJockeyName;
             const assignmentStatus =
               horse.jockeyAssignmentStatus ?? horse.JockeyAssignmentStatus;
-            return <option key={horseId} value={horseId} disabled={isAssigned} style={{color: isAssigned ? "#94a3b8" : "inherit"}}>
+            const label = isInThisRace ? " [Đã thêm]" : isBusyElsewhere ? " [Đã đăng ký cuộc đua khác]" : "";
+            return <option key={horseId} value={horseId} disabled={isDisabled} style={{color: isDisabled ? "#94a3b8" : "inherit"}}>
               {horse.name ?? horse.Name} · {jockeyName ? `${jockeyName} (${assignmentStatus || "Đã phân công"})` : "Không có kỵ sĩ"}
-              {isAssigned ? " [Đã thêm]" : ""}
+              {label}
             </option>;
           })}
         </select>
@@ -1123,7 +1159,7 @@ function ScheduleManagement({ type }) {
         <div className="modal-overlay" onClick={() => setPublishRaceId(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{background:"rgba(255,255,255,0.96)",borderRadius:18,padding:24,maxWidth:420,width:"100%",boxShadow:"0 30px 60px rgba(0,0,0,0.12)"}}>
             <h3 style={{margin:"0 0 12px",fontSize:17,fontWeight:700,color:"#1a1d23"}}>Công bố kết quả</h3>
-            <p style={{fontSize:13,color:"#64748b",margin:"0 0 16px"}}>Chọn ngựa chiến thắng để công bố kết quả cuộc đua.</p>
+            <p style={{fontSize:13,color:"#64748b",margin:"0 0 16px"}}>Chọn ngựa chiến thắng. Kết quả cần được admin duyệt trước khi thanh toán dự đoán.</p>
             <select className="admin-select" value={publishWinnerId} onChange={(e) => setPublishWinnerId(e.target.value)} style={{width:"100%",boxSizing:"border-box",marginBottom:12,padding:"10px 14px",borderRadius:10,border:"1px solid rgba(143,100,32,0.2)"}}>
               <option value="">-- Chọn ngựa thắng --</option>
               {publishEntries.map(e => <option key={e.horseId ?? e.HorseId} value={e.horseId ?? e.HorseId}>{e.horseName ?? e.HorseName} (odds: {e.odds ?? e.Odds}x)</option>)}
@@ -1137,6 +1173,7 @@ function ScheduleManagement({ type }) {
                   setMessage("Kết quả đã được công bố!");
                   setPublishRaceId(null);
                   setItems(await getTournamentRaces(selected));
+                  refreshBusyHorses();
                 } catch (err) { setMessage(err.message); }
                 finally { setPublishLoading(false); }
               }}>
@@ -1173,7 +1210,7 @@ function ScheduleManagement({ type }) {
           <small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} cuộc đua` : `${item.entriesCount ?? item.EntriesCount ?? 0} ngựa đã phân công`}</small>
           {type === "race" && (
             <div className="admin-actions admin-race-actions">
-              {itemStatus !== "inprogress" && itemStatus !== "finished" && (
+              {itemStatus !== "inprogress" && itemStatus !== "finished" && itemStatus !== "awaitingresult" && itemStatus !== "resultpendingapproval" && (
                 <button onClick={() => handleRaceAction(itemId, "start")} disabled={itemStatus === "cancelled"}>
                   Bắt đầu
                 </button>
@@ -1183,10 +1220,20 @@ function ScheduleManagement({ type }) {
                   Kết thúc
                 </button>
               )}
-              {itemStatus === "finished" && (
+              {(itemStatus === "finished" || itemStatus === "awaitingresult") && (
                 <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
                   Công bố KQ
                 </button>
+              )}
+              {itemStatus === "resultpendingapproval" && (
+                <>
+                  <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "approve")}>
+                    Duyệt KQ
+                  </button>
+                  <button style={{background:"rgba(239,68,68,0.1)",color:"#dc2626"}} onClick={() => handleRaceAction(itemId, "reject")}>
+                    Từ chối
+                  </button>
+                </>
               )}
               {itemStatus !== "finished" && itemStatus !== "cancelled" && (
                 <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>

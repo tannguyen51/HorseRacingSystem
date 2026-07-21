@@ -1,9 +1,9 @@
 export const LOGIN_ROLE_OPTIONS = [
-  { value: "horse_owner", label: "Horse Owner" },
-  { value: "jockey", label: "Jockey" },
-  { value: "spectator", label: "Spectator" },
-  { value: "referee", label: "Referee" },
-  { value: "admin", label: "Admin" },
+  { value: "horse_owner", label: "Chủ ngựa" },
+  { value: "jockey", label: "Kỵ sĩ" },
+  { value: "spectator", label: "Khán giả" },
+  { value: "referee", label: "Trọng tài" },
+  { value: "admin", label: "Quản trị viên" },
 ];
 
 export const REGISTER_ROLE_OPTIONS = LOGIN_ROLE_OPTIONS.filter(

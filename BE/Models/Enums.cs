@@ -16,7 +16,9 @@ public enum RaceStatus
     Scheduled = 1,
     InProgress = 2,
     Finished = 3,
-    Cancelled = 4
+    Cancelled = 4,
+    AwaitingResult = 5,
+    ResultPendingApproval = 6
 }
 
 public enum RegistrationStatus

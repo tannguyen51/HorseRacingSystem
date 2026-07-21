@@ -24,7 +24,7 @@ public class LeaderboardController : ControllerBase
     {
         var jockeys = await _db.Jockeys
             .Include(j => j.User)
-            .Where(j => j.User != null && j.Status == "Active")
+            .Where(j => j.User != null && j.Status == "Đang hoạt động")
             .Select(j => new
             {
                 id = j.Id,

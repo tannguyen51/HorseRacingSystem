@@ -139,7 +139,7 @@ function AppLayout() {
             </Route>
 
             {/* Owner */}
-            <Route element={<RequireAuth roles={["horse_owner"]} />}>
+            <Route element={<RequireAuth roles={["horse_owner", "jockey"]} />}>
               <Route path="/owner" element={<OwnerDashboardPage />} />
               <Route path="/owner/horses" element={<OwnerHorseListPage />} />
               <Route path="/owner/horses/new" element={<OwnerHorseCreatePage />} />

@@ -43,7 +43,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit log: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit log" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -65,7 +65,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -87,7 +87,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -109,7 +109,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error filtering audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error filtering audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi lọc nhật ký" });
         }
     }
 
@@ -131,7 +131,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -153,7 +153,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -175,7 +175,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting audit stats: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving stats" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất thống kê" });
         }
     }
 
@@ -200,7 +200,7 @@ public class AuditLogsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError($"Error getting latest audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error retrieving audit logs" });
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi truy xuất nhật ký" });
         }
     }
 
@@ -225,8 +225,8 @@ public class AuditLogsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error exporting audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error exporting audit logs" });
+            _logger.LogError($"Lỗi xuất nhật ký: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi xuất nhật ký" });
         }
     }
 
@@ -250,8 +250,8 @@ public class AuditLogsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error deleting old audit logs: {ex.Message}");
-            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Error deleting audit logs" });
+            _logger.LogError($"Lỗi xóa nhật ký cũ: {ex.Message}");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi xóa nhật ký" });
         }
     }
 }

@@ -38,24 +38,24 @@ public class PredictionService : IPredictionService
     {
         if (request.BetAmount <= 0)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Bet amount must be positive.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Số tiền cược phải lớn hơn 0");
         }
 
         var race = await _races.GetByIdWithEntriesAsync(request.RaceId);
         if (race == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Race not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
         if (race.Status != RaceStatus.Scheduled)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Race is not open for predictions.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Cuộc đua không mở cho dự đoán");
         }
 
         var horseInRace = race.Entries.Any(e => e.HorseId == request.PredictedHorseId);
         if (!horseInRace)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Horse is not registered for this race.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Ngựa không đăng ký tham gia cuộc đua này");
         }
 
         // Check wallet balance before creating prediction
@@ -80,7 +80,7 @@ public class PredictionService : IPredictionService
             Status = PredictionStatus.Pending,
             BetAmount = request.BetAmount,
             Odds = odds,
-            PotentialPayout = request.BetAmount * odds,
+            PotentialPayout = request.BetAmount * odds, 
             HorseNameSnapshot = entry?.Horse?.Name,
             CreatedAt = DateTime.UtcNow
         };
@@ -119,12 +119,12 @@ public class PredictionService : IPredictionService
         var race = await _races.GetByIdWithEntriesAsync(raceId);
         if (race == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Race not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
         if (race.Status != RaceStatus.Finished)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Race is not finished yet.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Cuộc đua chưa kết thúc");
         }
 
         // Atomically mark losers first — only Pending predictions NOT for the winning horse
@@ -145,7 +145,7 @@ public class PredictionService : IPredictionService
 
             try
             {
-                await _walletService.AddFundsAsync(w.SpectatorUserId, payout, $"win_{w.Id}");
+                await _walletService.AddPointsAsync(w.SpectatorUserId, payout, $"win_{w.Id}");
             }
             catch (Exception ex)
             {
@@ -165,7 +165,7 @@ public class PredictionService : IPredictionService
                 {
                     UserId = w.SpectatorUserId,
                     Title = "Chúc mừng! Bạn đã thắng cược",
-                    Message = $"Ngựa {w.PredictedHorse?.Name ?? w.HorseNameSnapshot ?? "?"} đã về nhất! Bạn nhận được {payout:N0} VNĐ vào ví.",
+                    Message = $"Ngựa {w.PredictedHorse?.Name ?? w.HorseNameSnapshot ?? "?"} đã về nhất! Bạn nhận được {payout:N0} điểm vào ví.",
                     Type = NotificationType.InApp,
                     Category = NotificationCategory.BetWon,
                     RelatedEntityId = w.RaceId,

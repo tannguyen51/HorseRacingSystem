@@ -72,7 +72,7 @@ public class TournamentsController : ControllerBase
     public async Task<ActionResult> CreateRound(Guid tournamentId, [FromBody] CreateRoundRequest request)
     {
         if (request.TournamentId != Guid.Empty && request.TournamentId != tournamentId)
-            return BadRequest(new { message = "TournamentId in body does not match route." });
+            return BadRequest(new { message = "TournamentId không khớp với route" });
         request.TournamentId = tournamentId;
 
         var result = await _roundService.CreateRoundAsync(request);

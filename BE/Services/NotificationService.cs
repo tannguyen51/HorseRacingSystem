@@ -51,7 +51,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = MapToDto(notification),
-                    Message = "Notification created successfully"
+                    Message = "Đã tạo thông báo"
                 }
             };
         }
@@ -63,7 +63,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<NotificationDto>
                 {
                     Success = false,
-                    Message = $"Error creating notification: {ex.Message}"
+                    Message = $"Lỗi tạo thông báo: {ex.Message}"
                 }
             };
         }
@@ -83,7 +83,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Notifications retrieved successfully"
+                    Message = "Đã lấy danh sách thông báo"
                 }
             };
         }
@@ -95,7 +95,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<List<NotificationDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving notifications: {ex.Message}"
+                    Message = $"Lỗi truy xuất thông báo: {ex.Message}"
                 }
             };
         }
@@ -115,7 +115,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Unread notifications retrieved successfully"
+                    Message = "Đã lấy thông báo chưa đọc"
                 }
             };
         }
@@ -127,7 +127,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<List<NotificationDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving unread notifications: {ex.Message}"
+                    Message = $"Lỗi truy xuất thông báo chưa đọc: {ex.Message}"
                 }
             };
         }
@@ -147,7 +147,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Filtered notifications retrieved successfully"
+                    Message = "Đã lọc thông báo"
                 }
             };
         }
@@ -159,7 +159,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<List<NotificationDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving notifications: {ex.Message}"
+                    Message = $"Lỗi truy xuất thông báo: {ex.Message}"
                 }
             };
         }
@@ -178,7 +178,7 @@ public class NotificationService : INotificationService
                     Result = new ApiResult<NotificationDetailDto>
                     {
                         Success = false,
-                        Message = "Notification not found"
+                        Message = "Không tìm thấy thông báo"
                     }
                 };
             }
@@ -190,7 +190,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = MapToDetailDto(notification),
-                    Message = "Notification retrieved successfully"
+                    Message = "Đã lấy thông báo"
                 }
             };
         }
@@ -202,7 +202,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<NotificationDetailDto>
                 {
                     Success = false,
-                    Message = $"Error retrieving notification: {ex.Message}"
+                    Message = $"Lỗi truy xuất thông báo: {ex.Message}"
                 }
             };
         }
@@ -221,7 +221,7 @@ public class NotificationService : INotificationService
                     Result = new ApiResult<bool>
                     {
                         Success = false,
-                        Message = "Notification not found"
+                        Message = "Không tìm thấy thông báo"
                     }
                 };
             }
@@ -236,7 +236,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = true,
-                    Message = "Notification marked as read"
+                    Message = "Đã đánh dấu thông báo là đã đọc"
                 }
             };
         }
@@ -248,7 +248,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<bool>
                 {
                     Success = false,
-                    Message = $"Error marking notification as read: {ex.Message}"
+                    Message = $"Lỗi đánh dấu thông báo đã đọc: {ex.Message}"
                 }
             };
         }
@@ -268,7 +268,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = true,
-                    Message = $"{dto.NotificationIds.Count} notifications marked as read"
+                    Message = $"{dto.NotificationIds.Count} thông báo đã được đánh dấu là đã đọc"
                 }
             };
         }
@@ -280,7 +280,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<bool>
                 {
                     Success = false,
-                    Message = $"Error marking notifications as read: {ex.Message}"
+                    Message = $"Lỗi đánh dấu thông báo đã đọc: {ex.Message}"
                 }
             };
         }
@@ -299,7 +299,7 @@ public class NotificationService : INotificationService
                     Result = new ApiResult<bool>
                     {
                         Success = false,
-                        Message = "Notification not found"
+                        Message = "Không tìm thấy thông báo"
                     }
                 };
             }
@@ -314,7 +314,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = true,
-                    Message = "Notification deleted successfully"
+                    Message = "Đã xóa thông báo"
                 }
             };
         }
@@ -326,7 +326,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<bool>
                 {
                     Success = false,
-                    Message = $"Error deleting notification: {ex.Message}"
+                    Message = $"Lỗi xóa thông báo: {ex.Message}"
                 }
             };
         }
@@ -345,7 +345,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = count,
-                    Message = "Unread count retrieved successfully"
+                    Message = "Đã lấy số lượng chưa đọc"
                 }
             };
         }
@@ -357,7 +357,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<int>
                 {
                     Success = false,
-                    Message = $"Error retrieving unread count: {ex.Message}"
+                    Message = $"Lỗi truy xuất số lượng chưa đọc: {ex.Message}"
                 }
             };
         }
@@ -390,7 +390,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = stats,
-                    Message = "Stats retrieved successfully"
+                    Message = "Đã lấy thống kê"
                 }
             };
         }
@@ -402,7 +402,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<NotificationStatsDto>
                 {
                     Success = false,
-                    Message = $"Error retrieving stats: {ex.Message}"
+                    Message = $"Lỗi truy xuất thống kê: {ex.Message}"
                 }
             };
         }
@@ -440,7 +440,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = true,
-                    Message = $"Bulk notifications created for {dto.UserIds.Count} users"
+                    Message = $"Đã tạo thông báo hàng loạt cho {dto.UserIds.Count} người dùng"
                 }
             };
         }
@@ -452,7 +452,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<bool>
                 {
                     Success = false,
-                    Message = $"Error sending bulk notifications: {ex.Message}"
+                    Message = $"Lỗi gửi thông báo hàng loạt: {ex.Message}"
                 }
             };
         }
@@ -472,7 +472,7 @@ public class NotificationService : INotificationService
                 {
                     Success = true,
                     Data = dtos,
-                    Message = "Entity notifications retrieved successfully"
+                    Message = "Đã lấy thông báo đối tượng"
                 }
             };
         }
@@ -484,7 +484,7 @@ public class NotificationService : INotificationService
                 Result = new ApiResult<List<NotificationDto>>
                 {
                     Success = false,
-                    Message = $"Error retrieving entity notifications: {ex.Message}"
+                    Message = $"Lỗi truy xuất thông báo đối tượng: {ex.Message}"
                 }
             };
         }

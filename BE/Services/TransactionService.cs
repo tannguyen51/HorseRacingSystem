@@ -51,7 +51,7 @@ public class TransactionService : ITransactionService
         var user = await _userRepo.GetByIdAsync(userId);
         if (user == null)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "User not found.");
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy người dùng");
         }
 
         var bankCode = _config["Sepay:BankId"] ?? "TPBANK";
@@ -94,7 +94,7 @@ public class TransactionService : ITransactionService
         var amount = request.TransferAmount;
         if (amount == null || amount <= 0)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Invalid amount.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Số tiền không hợp lệ");
         }
 
         // ── Only process incoming transfers ──
@@ -107,7 +107,7 @@ public class TransactionService : ITransactionService
         if (request.Id != null && await _transactionRepo.ExistsBySepayIdAsync(request.Id.Value))
         {
             _logger.LogInformation("Sepay webhook {SepayId} already processed — skipping", request.Id);
-            return ServiceResult<object>.Ok(new { message = "Already processed." });
+            return ServiceResult<object>.Ok(new { message = "Đã được xử lý" });
         }
 
         // ── Extract our reference from transfer content ──
@@ -118,7 +118,7 @@ public class TransactionService : ITransactionService
         if (reference == null)
         {
             _logger.LogWarning("No reference found in transfer content: {Content}", content);
-            return ServiceResult<object>.Ok(new { message = "No reference code found." });
+            return ServiceResult<object>.Ok(new { message = "Không tìm thấy mã tham chiếu" });
         }
 
         // ── Atomic complete: only ONE request can succeed (fixes race condition) ──
@@ -128,14 +128,14 @@ public class TransactionService : ITransactionService
         if (!completed)
         {
             _logger.LogWarning("Reference {Ref} not found or already completed", reference);
-            return ServiceResult<object>.Ok(new { message = "Transaction already completed or not found." });
+            return ServiceResult<object>.Ok(new { message = "Giao dịch đã hoàn thành hoặc không tìm thấy" });
         }
 
         // ── Get the completed transaction to know userId ──
         var tx = await _transactionRepo.GetByReferenceAsync(reference);
         if (tx == null || tx.UserId == Guid.Empty)
         {
-            return ServiceResult<object>.Ok(new { message = "Transaction recorded (no user)." });
+            return ServiceResult<object>.Ok(new { message = "Đã ghi nhận giao dịch (không có người dùng)" });
         }
 
         // ── Validate transfer amount against pending transaction ──
@@ -156,7 +156,7 @@ public class TransactionService : ITransactionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to add funds for reference {Ref}, user {UserId}", reference, tx.UserId);
-            return ServiceResult<object>.Fail(StatusCodes.Status500InternalServerError, "Funds added failed — contact support.");
+            return ServiceResult<object>.Fail(StatusCodes.Status500InternalServerError, "Thêm tiền thất bại - liên hệ hỗ trợ");
         }
 
         _logger.LogInformation("Deposit completed: ref={Ref}, userId={UserId}, amount={Amount}", reference, tx.UserId, tx.Amount);
@@ -168,14 +168,14 @@ public class TransactionService : ITransactionService
             {
                 UserId = tx.UserId,
                 Title = "Nạp tiền thành công",
-                Message = $"Bạn vừa nạp thành công {tx.Amount:N0} VNĐ vào ví. Số dư đã được cập nhật.",
+                Message = $"Bạn vừa nạp thành công {tx.Amount:N0} VNĐ vào ví. Số điểm đã được cập nhật.",
                 Type = NotificationType.InApp,
                 Category = NotificationCategory.DepositSuccess
             });
         }
         catch { /* non-critical: notification failure doesn't affect deposit */ }
 
-        return ServiceResult<object>.Ok(new { message = "Transaction completed.", userId = tx.UserId });
+        return ServiceResult<object>.Ok(new { message = "Giao dịch hoàn thành", userId = tx.UserId });
     }
 
     public async Task<ServiceResult<object>> CheckTransactionAsync(Guid userId, DateTime since)

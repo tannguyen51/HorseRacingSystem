@@ -12,7 +12,7 @@ namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/owner")]
-[Authorize(Roles = "HorseOwner")]
+[Authorize(Roles = "HorseOwner,Jockey")]
 public class OwnerController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
@@ -63,7 +63,7 @@ public class OwnerController : ControllerBase
                 return new
                 {
                     horseId = g.Key,
-                    horseName = horse?.Name ?? "Unknown",
+                    horseName = horse?.Name ?? "Không xác định",
                     totalRaces = horseEntries.Count,
                     wins = horseWins,
                     winRate = horseEntries.Count > 0 ? Math.Round((double)horseWins / horseEntries.Count * 100) : 0

@@ -39,6 +39,7 @@ public interface IRaceManagementService
     Task<ServiceResult<bool>> AssignHorseToRaceAsync(Guid raceId, AssignHorseToRaceRequest request);
     Task<ServiceResult<bool>> BulkAssignHorsesToRaceAsync(Guid raceId, BulkAssignHorsesToRaceRequest request);
     Task<ServiceResult<bool>> RemoveHorseFromRaceAsync(Guid raceId, Guid horseId);
+    Task<ServiceResult<List<Guid>>> GetBusyHorseIdsAsync();
     
     // Race Status
     Task<ServiceResult<bool>> StartRaceAsync(Guid raceId);
@@ -63,7 +64,7 @@ public interface IRefereeService
     Task<ServiceResult<RefereeAssignmentResponse>> ConfirmAssignmentAsync(ConfirmRefereeAssignmentRequest request);
 }
 
-public interface IRefereeHtmlCheckService
+public interface IRefereeHealthCheckService
 {
     // Health Checks
     Task<ServiceResult<HealthCheckResponse>> CreateHealthCheckAsync(CreateHealthCheckRequest request);
@@ -127,6 +128,8 @@ public interface IAdminService
     Task<ServiceResult<RefereeAssignmentResponse>> AssignRefereeToRaceAsync(AssignRefereeRequest request);
     Task<ServiceResult<bool>> PublishRaceResultAsync(Guid raceId, RaceResultRequest request);
     Task<ServiceResult<bool>> SettlePredictionsAsync(Guid raceId, RaceResultRequest request);
+    Task<ServiceResult<bool>> ApproveRaceResultAsync(Guid raceId);
+    Task<ServiceResult<bool>> RejectRaceResultAsync(Guid raceId, string reason);
 }
 
 public interface ILiveResultService
