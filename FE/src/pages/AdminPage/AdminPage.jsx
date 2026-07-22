@@ -137,6 +137,8 @@ const isGuid = (value) =>
     value,
   );
 
+const canOwnHorses = (role) => role === "HorseOwner" || role === "Jockey";
+
 function AdminShell({ children }) {
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
@@ -510,7 +512,7 @@ function UserDetail() {
 
         setUser(userData);
         const userRole = userData?.role ?? userData?.Role;
-        if (userRole === "HorseOwner") {
+        if (canOwnHorses(userRole)) {
           const horseData = await getOwnerHorses(id);
           if (!cancelled) {
             setHorses(Array.isArray(horseData) ? horseData : []);
@@ -570,7 +572,7 @@ function UserDetail() {
         <div><span>Ngựa đã đăng ký</span><strong>{user?.horseCount ?? user?.HorseCount ?? 0}</strong></div>
         <div><span>ID người dùng</span><strong>{id}</strong></div>
       </section>
-      {role === "HorseOwner" && <>
+      {canOwnHorses(role) && <>
         <div className="section-heading">
           <h2>Ngựa của chủ sở hữu</h2>
           <p>Xem và thay đổi trạng thái phê duyệt cho từng con ngựa.</p>
@@ -925,7 +927,7 @@ function ScheduleManagement({ type }) {
       try {
         const users = await getAdminUsers();
         const owners = (Array.isArray(users) ? users : []).filter(
-          (user) => (user.role ?? user.Role) === "HorseOwner",
+          (user) => canOwnHorses(user.role ?? user.Role),
         );
         const horseGroups = await Promise.all(
           owners.map((owner) => getOwnerHorses(owner.id ?? owner.Id)),
