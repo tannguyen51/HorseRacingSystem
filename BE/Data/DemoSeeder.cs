@@ -92,7 +92,9 @@ public static class DemoSeeder
         // ── OWNERS ──
         var ownerProfile1 = new Owner { Id = Guid.NewGuid(), UserId = owner1.Id, OwnerCode = "OWN-A1B2C3D4", OwnerType = "Cá nhân", OrganizationName = "Whitfield Stables", JoinDate = now.AddMonths(-12), Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
         var ownerProfile2 = new Owner { Id = Guid.NewGuid(), UserId = owner2.Id, OwnerCode = "OWN-E5F6G7H8", OwnerType = "Organization", OrganizationName = "O'Brien Racing Ltd", BusinessLicenseNumber = "BL-2024-001", JoinDate = now.AddMonths(-8), Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
-        db.Owners.AddRange(ownerProfile1, ownerProfile2);
+        var jockeyOwnerProfile1 = new Owner { Id = Guid.NewGuid(), UserId = jockey1.Id, OwnerCode = "OWN-JKY00001", OwnerType = "Cá nhân", JoinDate = now, Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
+        var jockeyOwnerProfile2 = new Owner { Id = Guid.NewGuid(), UserId = jockey2.Id, OwnerCode = "OWN-JKY00002", OwnerType = "Cá nhân", JoinDate = now, Status = "Đang hoạt động", CreatedAt = now, UpdatedAt = now };
+        db.Owners.AddRange(ownerProfile1, ownerProfile2, jockeyOwnerProfile1, jockeyOwnerProfile2);
         await db.SaveChangesAsync();
 
         // ── HORSES ──
