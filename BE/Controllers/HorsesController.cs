@@ -46,6 +46,7 @@ public class HorsesController : ControllerBase
             HorseName = h.Name,
             RaceId = e.RaceId,
             RaceName = e.Race?.Name ?? e.RaceId.ToString(),
+            TournamentName = e.Race?.Tournament?.Name ?? string.Empty,
             Status = e.Status.ToString(),
             OwnerConfirmed = e.OwnerConfirmed,
             JockeyConfirmed = e.JockeyConfirmed,

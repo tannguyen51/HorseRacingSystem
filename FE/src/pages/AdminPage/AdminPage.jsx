@@ -137,6 +137,11 @@ const isGuid = (value) =>
     value,
   );
 
+const canOwnHorses = (role) => {
+  const normalizedRole = String(role ?? "").replace(/[_\s-]/g, "").toLowerCase();
+  return normalizedRole === "horseowner" || normalizedRole === "jockey";
+};
+
 function AdminShell({ children }) {
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
@@ -498,6 +503,8 @@ function UserDetail() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [horses, setHorses] = useState([]);
+  const [horsesLoading, setHorsesLoading] = useState(false);
+  const [horsesError, setHorsesError] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -510,10 +517,17 @@ function UserDetail() {
 
         setUser(userData);
         const userRole = userData?.role ?? userData?.Role;
-        if (userRole === "HorseOwner") {
-          const horseData = await getOwnerHorses(id);
-          if (!cancelled) {
-            setHorses(Array.isArray(horseData) ? horseData : []);
+        const horseCount = userData?.horseCount ?? userData?.HorseCount ?? 0;
+        if (canOwnHorses(userRole) || horseCount > 0) {
+          setHorsesLoading(true);
+          setHorsesError("");
+          try {
+            const horseData = await getOwnerHorses(id);
+            if (!cancelled) setHorses(Array.isArray(horseData) ? horseData : []);
+          } catch (err) {
+            if (!cancelled) setHorsesError(err.message);
+          } finally {
+            if (!cancelled) setHorsesLoading(false);
           }
         } else {
           setHorses([]);
@@ -529,6 +543,8 @@ function UserDetail() {
   }, [id]);
   const active = user?.isActive ?? user?.IsActive;
   const role = user?.role ?? user?.Role;
+  const horseCount = user?.horseCount ?? user?.HorseCount ?? 0;
+  const showHorseManagement = canOwnHorses(role) || horseCount > 0;
 
   const toggle = async () => {
     try {
@@ -567,14 +583,17 @@ function UserDetail() {
       <section className="admin-detail-grid">
         <div><span>Vai trò</span><strong>{role ?? "-"}</strong></div>
         <div><span>Ngày tạo</span><strong>{formatDate(user?.createdAt ?? user?.CreatedAt)}</strong></div>
-        <div><span>Ngựa đã đăng ký</span><strong>{user?.horseCount ?? user?.HorseCount ?? 0}</strong></div>
+        <div><span>Ngựa đã đăng ký</span><strong>{horseCount}</strong></div>
         <div><span>ID người dùng</span><strong>{id}</strong></div>
       </section>
-      {role === "HorseOwner" && <>
+      {showHorseManagement && <>
         <div className="section-heading">
           <h2>Ngựa của chủ sở hữu</h2>
           <p>Xem và thay đổi trạng thái phê duyệt cho từng con ngựa.</p>
         </div>
+        {horsesLoading && <p className="admin-muted-note">Đang tải danh sách ngựa...</p>}
+        {horsesError && <p className="admin-notice admin-notice--error">Không thể tải danh sách ngựa: {horsesError}</p>}
+        {!horsesLoading && !horsesError && horses.length === 0 && <p className="admin-muted-note">Người dùng chưa có ngựa để duyệt.</p>}
         <section className="admin-horse-grid">
           {horses.map((horse) => {
             const status = horse.approvalStatus ?? horse.ApprovalStatus;
@@ -925,7 +944,7 @@ function ScheduleManagement({ type }) {
       try {
         const users = await getAdminUsers();
         const owners = (Array.isArray(users) ? users : []).filter(
-          (user) => (user.role ?? user.Role) === "HorseOwner",
+          (user) => canOwnHorses(user.role ?? user.Role),
         );
         const horseGroups = await Promise.all(
           owners.map((owner) => getOwnerHorses(owner.id ?? owner.Id)),
