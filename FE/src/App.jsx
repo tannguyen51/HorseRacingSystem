@@ -54,6 +54,7 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage/RegisterPage"));
 const RegisterHorseOwnerPage = lazy(() => import("./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage"));
 const RegisterJockeyPage = lazy(() => import("./pages/RegisterJockeyPage/RegisterJockeyPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
+const RaceManagementPage = lazy(() => import("./pages/RaceManagementPage/RaceManagementPage"));
 import "./App.css";
 
 const getStoredAuthUser = () => {
@@ -173,6 +174,7 @@ function AppLayout() {
               <Route path="/admin/tournaments" element={<AdminPage />} />
               <Route path="/admin/rounds" element={<AdminPage />} />
               <Route path="/admin/races" element={<AdminPage />} />
+              <Route path="/admin/races/:raceId" element={<RaceManagementPage />} />
               <Route path="/admin/prizes" element={<AdminPage />} />
               <Route path="/admin/protests" element={<AdminPage />} />
               <Route path="/admin/transfers" element={<AdminPage />} />

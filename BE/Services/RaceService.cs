@@ -12,12 +12,14 @@ public class RaceService : IRaceService
     private readonly IRaceRepository _races;
     private readonly IRaceResultRepository _results;
     private readonly ITournamentRepository _tournaments;
+    private readonly IRaceManagementService _raceManagement;
 
-    public RaceService(IRaceRepository races, IRaceResultRepository results, ITournamentRepository tournaments)
+    public RaceService(IRaceRepository races, IRaceResultRepository results, ITournamentRepository tournaments, IRaceManagementService raceManagement)
     {
         _races = races;
         _results = results;
         _tournaments = tournaments;
+        _raceManagement = raceManagement;
     }
 
     public async Task<ServiceResult<object>> GetRacesAsync()
@@ -61,5 +63,20 @@ public class RaceService : IRaceService
     {
         var tournaments = await _tournaments.GetAllWithRacesAsync();
         return ServiceResult<object>.Ok(tournaments);
+    }
+
+    public async Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId)
+    {
+        return await _raceManagement.OpenRegistrationAsync(raceId);
+    }
+
+    public async Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId)
+    {
+        return await _raceManagement.CloseRegistrationAsync(raceId);
+    }
+
+    public async Task<ServiceResult<bool>> ReleaseHorseAsync(Guid raceId, Guid horseId)
+    {
+        return await _raceManagement.ReleaseHorseAsync(raceId, horseId);
     }
 }

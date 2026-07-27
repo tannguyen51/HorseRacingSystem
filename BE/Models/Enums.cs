@@ -18,7 +18,18 @@ public enum RaceStatus
     Finished = 3,
     Cancelled = 4,
     AwaitingResult = 5,
-    ResultPendingApproval = 6
+    ResultPendingApproval = 6,
+    RegistrationOpen = 7,
+    RegistrationClosed = 8
+}
+
+public enum TournamentStatus
+{
+    Draft = 0,
+    Published = 1,
+    Ongoing = 2,
+    Finished = 3,
+    Cancelled = 4
 }
 
 public enum RegistrationStatus

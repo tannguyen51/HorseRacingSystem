@@ -47,6 +47,8 @@ import {
   InjuryManagement,
 } from "./AdminOperations";
 import { AuditLogViewer, NotificationManager } from "./AdminAudit";
+import TournamentForm from "../../components/TournamentForm";
+import RaceForm from "../../components/RaceForm";
 import "./AdminPage.css";
 
 function AdminHorseImage({ imageUrl, name, className = "" }) {
@@ -808,7 +810,7 @@ function TournamentManagement() {
   const [editingId, setEditingId] = useState("");
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", startDate: inputDate(7), endDate: inputDate(14), imageUrl: "" });
+  const [form, setForm] = useState({ name: "", description: "", venue: "", startDate: inputDate(7), endDate: inputDate(14), prizePool: 0, imageUrl: "" });
   const load = () => getAdminTournaments().then((data) => setItems(Array.isArray(data) ? data : [])).catch((err) => setMessage(err.message));
   useEffect(() => {
     load();
@@ -861,9 +863,19 @@ function TournamentManagement() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý giải đấu" title="Giải đấu" description="Tạo giải đấu và điều phối vòng đấu, cuộc đua." action={<button className="primary-button" onClick={() => { setEditingId(""); setForm({ name: "", description: "", startDate: inputDate(7), endDate: inputDate(14) }); setShowForm(!showForm); }}>Tạo giải đấu</button>} />
+      <PageTitle eyebrow="Quản lý giải đấu" title="Giải đấu" description="Tạo giải đấu và điều phối vòng đấu, cuộc đua." action={<button className="primary-button" onClick={() => { setEditingId(""); setShowForm(true); }}>Tạo giải đấu</button>} />
       <Notice message={message} />
-      {showForm && <form className="admin-form" onSubmit={submit}>
+      {showForm && !editingId && (
+        <TournamentForm
+          onClose={() => setShowForm(false)}
+          onSuccess={() => {
+            setShowForm(false);
+            setMessage("Giải đấu đã tạo thành công.");
+            load();
+          }}
+        />
+      )}
+      {showForm && editingId && <form className="admin-form" onSubmit={submit}>
         <input placeholder="Tên giải đấu" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         <input type="datetime-local" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} min={inputDate(0)} />
@@ -903,6 +915,7 @@ function ScheduleManagement({ type }) {
   const [raceViolations, setRaceViolations] = useState([]);
   const [assignedHorseIds, setAssignedHorseIds] = useState(new Set());
   const [busyHorseIdsAll, setBusyHorseIdsAll] = useState(new Set());
+  const [showRaceForm, setShowRaceForm] = useState(false);
 
   const refreshBusyHorses = async () => {
     try {
@@ -1108,8 +1121,25 @@ function ScheduleManagement({ type }) {
   const title = type === "round" ? "Quản lý vòng đấu" : "Quản lý cuộc đua & lên lịch";
   return (
     <>
-      <PageTitle eyebrow="Quản lý giải đấu" title={title} description={type === "round" ? "Xây dựng giai đoạn giải đấu và xác định khung thời gian." : "Sắp xếp cuộc đua, đặt lịch và chuẩn bị phân công ngựa."} />
+      <PageTitle
+        eyebrow="Quản lý giải đấu"
+        title={title}
+        description={type === "round" ? "Xây dựng giai đoạn giải đấu và xác định khung thời gian." : "Sắp xếp cuộc đua, đặt lịch và chuẩn bị phân công ngựa."}
+        action={type === "race" ? <button className="primary-button" onClick={() => setShowRaceForm(true)}>Tạo cuộc đua</button> : null}
+      />
       <Notice message={message} />
+      {showRaceForm && (
+        <RaceForm
+          tournamentId={selected}
+          onClose={() => setShowRaceForm(false)}
+          onSuccess={async () => {
+            setShowRaceForm(false);
+            setMessage("Cuộc đua đã tạo thành công. Lời mời trọng tài đã được gửi.");
+            setItems(await getTournamentRaces(selected));
+            refreshBusyHorses();
+          }}
+        />
+      )}
       <div className="admin-select-row"><label>Giải đấu<select className="admin-select" value={selected} onChange={(e) => setSelected(e.target.value)}>{tournaments.map((item) => <option key={item.id ?? item.Id} value={item.id ?? item.Id}>{item.name ?? item.Name}</option>)}</select></label></div>
       <form className="admin-form" onSubmit={submit}>
         <input placeholder={`Tên ${type === "round" ? "vòng đấu" : "cuộc đua"}`} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

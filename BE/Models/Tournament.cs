@@ -42,8 +42,16 @@ public class Tournament
 
     public bool IsActive { get; set; } = true;
 
+    public TournamentStatus Status { get; set; } = TournamentStatus.Draft;
+
+    public DateTime? RegistrationDeadline { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public DateTime? StartedAt { get; set; }
+    public DateTime? FinishedAt { get; set; }
+    public DateTime? CancelledAt { get; set; }
 
     public ICollection<Round> Rounds { get; set; } = new List<Round>();
     public ICollection<Race> Races { get; set; } = new List<Race>();

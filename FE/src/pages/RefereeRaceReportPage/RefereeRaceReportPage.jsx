@@ -59,9 +59,19 @@ export default function RefereeRaceReportPage() {
     getMyAssignments()
       .then((d) => {
         const list = Array.isArray(d) ? d : [];
-        setAssignments(list);
-        if (list.length > 0)
-          setSelectedRaceId(list[0].raceId || list[0].RaceId || "");
+        console.log("🔍 All assignments:", list);
+        // Filter only confirmed assignments (referee đã chấp nhận lời mời)
+        const confirmedAssignments = list.filter((a) => {
+          const status = (a.status || a.Status || "").toLowerCase();
+          console.log(`Assignment ${a.raceId || a.RaceId}: status=${status}`);
+          return status === "confirmed";
+        });
+        console.log("✅ Confirmed assignments:", confirmedAssignments);
+        setAssignments(confirmedAssignments);
+        if (confirmedAssignments.length > 0)
+          setSelectedRaceId(
+            confirmedAssignments[0].raceId || confirmedAssignments[0].RaceId || ""
+          );
       })
       .catch(() => {})
       .finally(() => setLoading(false));

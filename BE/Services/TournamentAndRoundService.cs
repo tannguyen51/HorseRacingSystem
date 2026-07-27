@@ -14,13 +14,29 @@ public class TournamentService : ITournamentService
     private readonly ITournamentRepository _tournamentRepo;
     private readonly INotificationService _notificationService;
     private readonly IUserRepository _userRepo;
+    private readonly IRaceRepository _raceRepo;
+    private readonly IRaceEntryRepository _raceEntryRepo;
+    private readonly IHorseRepository _horseRepo;
+    private readonly IJockeyRepository _jockeyRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public TournamentService(ITournamentRepository tournamentRepo, INotificationService notificationService, IUserRepository userRepo, IUnitOfWork unitOfWork)
+    public TournamentService(
+        ITournamentRepository tournamentRepo,
+        INotificationService notificationService,
+        IUserRepository userRepo,
+        IRaceRepository raceRepo,
+        IRaceEntryRepository raceEntryRepo,
+        IHorseRepository horseRepo,
+        IJockeyRepository jockeyRepo,
+        IUnitOfWork unitOfWork)
     {
         _tournamentRepo = tournamentRepo;
         _notificationService = notificationService;
         _userRepo = userRepo;
+        _raceRepo = raceRepo;
+        _raceEntryRepo = raceEntryRepo;
+        _horseRepo = horseRepo;
+        _jockeyRepo = jockeyRepo;
         _unitOfWork = unitOfWork;
     }
 
@@ -35,8 +51,10 @@ public class TournamentService : ITournamentService
                 Description = request.Description,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
+                RegistrationDeadline = request.RegistrationDeadline,
                 ImageUrl = request.ImageUrl,
-                IsActive = true,
+                Status = TournamentStatus.Draft,
+                IsActive = false, // Will be true when Published
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -73,19 +91,7 @@ public class TournamentService : ITournamentService
                 System.Console.WriteLine($"Failed to send tournament notifications: {ex.Message}");
             }
 
-            return new ServiceResult<TournamentResponse>(201, ApiResult<TournamentResponse>.Ok(new TournamentResponse
-            {
-                Id = tournament.Id,
-                Name = tournament.Name,
-                Description = tournament.Description,
-                StartDate = tournament.StartDate,
-                EndDate = tournament.EndDate,
-                IsActive = tournament.IsActive,
-                RoundCount = 0,
-                RaceCount = 0,
-                ImageUrl = tournament.ImageUrl,
-                CreatedAt = tournament.CreatedAt
-            }));
+            return new ServiceResult<TournamentResponse>(201, ApiResult<TournamentResponse>.Ok(await MapToResponseAsync(tournament)));
         }
         catch (Exception ex)
         {
@@ -103,7 +109,7 @@ public class TournamentService : ITournamentService
                 return ServiceResult<TournamentResponse>.Fail(404, "Không tìm thấy giải đấu");
             }
 
-            return ServiceResult<TournamentResponse>.Ok(MapToResponse(tournament));
+            return ServiceResult<TournamentResponse>.Ok(await MapToResponseAsync(tournament));
         }
         catch (Exception ex)
         {
@@ -116,8 +122,12 @@ public class TournamentService : ITournamentService
         try
         {
             var tournaments = await _tournamentRepo.GetAllAsync();
-            return ServiceResult<IEnumerable<TournamentResponse>>.Ok(
-                tournaments.Select(MapToResponse));
+            var responses = new List<TournamentResponse>();
+            foreach (var t in tournaments)
+            {
+                responses.Add(await MapToResponseAsync(t));
+            }
+            return ServiceResult<IEnumerable<TournamentResponse>>.Ok(responses);
         }
         catch (Exception ex)
         {
@@ -131,8 +141,12 @@ public class TournamentService : ITournamentService
         try
         {
             var tournaments = await _tournamentRepo.GetActiveAsync();
-            return ServiceResult<IEnumerable<TournamentResponse>>.Ok(
-                tournaments.Select(MapToResponse));
+            var responses = new List<TournamentResponse>();
+            foreach (var t in tournaments)
+            {
+                responses.Add(await MapToResponseAsync(t));
+            }
+            return ServiceResult<IEnumerable<TournamentResponse>>.Ok(responses);
         }
         catch (Exception ex)
         {
@@ -151,6 +165,13 @@ public class TournamentService : ITournamentService
                 return ServiceResult<TournamentResponse>.Fail(404, "Không tìm thấy giải đấu");
             }
 
+            // Only allow updates when Draft or Published
+            if (tournament.Status != TournamentStatus.Draft && tournament.Status != TournamentStatus.Published)
+            {
+                return ServiceResult<TournamentResponse>.Fail(400,
+                    $"Không thể chỉnh sửa giải đấu ở trạng thái {tournament.Status}. Chỉ có thể chỉnh sửa khi ở trạng thái Bản nháp hoặc Đã công bố.");
+            }
+
             if (!string.IsNullOrEmpty(request.Name))
                 tournament.Name = request.Name;
             if (request.Description != null)
@@ -159,15 +180,19 @@ public class TournamentService : ITournamentService
                 tournament.StartDate = request.StartDate.Value;
             if (request.EndDate.HasValue)
                 tournament.EndDate = request.EndDate.Value;
+            if (request.RegistrationDeadline.HasValue)
+                tournament.RegistrationDeadline = request.RegistrationDeadline.Value;
             if (request.IsActive.HasValue)
                 tournament.IsActive = request.IsActive.Value;
             if (request.ImageUrl != null)
                 tournament.ImageUrl = request.ImageUrl;
 
+            tournament.UpdatedAt = DateTime.UtcNow;
+
             await _tournamentRepo.UpdateAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
 
-            return ServiceResult<TournamentResponse>.Ok(MapToResponse(tournament));
+            return ServiceResult<TournamentResponse>.Ok(await MapToResponseAsync(tournament));
         }
         catch (Exception ex)
         {
@@ -179,6 +204,18 @@ public class TournamentService : ITournamentService
     {
         try
         {
+            var tournament = await _tournamentRepo.GetByIdAsync(id);
+            if (tournament == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy giải đấu");
+
+            // Only allow delete when Draft and has 0 races
+            if (tournament.Status != TournamentStatus.Draft)
+                return ServiceResult<bool>.Fail(400, "Chỉ có thể xóa giải đấu ở trạng thái Bản nháp");
+
+            var races = await _raceRepo.GetByTournamentAsync(id);
+            if (races.Any())
+                return ServiceResult<bool>.Fail(400, "Không thể xóa giải đấu đã có cuộc đua");
+
             await _tournamentRepo.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
             return ServiceResult<bool>.Ok(true);
@@ -187,6 +224,277 @@ public class TournamentService : ITournamentService
         {
             return ServiceResult<bool>.Fail(500, $"Lỗi xóa giải đấu: {ex.Message}");
         }
+    }
+
+    public async Task<ServiceResult<TournamentResponse>> ChangeStatusAsync(Guid id, ChangeTournamentStatusRequest request)
+    {
+        try
+        {
+            var tournament = await _tournamentRepo.GetByIdAsync(id);
+            if (tournament == null)
+                return ServiceResult<TournamentResponse>.Fail(404, "Không tìm thấy giải đấu");
+
+            var currentStatus = tournament.Status;
+            var newStatus = request.NewStatus;
+
+            // Validate state transition
+            var isValidTransition = IsValidStatusTransition(currentStatus, newStatus);
+            if (!isValidTransition)
+                return ServiceResult<TournamentResponse>.Fail(400,
+                    $"Không thể chuyển từ {currentStatus} sang {newStatus}");
+
+            // Update status and timestamp
+            tournament.Status = newStatus;
+            tournament.UpdatedAt = DateTime.UtcNow;
+
+            switch (newStatus)
+            {
+                case TournamentStatus.Published:
+                    tournament.PublishedAt = DateTime.UtcNow;
+                    break;
+                case TournamentStatus.Ongoing:
+                    tournament.StartedAt = DateTime.UtcNow;
+                    break;
+                case TournamentStatus.Finished:
+                    tournament.FinishedAt = DateTime.UtcNow;
+                    break;
+                case TournamentStatus.Cancelled:
+                    tournament.CancelledAt = DateTime.UtcNow;
+                    break;
+            }
+
+            // Update IsActive based on status
+            tournament.IsActive = newStatus == TournamentStatus.Ongoing || newStatus == TournamentStatus.Published;
+
+            await _tournamentRepo.UpdateAsync(tournament);
+            await _unitOfWork.SaveChangesAsync();
+
+            return ServiceResult<TournamentResponse>.Ok(await MapToResponseAsync(tournament));
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<TournamentResponse>.Fail(500, $"Lỗi thay đổi trạng thái: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<TournamentStatsDto>> GetStatsAsync(Guid id)
+    {
+        try
+        {
+            var tournament = await _tournamentRepo.GetByIdAsync(id);
+            if (tournament == null)
+                return ServiceResult<TournamentStatsDto>.Fail(404, "Không tìm thấy giải đấu");
+
+            var stats = await CalculateStatsAsync(tournament);
+            return ServiceResult<TournamentStatsDto>.Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<TournamentStatsDto>.Fail(500, $"Lỗi lấy thống kê: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<List<TournamentTimelineDto>>> GetTimelineAsync(Guid id)
+    {
+        try
+        {
+            var tournament = await _tournamentRepo.GetByIdAsync(id);
+            if (tournament == null)
+                return ServiceResult<List<TournamentTimelineDto>>.Fail(404, "Không tìm thấy giải đấu");
+
+            var timeline = new List<TournamentTimelineDto>();
+
+            // Add creation event
+            timeline.Add(new TournamentTimelineDto
+            {
+                Id = Guid.NewGuid(),
+                Timestamp = tournament.CreatedAt,
+                Action = "Tạo giải đấu",
+                Actor = "Admin",
+                Status = TournamentStatus.Draft
+            });
+
+            // Add status change events
+            if (tournament.PublishedAt.HasValue)
+                timeline.Add(new TournamentTimelineDto
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = tournament.PublishedAt.Value,
+                    Action = "Công bố giải đấu",
+                    Actor = "Admin",
+                    Status = TournamentStatus.Published
+                });
+
+            if (tournament.StartedAt.HasValue)
+                timeline.Add(new TournamentTimelineDto
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = tournament.StartedAt.Value,
+                    Action = "Bắt đầu giải đấu",
+                    Actor = "Admin",
+                    Status = TournamentStatus.Ongoing
+                });
+
+            if (tournament.FinishedAt.HasValue)
+                timeline.Add(new TournamentTimelineDto
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = tournament.FinishedAt.Value,
+                    Action = "Kết thúc giải đấu",
+                    Actor = "Admin",
+                    Status = TournamentStatus.Finished
+                });
+
+            if (tournament.CancelledAt.HasValue)
+                timeline.Add(new TournamentTimelineDto
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = tournament.CancelledAt.Value,
+                    Action = "Hủy giải đấu",
+                    Actor = "Admin",
+                    Status = TournamentStatus.Cancelled
+                });
+
+            // Sort by timestamp descending (newest first)
+            timeline = timeline.OrderByDescending(t => t.Timestamp).ToList();
+
+            return ServiceResult<List<TournamentTimelineDto>>.Ok(timeline);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<List<TournamentTimelineDto>>.Fail(500, $"Lỗi lấy timeline: {ex.Message}");
+        }
+    }
+
+    private bool IsValidStatusTransition(TournamentStatus current, TournamentStatus next)
+    {
+        return (current, next) switch
+        {
+            (TournamentStatus.Draft, TournamentStatus.Published) => true,
+            (TournamentStatus.Published, TournamentStatus.Ongoing) => true,
+            (TournamentStatus.Ongoing, TournamentStatus.Finished) => true,
+            (TournamentStatus.Draft, TournamentStatus.Cancelled) => true,
+            (TournamentStatus.Published, TournamentStatus.Cancelled) => true,
+            (TournamentStatus.Ongoing, TournamentStatus.Cancelled) => true,
+            _ => false
+        };
+    }
+
+    private List<NextTransitionDto> GetNextTransitions(TournamentStatus current)
+    {
+        var transitions = new List<NextTransitionDto>();
+
+        switch (current)
+        {
+            case TournamentStatus.Draft:
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Published,
+                    Label = "Công bố giải",
+                    IsPrimary = true
+                });
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Cancelled,
+                    Label = "Hủy giải",
+                    IsPrimary = false
+                });
+                break;
+
+            case TournamentStatus.Published:
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Ongoing,
+                    Label = "Bắt đầu giải",
+                    IsPrimary = true
+                });
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Cancelled,
+                    Label = "Hủy giải",
+                    IsPrimary = false
+                });
+                break;
+
+            case TournamentStatus.Ongoing:
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Finished,
+                    Label = "Kết thúc giải",
+                    IsPrimary = true
+                });
+                transitions.Add(new NextTransitionDto
+                {
+                    Status = TournamentStatus.Cancelled,
+                    Label = "Hủy giải",
+                    IsPrimary = false
+                });
+                break;
+        }
+
+        return transitions;
+    }
+
+    private async Task<TournamentStatsDto> CalculateStatsAsync(Tournament tournament)
+    {
+        var races = await _raceRepo.GetByTournamentAsync(tournament.Id);
+        var raceIds = races.Select(r => r.Id).ToList();
+
+        var entries = new List<RaceEntry>();
+        foreach (var raceId in raceIds)
+        {
+            var raceEntries = await _raceEntryRepo.GetByRaceAsync(raceId);
+            entries.AddRange(raceEntries);
+        }
+
+        var horseIds = entries.Select(e => e.HorseId).Distinct().ToList();
+        var jockeyIds = entries.Select(e => e.JockeyId).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
+
+        int? daysRemaining = null;
+        if (tournament.Status == TournamentStatus.Published || tournament.Status == TournamentStatus.Ongoing)
+        {
+            var daysLeft = (tournament.EndDate - DateTime.UtcNow).Days;
+            daysRemaining = daysLeft > 0 ? daysLeft : 0;
+        }
+
+        return new TournamentStatsDto
+        {
+            RaceCount = races.Count,
+            EntryCount = entries.Count,
+            HorseCount = horseIds.Count,
+            JockeyCount = jockeyIds.Count,
+            DaysRemaining = daysRemaining
+        };
+    }
+
+    private async Task<TournamentResponse> MapToResponseAsync(Tournament tournament)
+    {
+        var stats = await CalculateStatsAsync(tournament);
+        var nextTransitions = GetNextTransitions(tournament.Status);
+
+        return new TournamentResponse
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            Description = tournament.Description,
+            StartDate = tournament.StartDate,
+            EndDate = tournament.EndDate,
+            IsActive = tournament.IsActive,
+            RoundCount = tournament.Rounds?.Count ?? 0,
+            RaceCount = stats.RaceCount,
+            ImageUrl = tournament.ImageUrl,
+            CreatedAt = tournament.CreatedAt,
+            UpdatedAt = tournament.UpdatedAt,
+            Status = tournament.Status,
+            StatusName = tournament.Status.ToString(),
+            RegistrationDeadline = tournament.RegistrationDeadline,
+            PublishedAt = tournament.PublishedAt,
+            StartedAt = tournament.StartedAt,
+            FinishedAt = tournament.FinishedAt,
+            CancelledAt = tournament.CancelledAt,
+            Stats = stats,
+            NextTransitions = nextTransitions
+        };
     }
 
     private TournamentResponse MapToResponse(Tournament tournament)
@@ -203,7 +511,14 @@ public class TournamentService : ITournamentService
             RaceCount = tournament.Races?.Count ?? 0,
             ImageUrl = tournament.ImageUrl,
             CreatedAt = tournament.CreatedAt,
-            UpdatedAt = tournament.UpdatedAt
+            UpdatedAt = tournament.UpdatedAt,
+            Status = tournament.Status,
+            StatusName = tournament.Status.ToString(),
+            RegistrationDeadline = tournament.RegistrationDeadline,
+            PublishedAt = tournament.PublishedAt,
+            StartedAt = tournament.StartedAt,
+            FinishedAt = tournament.FinishedAt,
+            CancelledAt = tournament.CancelledAt
         };
     }
 }

@@ -292,6 +292,7 @@ public class RefereeService : IRefereeService
             Id = assignment.Id,
             RaceId = assignment.RaceId,
             RaceName = race?.Name,
+            RaceStatus = race?.Status.ToString() ?? string.Empty,
             RefereeId = assignment.RefereeId,
             RefereeName = referee?.User?.FullName,
             Role = assignment.Role,
