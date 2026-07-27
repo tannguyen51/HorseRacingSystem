@@ -525,6 +525,11 @@ public class AdminService : IAdminService
             if (raceResult == null)
                 return ServiceResult<bool>.Fail(404, "Chưa có kết quả cuộc đua. Trọng tài phải nộp kết quả trước.");
 
+            // Check if there is at least one referee report
+            var hasReport = race.Reports?.Any() ?? false;
+            if (!hasReport)
+                return ServiceResult<bool>.Fail(400, "Chưa có báo cáo từ trọng tài. Trọng tài phải nộp báo cáo trước khi duyệt kết quả.");
+
             // Wrap in transaction: if settlement fails, race + result roll back
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try

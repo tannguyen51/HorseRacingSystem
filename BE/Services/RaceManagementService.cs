@@ -193,9 +193,9 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
-            if (race.Status != RaceStatus.Scheduled)
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.RegistrationOpen)
             {
-                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch hoặc Đang mở đăng ký.");
             }
 
             var currentCount = await _entryRepo.GetByRaceAsync(raceId);
@@ -301,9 +301,9 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
-            if (race.Status != RaceStatus.Scheduled)
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.RegistrationOpen)
             {
-                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+                return ServiceResult<bool>.Fail(400, $"Không thể thêm ngựa vào cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch hoặc Đang mở đăng ký.");
             }
 
             var currentCount = await _entryRepo.GetByRaceAsync(raceId);
@@ -383,8 +383,8 @@ public class RaceManagementService : IRaceManagementService
             if (race == null)
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
 
-            if (race.Status != RaceStatus.Scheduled)
-                return ServiceResult<bool>.Fail(400, "Không thể xóa ngựa sau khi cuộc đua đã bắt đầu.");
+            if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.RegistrationOpen)
+                return ServiceResult<bool>.Fail(400, "Không thể xóa ngựa sau khi cuộc đua đã đóng đăng ký.");
 
             var entry = await _entryRepo.GetByRaceAndHorseAsync(raceId, horseId);
             if (entry == null)
@@ -426,15 +426,22 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
-            if (race.Status != RaceStatus.Scheduled)
+            if (race.Status != RaceStatus.RegistrationClosed)
             {
-                return ServiceResult<bool>.Fail(400, $"Không thể bắt đầu cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+                return ServiceResult<bool>.Fail(400, $"Không thể bắt đầu cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã đóng đăng ký.");
             }
 
             var entries = await _entryRepo.GetByRaceAsync(raceId);
             if (entries.Count == 0)
             {
                 return ServiceResult<bool>.Fail(400, "Không thể bắt đầu cuộc đua khi chưa có ngựa tham gia.");
+            }
+
+            // Check if at least one referee has accepted (Confirmed status)
+            var hasAcceptedReferee = race.RefereeAssignments?.Any(ra => ra.Status == RefereeAssignmentStatus.Confirmed) ?? false;
+            if (!hasAcceptedReferee)
+            {
+                return ServiceResult<bool>.Fail(400, "Không thể bắt đầu cuộc đua khi chưa có trọng tài nào chấp nhận lời mời.");
             }
 
             race.Status = RaceStatus.InProgress;
@@ -529,6 +536,85 @@ public class RaceManagementService : IRaceManagementService
         catch (Exception ex)
         {
             return ServiceResult<bool>.Fail(500, $"Lỗi hủy cuộc đua: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.Scheduled)
+                return ServiceResult<bool>.Fail(400, $"Không thể mở đăng ký cho cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+
+            race.Status = RaceStatus.RegistrationOpen;
+            race.UpdatedAt = DateTime.UtcNow;
+
+            await _raceRepo.UpdateAsync(race);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi mở đăng ký: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.RegistrationOpen)
+                return ServiceResult<bool>.Fail(400, $"Không thể đóng đăng ký cho cuộc đua có trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đang mở đăng ký.");
+
+            var entries = await _entryRepo.GetByRaceAsync(raceId);
+            if (entries.Count == 0)
+                return ServiceResult<bool>.Fail(400, "Không thể đóng đăng ký khi chưa có ngựa tham gia.");
+
+            race.Status = RaceStatus.RegistrationClosed;
+            race.UpdatedAt = DateTime.UtcNow;
+
+            await _raceRepo.UpdateAsync(race);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi đóng đăng ký: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> ReleaseHorseAsync(Guid raceId, Guid horseId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            // Allow release from any non-finished, non-cancelled race
+            if (race.Status == RaceStatus.Finished || race.Status == RaceStatus.Cancelled)
+                return ServiceResult<bool>.Fail(400, "Không thể giải phóng ngựa từ cuộc đua đã kết thúc hoặc đã hủy.");
+
+            var entry = await _entryRepo.GetByRaceAndHorseAsync(raceId, horseId);
+            if (entry == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy đăng ký tham gia");
+
+            await _entryRepo.DeleteAsync(entry.Id);
+            await _unitOfWork.SaveChangesAsync();
+            await RecalculateOddsAsync(raceId);
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi giải phóng ngựa: {ex.Message}");
         }
     }
 

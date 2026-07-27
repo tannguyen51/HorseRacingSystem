@@ -60,6 +60,7 @@ public class RefereeAssignmentResponse
     public Guid Id { get; set; }
     public Guid RaceId { get; set; }
     public string RaceName { get; set; } = string.Empty;
+    public string RaceStatus { get; set; } = string.Empty;
     public Guid RefereeId { get; set; }
     public string? RefereeName { get; set; }
     public string Role { get; set; } = string.Empty;

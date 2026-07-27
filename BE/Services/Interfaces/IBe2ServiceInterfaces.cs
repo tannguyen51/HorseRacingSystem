@@ -14,6 +14,11 @@ public interface ITournamentService
     Task<ServiceResult<IEnumerable<TournamentResponse>>> GetActiveTournamentsAsync();
     Task<ServiceResult<TournamentResponse>> UpdateTournamentAsync(Guid id, UpdateTournamentRequest request);
     Task<ServiceResult<bool>> DeleteTournamentAsync(Guid id);
+
+    // State machine methods
+    Task<ServiceResult<TournamentResponse>> ChangeStatusAsync(Guid id, ChangeTournamentStatusRequest request);
+    Task<ServiceResult<TournamentStatsDto>> GetStatsAsync(Guid id);
+    Task<ServiceResult<List<TournamentTimelineDto>>> GetTimelineAsync(Guid id);
 }
 
 public interface IRoundService
@@ -42,9 +47,14 @@ public interface IRaceManagementService
     Task<ServiceResult<List<Guid>>> GetBusyHorseIdsAsync();
     
     // Race Status
+    Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId);
+    Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId);
     Task<ServiceResult<bool>> StartRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> EndRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> CancelRaceAsync(Guid raceId);
+
+    // Horse Release
+    Task<ServiceResult<bool>> ReleaseHorseAsync(Guid raceId, Guid horseId);
 }
 
 public interface IRefereeService
