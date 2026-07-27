@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyAssignments } from "../../services/refereeAssignmentApi";
-import { createReport, getRaceReport } from "../../services/refereeApi";
+import { createReport, getRaceReport, getRaceEntries, submitRaceResult } from "../../services/refereeApi";
 import "./RefereeRaceReportPage.css";
 
 const REPORT_TYPES = [
@@ -54,6 +54,11 @@ export default function RefereeRaceReportPage() {
 
   // Recent reports history (built from submissions during session + loaded)
   const [recentReports, setRecentReports] = useState([]);
+  // Submit result states
+  const [resultEntries, setResultEntries] = useState([]);
+  const [resultWinningHorseId, setResultWinningHorseId] = useState("");
+  const [resultSubmitting, setResultSubmitting] = useState(false);
+  const [resultMsg, setResultMsg] = useState("");
 
   useEffect(() => {
     getMyAssignments()
@@ -93,6 +98,20 @@ export default function RefereeRaceReportPage() {
         }
       })
       .catch(() => setExistingReport(null));
+  }, [selectedRaceId]);
+
+  // Load race entries for result submission
+  useEffect(() => {
+    if (!selectedRaceId) {
+      setResultEntries([]);
+      return;
+    }
+    getRaceEntries(selectedRaceId)
+      .then((d) => {
+        const list = Array.isArray(d) ? d : [];
+        setResultEntries(list);
+      })
+      .catch(() => setResultEntries([]));
   }, [selectedRaceId]);
 
   // Chart data — monthly count (simulated from recent reports)
@@ -162,6 +181,25 @@ export default function RefereeRaceReportPage() {
       setMsg("Lỗi: " + (e.message || ""));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSubmitResult = async (e) => {
+    e.preventDefault();
+    if (!resultWinningHorseId) {
+      setResultMsg("Vui lòng chọn ngựa thắng cuộc.");
+      return;
+    }
+    setResultSubmitting(true);
+    setResultMsg("");
+    try {
+      await submitRaceResult(selectedRaceId, { winningHorseId: resultWinningHorseId });
+      setResultMsg("✅ Kết quả đã được gửi thành công! Admin sẽ duyệt sau.");
+      setResultWinningHorseId("");
+    } catch (err) {
+      setResultMsg("❌ Lỗi: " + (err.message || ""));
+    } finally {
+      setResultSubmitting(false);
     }
   };
 
@@ -327,6 +365,47 @@ export default function RefereeRaceReportPage() {
               </button>
             </form>
           ) : null}
+
+          {/* ── Submit Race Result ── */}
+          {selectedRaceId && (
+            <form className="rr-card rr-card-dark rr-form" onSubmit={handleSubmitResult} style={{ marginTop: 16, borderTop: "3px solid #e6a54a" }}>
+              <h3 className="rr-card-title" style={{ color: "#7C2D12" }}>
+                🏁 Chốt kết quả cuộc đua
+              </h3>
+              {resultMsg && (
+                <div className={`rr-msg ${resultMsg.includes("❌") ? "rr-msg--err" : "rr-msg--ok"}`}>
+                  {resultMsg}
+                </div>
+              )}
+              <p className="rr-muted" style={{ marginBottom: 12 }}>
+                Chọn ngựa thắng cuộc. Kết quả sẽ được gửi lên admin duyệt.
+              </p>
+              <div className="rr-field">
+                <label>Ngựa thắng cuộc</label>
+                <select
+                  value={resultWinningHorseId}
+                  onChange={(e) => setResultWinningHorseId(e.target.value)}
+                  className="rr-select"
+                  style={{ width: "100%", padding: 10, borderRadius: 8, fontSize: 14 }}
+                >
+                  <option value="">-- Chọn ngựa thắng --</option>
+                  {resultEntries.map((entry) => (
+                    <option key={entry.horseId || entry.HorseId} value={entry.horseId || entry.HorseId}>
+                      🐎 {entry.horseName || entry.HorseName} — Tỉ lệ: {(entry.odds || entry.Odds || 1).toFixed(2)}x
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="rr-submit-btn"
+                disabled={resultSubmitting || !resultWinningHorseId}
+                style={{ background: resultWinningHorseId ? "#e6a54a" : undefined }}
+              >
+                {resultSubmitting ? "Đang gửi..." : "📨 Gửi kết quả"}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* RIGHT — Chart + Recent Reports */}

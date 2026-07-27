@@ -91,3 +91,12 @@ export function updateReport(id, payload) {
 export function getRaceEntries(raceId) {
   return request(`/api/referees/race/${raceId}/entries`);
 }
+
+// ── Submit Race Result ──
+
+export function submitRaceResult(raceId, payload) {
+  return request(`/api/referees/race/${raceId}/submit-result`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
