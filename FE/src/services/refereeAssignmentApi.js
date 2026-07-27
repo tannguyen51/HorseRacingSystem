@@ -7,7 +7,9 @@ import { request } from "./apiClient";
  */
 export function getMyAssignments(status) {
   const qs = status ? `?status=${encodeURIComponent(status)}` : "";
-  return request(`/api/referees/my-assignments${qs}`);
+  return request(`/api/referees/my-assignments${qs}`).then(
+    (d) => d?.data ?? d?.Data ?? d
+  );
 }
 
 /**
