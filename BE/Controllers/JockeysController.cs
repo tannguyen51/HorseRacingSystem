@@ -21,7 +21,7 @@ public class JockeysController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "HorseOwner,Admin")]
+    [Authorize(Roles = "HorseOwner,Jockey,Admin")]
     public async Task<ActionResult> GetAvailableJockeys()
     {
         var result = await _jockeyService.GetAvailableJockeysAsync();

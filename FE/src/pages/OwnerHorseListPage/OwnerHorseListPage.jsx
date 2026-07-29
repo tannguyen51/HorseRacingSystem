@@ -19,6 +19,7 @@ function OwnerHorseListPage() {
   const [jockeys, setJockeys] = useState([]);
   const [selectedJockey, setSelectedJockey] = useState("");
   const [jockeyError, setJockeyError] = useState("");
+  const [jockeyLoading, setJockeyLoading] = useState(false);
 
   const loadHorses = async () => {
     setLoading(true);
@@ -53,10 +54,16 @@ function OwnerHorseListPage() {
     setAssignHorse(horse);
     setSelectedJockey("");
     setJockeyError("");
+    setJockeyLoading(true);
     try {
       const data = await getAvailableJockeys();
       setJockeys(Array.isArray(data) ? data : []);
-    } catch { setJockeys([]); }
+    } catch (e) {
+      setJockeys([]);
+      setJockeyError(e.message || "Không thể tải danh sách kỵ sĩ.");
+    } finally {
+      setJockeyLoading(false);
+    }
   };
 
   const submitAssign = async () => {
@@ -182,10 +189,13 @@ function OwnerHorseListPage() {
           <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
             <h3>Chỉ định kỵ sĩ</h3>
             <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn kỵ sĩ cho {assignHorse.name ?? assignHorse.Name}</p>
-            <select value={selectedJockey} onChange={e => setSelectedJockey(e.target.value)} className="oh-select">
-              <option value="">-- Chọn kỵ sĩ --</option>
+            <select value={selectedJockey} onChange={e => setSelectedJockey(e.target.value)} className="oh-select" disabled={jockeyLoading || jockeys.length === 0}>
+              <option value="">{jockeyLoading ? "Đang tải danh sách kỵ sĩ..." : "-- Chọn kỵ sĩ --"}</option>
               {jockeys.map(j => <option key={j.id ?? j.Id} value={j.id ?? j.Id}>{j.fullName ?? j.FullName ?? j.email ?? j.Email}</option>)}
             </select>
+            {!jockeyLoading && jockeys.length === 0 && !jockeyError && (
+              <p className="oh-error" style={{margin:"8px 0 0"}}>Chưa có kỵ sĩ khả dụng.</p>
+            )}
             {jockeyError && <p className="oh-error" style={{margin:"8px 0 0"}}>{jockeyError}</p>}
             <div className="oh-modal-actions">
               <button className="oh-btn" onClick={() => setAssignHorse(null)}>Huỷ</button>
