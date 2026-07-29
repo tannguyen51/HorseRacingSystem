@@ -24,7 +24,7 @@ public class JockeysController : ControllerBase
     [Authorize(Roles = "HorseOwner,Jockey,Admin")]
     public async Task<ActionResult> GetAvailableJockeys()
     {
-        var result = await _jockeyService.GetAvailableJockeysAsync();
+        var result = await _jockeyService.GetAvailableJockeysAsync(GetUserId());
         return StatusCode(result.StatusCode, result.Result);
     }
 

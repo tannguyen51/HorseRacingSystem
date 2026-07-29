@@ -180,6 +180,19 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
+        var invitedJockey = await _jockeys.GetByIdAsync(request.JockeyId);
+        if (invitedJockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kỵ sĩ");
+        }
+
+        if (invitedJockey.UserId == userId)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Bạn không thể gửi lời mời cho chính mình");
+        }
+
         var existingInvitation = await _invitations.GetByHorseAndJockeyAsync(horseId, request.JockeyId);
         if (existingInvitation != null)
         {

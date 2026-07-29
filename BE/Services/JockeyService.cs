@@ -30,11 +30,13 @@ public class JockeyService : IJockeyService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<ServiceResult<object>> GetAvailableJockeysAsync()
+    public async Task<ServiceResult<object>> GetAvailableJockeysAsync(Guid currentUserId)
     {
         await EnsureJockeyProfilesAsync();
         var jockeys = await _jockeys.GetAvailableAsync();
-        var response = jockeys.Select(jockey => new JockeyListResponse
+        var response = jockeys
+            .Where(jockey => jockey.UserId != currentUserId)
+            .Select(jockey => new JockeyListResponse
         {
             Id = jockey.Id,
             UserId = jockey.UserId,
