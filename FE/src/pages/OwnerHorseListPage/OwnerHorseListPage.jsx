@@ -57,7 +57,18 @@ function OwnerHorseListPage() {
     setJockeyLoading(true);
     try {
       const data = await getAvailableJockeys();
-      setJockeys(Array.isArray(data) ? data : []);
+      let currentUserId = "";
+      try {
+        const authUser = JSON.parse(localStorage.getItem("authUser") || "{}");
+        currentUserId = String(authUser.userId ?? authUser.UserId ?? "").toLowerCase();
+      } catch {
+        // The backend still enforces this rule if local auth data is unavailable.
+      }
+      setJockeys(
+        Array.isArray(data)
+          ? data.filter(j => String(j.userId ?? j.UserId ?? "").toLowerCase() !== currentUserId)
+          : [],
+      );
     } catch (e) {
       setJockeys([]);
       setJockeyError(e.message || "Không thể tải danh sách kỵ sĩ.");
