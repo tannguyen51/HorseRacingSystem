@@ -15,19 +15,22 @@ public class JockeyService : IJockeyService
     private readonly IJockeyInvitationRepository _invitations;
     private readonly IRaceEntryRepository _raceEntries;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notifications;
 
     public JockeyService(
         IUserRepository users,
         IJockeyRepository jockeys,
         IJockeyInvitationRepository invitations,
         IRaceEntryRepository raceEntries,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        INotificationService notifications)
     {
         _users = users;
         _jockeys = jockeys;
         _invitations = invitations;
         _raceEntries = raceEntries;
         _unitOfWork = unitOfWork;
+        _notifications = notifications;
     }
 
     public async Task<ServiceResult<object>> GetAvailableJockeysAsync(Guid currentUserId)
@@ -143,6 +146,28 @@ public class JockeyService : IJockeyService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        if (invitation.Horse?.Owner?.User != null)
+        {
+            var responseText = request.Accept ? "đã chấp nhận" : "đã từ chối";
+            var nextStep = request.Accept
+                ? "Kỵ sĩ đã được phân công cho ngựa."
+                : "Bạn có thể chọn một kỵ sĩ khác cho ngựa.";
+
+            await _notifications.CreateNotificationAsync(new CreateNotificationDto
+            {
+                UserId = invitation.Horse.Owner.UserId,
+                Title = request.Accept ? "Kỵ sĩ đã chấp nhận lời mời" : "Kỵ sĩ đã từ chối lời mời",
+                Message = $"{jockey.User?.FullName ?? "Kỵ sĩ"} {responseText} lời mời cho ngựa {invitation.Horse.Name}. {nextStep}",
+                Type = NotificationType.InApp,
+                Category = NotificationCategory.JockeyInvitation,
+                ActionUrl = request.Accept
+                    ? $"/owner/horses/{invitation.HorseId}"
+                    : "/owner/horses",
+                RelatedEntityId = invitation.Id,
+                RelatedEntityType = nameof(JockeyInvitation)
+            });
+        }
 
         return ServiceResult<object>.Ok(invitation);
     }

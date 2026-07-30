@@ -37,7 +37,14 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
 
     public Task<JockeyInvitation?> GetByIdAsync(Guid invitationId, Guid jockeyId)
     {
-        return _db.JockeyInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.JockeyId == jockeyId);
+        return _db.JockeyInvitations
+            .Include(i => i.Horse)
+                .ThenInclude(h => h!.Owner)
+                .ThenInclude(o => o!.User)
+            .Include(i => i.Jockey)
+                .ThenInclude(j => j!.User)
+            .Include(i => i.Race)
+            .FirstOrDefaultAsync(i => i.Id == invitationId && i.JockeyId == jockeyId);
     }
 
     public Task<JockeyInvitation?> GetActiveByHorseAsync(Guid horseId)
