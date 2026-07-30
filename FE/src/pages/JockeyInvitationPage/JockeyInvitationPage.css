@@ -548,7 +548,7 @@
   flex-shrink: 0;
 }
 
-.jockey-response-panel button {
+.jockey-response-button {
   min-height: 44px;
   padding: 0 20px;
   border-radius: 11px;
@@ -560,23 +560,43 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.jockey-response-panel .ghost-button {
+.jockey-response-button--decline {
   background: rgba(255, 255, 255, 0.7);
   color: #a13c35;
 }
 
-.jockey-response-panel .primary-button {
+.jockey-response-button--accept {
   border-color: #1a1d23;
   background: #1a1d23;
-  color: #fff;
+  color: #fff !important;
   box-shadow: 0 8px 18px rgba(26, 29, 35, 0.16);
 }
 
-.jockey-response-panel button:not(:disabled):hover {
+.jockey-response-button:not(:disabled):hover {
   transform: translateY(-2px);
 }
 
-.jockey-response-panel button:disabled {
+.jockey-response-button--accept:not(:disabled):hover,
+.jockey-response-button--accept:not(:disabled):focus-visible {
+  border-color: #2d3340;
+  background: #2d3340;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(26, 29, 35, 0.22);
+}
+
+.jockey-response-button--decline:not(:disabled):hover,
+.jockey-response-button--decline:not(:disabled):focus-visible {
+  border-color: rgba(161, 60, 53, 0.28);
+  background: rgba(161, 60, 53, 0.07);
+  color: #8d302b;
+}
+
+.jockey-response-button:focus-visible {
+  outline: 3px solid rgba(215, 170, 77, 0.3);
+  outline-offset: 2px;
+}
+
+.jockey-response-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
