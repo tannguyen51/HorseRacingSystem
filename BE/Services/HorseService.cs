@@ -294,14 +294,20 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Ngựa đã được đăng ký");
         }
 
+        var acceptedInvitation = horse.JockeyInvitations
+            .Where(invitation => invitation.Status == JockeyInvitationStatus.Accepted)
+            .OrderByDescending(invitation => invitation.CreatedAt)
+            .FirstOrDefault();
+
         var entry = new RaceEntry
         {
             Id = Guid.NewGuid(),
             RaceId = raceId,
             HorseId = horseId,
+            JockeyId = acceptedInvitation?.JockeyId,
             Status = RegistrationStatus.Pending,
             OwnerConfirmed = request.OwnerConfirmed,
-            JockeyConfirmed = false
+            JockeyConfirmed = acceptedInvitation != null
         };
 
         await _raceEntries.AddAsync(entry);
