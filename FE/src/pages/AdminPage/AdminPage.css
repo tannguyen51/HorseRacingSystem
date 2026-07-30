@@ -978,4 +978,20 @@
 .ad-action-card__bar div { height: 100%; border-radius: 99px; transition: width 0.4s; }
 
 .ad-action-card__actions { display: flex; gap: 6px; }
-.ad-action-card__actions button { flex: 1; }
+.ad-action-card__actions button {
+  flex: 1;
+  background: rgba(16,185,129,0.08);
+  color: #0f7a5a;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(16,185,129,0.2) !important;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+.ad-action-card__actions button:hover {
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.3) !important;
+}
