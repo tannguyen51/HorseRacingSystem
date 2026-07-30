@@ -94,18 +94,18 @@ export const normalizeInvitation = (invitation) => {
       "RaceName",
       "title",
       "Title",
-    ) ?? read(race, "name", "Name") ?? "Race invitation",
+    ) ?? read(race, "name", "Name") ?? "Lời mời tham gia cuộc đua",
     scheduledAt:
       read(invitation, "scheduledAt", "ScheduledAt", "date", "Date") ??
       read(race, "scheduledAt", "ScheduledAt"),
     location:
       read(invitation, "track", "Track", "location", "Location") ??
       read(race, "location", "Location") ??
-      "TBD Track",
+      "Chưa xác định",
     distance: read(race, "distance", "Distance"),
     maxParticipants: read(race, "maxParticipants", "MaxParticipants"),
     raceStatus: read(race, "status", "Status"),
-    tournamentName: read(tournament, "name", "Name") ?? "Tournament TBD",
+    tournamentName: read(tournament, "name", "Name") ?? "Chưa xác định",
     horseId: read(invitation, "horseId", "HorseId") ?? read(horse, "id", "Id"),
     horseName:
       read(invitation, "horseName", "HorseName") ??

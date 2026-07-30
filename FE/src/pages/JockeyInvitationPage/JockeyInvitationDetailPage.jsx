@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   formatJockeyDate,
   getJockeyInvitations,
+  normalizeInvitationStatus,
   respondJockeyInvitation,
 } from "../../services/jockeyApi";
 import "../SpectatorSharedLayout.css";
@@ -60,6 +61,14 @@ function JockeyInvitationDetailPage() {
     return totalRaces > 0 ? `${Math.round((totalWins / totalRaces) * 100)}%` : "0%";
   }, [invitation]);
 
+  const statusLabel = useMemo(() => {
+    const status = normalizeInvitationStatus(invitation?.status);
+    if (status === "Pending") return "Chờ phản hồi";
+    if (status === "Accepted") return "Đã chấp nhận";
+    if (status === "Declined") return "Đã từ chối";
+    return status || "Chưa xác định";
+  }, [invitation?.status]);
+
   const handleResponse = async (accept) => {
     setSubmitting(true);
     try {
@@ -88,7 +97,7 @@ function JockeyInvitationDetailPage() {
           </div>
           <div className="spectator-sidebar__card">
             <p className="muted">Trạng thái lời mời</p>
-            <h4>{invitation?.status ?? "Đang tải..."}</h4>
+            <h4>{loading ? "Đang tải..." : statusLabel}</h4>
             <span>{formatJockeyDate(invitation?.createdAt, "Ngày tạo chưa xác định")}</span>
           </div>
           <Link className="jockey-back-link" to="/jockey/invitations">
@@ -152,8 +161,14 @@ function JockeyInvitationDetailPage() {
                   <DetailRow label="Ngựa" value={invitation.horseName} />
                   <DetailRow label="Chủ ngựa" value={invitation.ownerName} />
                   <DetailRow label="Giống" value={invitation.horseBreed} />
-                  <DetailRow label="Tuổi" value={invitation.horseAge} />
-                  <DetailRow label="Cân nặng" value={invitation.horseWeight} />
+                  <DetailRow
+                    label="Tuổi"
+                    value={invitation.horseAge ? `${invitation.horseAge} tuổi` : ""}
+                  />
+                  <DetailRow
+                    label="Cân nặng"
+                    value={invitation.horseWeight ? `${invitation.horseWeight} kg` : ""}
+                  />
                   <DetailRow label="Màu sắc" value={invitation.horseColor} />
                   <DetailRow label="Tỷ lệ thắng" value={horseWinRate} />
                 </article>
@@ -166,24 +181,30 @@ function JockeyInvitationDetailPage() {
                     Chấp nhận xác nhận bạn là kỵ sĩ cho cuộc đua này.
                   </p>
                 </div>
-                <div className="jockey-response-panel__actions">
-                  <button
-                    type="button"
-                    className="ghost-button"
-                    disabled={submitting}
-                    onClick={() => handleResponse(false)}
-                  >
-                    Từ Chối Lời Mời
-                  </button>
-                  <button
-                    type="button"
-                    className="primary-button"
-                    disabled={submitting}
-                    onClick={() => handleResponse(true)}
-                  >
-                    {submitting ? "Đang xử lý..." : "Chấp Nhận Lời Mời"}
-                  </button>
-                </div>
+                {normalizeInvitationStatus(invitation.status) === "Pending" ? (
+                  <div className="jockey-response-panel__actions">
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      disabled={submitting}
+                      onClick={() => handleResponse(false)}
+                    >
+                      Từ chối lời mời
+                    </button>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={submitting}
+                      onClick={() => handleResponse(true)}
+                    >
+                      {submitting ? "Đang xử lý..." : "Chấp nhận lời mời"}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="jockey-response-completed">
+                    Lời mời này {statusLabel.toLowerCase()}.
+                  </span>
+                )}
               </section>
             </>
           )}
