@@ -395,9 +395,7 @@ function Dashboard() {
                   </div>
                   <div className="ad-action-card__bar"><div style={{ width: `${Math.min((item.count||0)*20, 100)}%`, background: p.bar }} /></div>
                   <div className="ad-action-card__actions">
-                  <div className="ad-action-card__actions">
                     <button className="ad-btn-approve" onClick={() => navigate(item.path)}>Xem chi tiết</button>
-                  </div>
                   </div>
                 </div>
               );

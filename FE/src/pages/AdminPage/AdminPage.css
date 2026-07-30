@@ -727,7 +727,7 @@
   padding: 5px 14px; border-radius: 8px; font-size: 11px; font-weight: 600;
   border: none; cursor: pointer; font-family: inherit; transition: all 0.15s;
 }
-.ad-btn-approve { background: rgba(16,185,129,0.1); color: #0f7a5a; }
+.ad-btn-approve { background: rgba(16,185,129,0.1); color: #0f7a5a; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
 .ad-btn-approve:hover { background: rgba(16,185,129,0.2); }
 .ad-btn-view { background: transparent; border: 1px solid rgba(0,0,0,0.06) !important; color: #64748b; }
 .ad-btn-view:hover { border-color: rgba(0,0,0,0.15) !important; }
