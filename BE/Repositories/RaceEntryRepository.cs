@@ -50,9 +50,14 @@ public class RaceEntryRepository : IRaceEntryRepository
     {
         return _db.RaceEntries
             .Include(e => e.Race)
+                .ThenInclude(r => r!.Tournament)
             .Include(e => e.Horse)
             .Include(e => e.Jockey)
-            .Where(e => e.JockeyId == jockeyId)
+            .Where(e =>
+                e.JockeyId == jockeyId ||
+                (e.Horse != null && e.Horse.JockeyInvitations.Any(invitation =>
+                    invitation.JockeyId == jockeyId &&
+                    invitation.Status == JockeyInvitationStatus.Accepted)))
             .ToListAsync();
     }
 
