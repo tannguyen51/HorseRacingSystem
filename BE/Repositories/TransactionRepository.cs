@@ -37,6 +37,14 @@ public class TransactionRepository : ITransactionRepository
             .FirstOrDefaultAsync();
     }
 
+    public Task<List<Transaction>> GetHistoryByUserAsync(Guid userId)
+    {
+        return _db.Transactions
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
     public Task<bool> HasCompletedSinceAsync(Guid userId, DateTime since)
     {
         return _db.Transactions

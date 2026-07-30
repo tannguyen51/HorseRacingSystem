@@ -52,9 +52,20 @@ export function checkDeposit(since) {
   return request(`/api/sepay/check?since=${since.toISOString()}`);
 }
 
+export function getDepositHistory() {
+  return request("/api/sepay/history");
+}
+
 export function forgotPassword(email) {
   return request("/api/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPassword(payload) {
+  return request("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }

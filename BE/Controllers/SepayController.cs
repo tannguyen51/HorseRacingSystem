@@ -58,6 +58,16 @@ public class SepayController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [Authorize]
+    [HttpGet("history")]
+    public async Task<ActionResult> GetHistory()
+    {
+        var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(uid, out var userId)) return Unauthorized();
+        var result = await _transactionService.GetHistoryAsync(userId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpGet("webhook/test")]
     public ActionResult WebhookTest()
     {

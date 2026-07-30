@@ -67,3 +67,14 @@ public class DepositRequest
 {
     public decimal Amount { get; set; }
 }
+
+public class DepositHistoryItem
+{
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Status { get; set; } = "pending";
+    public string Reference { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+}

@@ -188,6 +188,23 @@ public class TransactionService : ITransactionService
         return ServiceResult<object>.Ok(new { completed = false });
     }
 
+    public async Task<ServiceResult<object>> GetHistoryAsync(Guid userId)
+    {
+        var transactions = await _transactionRepo.GetHistoryByUserAsync(userId);
+        var items = transactions.Select(t => new DepositHistoryItem
+        {
+            Id = t.Id,
+            Amount = t.Amount,
+            Status = t.Status,
+            Reference = t.Reference ?? string.Empty,
+            Description = t.Description ?? string.Empty,
+            CreatedAt = t.CreatedAt,
+            CompletedAt = t.CompletedAt
+        }).ToList();
+
+        return ServiceResult<object>.Ok(items);
+    }
+
     private static string GenerateReference()
     {
         var bytes = RandomNumberGenerator.GetBytes(4);

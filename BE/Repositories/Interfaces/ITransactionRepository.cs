@@ -10,6 +10,7 @@ public interface ITransactionRepository
     Task AddAsync(Transaction transaction);
     Task<Transaction?> GetByReferenceAsync(string reference);
     Task<Transaction?> GetLatestByUserAsync(Guid userId);
+    Task<List<Transaction>> GetHistoryByUserAsync(Guid userId);
     Task<bool> HasCompletedSinceAsync(Guid userId, DateTime since);
     Task<Transaction?> GetPendingByRefAsync(string reference);
     Task<bool> ExistsBySepayIdAsync(long sepayTransactionId);

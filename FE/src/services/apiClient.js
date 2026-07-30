@@ -1,10 +1,17 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "";
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return "";
+  }
+
+  return import.meta.env.VITE_API_BASE_URL?.trim() ?? "";
+};
 
 export const resolveApiUrl = (url) => {
   if (!url) return "";
   if (/^(https?:)?\/\//i.test(url) || /^data:/i.test(url)) return url;
-  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+
+  const baseUrl = getApiBaseUrl();
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 const getAuthToken = () => {
@@ -42,7 +49,7 @@ async function tryRefreshToken() {
   isRefreshing = true;
   refreshPromise = (async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      const res = await fetch(resolveApiUrl("/api/auth/refresh"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),
@@ -87,10 +94,21 @@ export async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  let response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const requestUrl = resolveApiUrl(path);
+
+  let response;
+  try {
+    response = await fetch(requestUrl, {
+      ...options,
+      headers,
+    });
+  } catch (networkError) {
+    const error = new Error("Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
+    error.status = 0;
+    error.data = null;
+    error.cause = networkError;
+    throw error;
+  }
 
   // Attempt silent token refresh on 401
   if (response.status === 401 && !path.startsWith("/api/auth/")) {
@@ -99,7 +117,7 @@ export async function request(path, options = {}) {
       const newToken = getAuthToken();
       if (newToken) {
         headers.Authorization = `Bearer ${newToken}`;
-        response = await fetch(`${API_BASE_URL}${path}`, {
+        response = await fetch(requestUrl, {
           ...options,
           headers,
         });
