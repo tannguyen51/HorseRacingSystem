@@ -76,6 +76,8 @@ export const normalizeInvitationStatus = (rawStatus) => {
 
 export const normalizeInvitation = (invitation) => {
   const horse = read(invitation, "horse", "Horse") ?? {};
+  const owner = read(horse, "owner", "Owner") ?? {};
+  const ownerUser = read(owner, "user", "User") ?? {};
   const race = read(invitation, "race", "Race") ?? {};
   const tournament = read(race, "tournament", "Tournament") ?? {};
   const rawStatus = read(invitation, "status", "Status", "statusName", "StatusName");
@@ -109,6 +111,11 @@ export const normalizeInvitation = (invitation) => {
       read(invitation, "horseName", "HorseName") ??
       read(horse, "name", "Name") ??
       "Unknown horse",
+    ownerName:
+      read(invitation, "ownerName", "OwnerName") ??
+      read(ownerUser, "fullName", "FullName") ??
+      read(owner, "organizationName", "OrganizationName") ??
+      "Chưa xác định",
     horseBreed: read(horse, "breed", "Breed"),
     horseAge: read(horse, "age", "Age"),
     horseWeight: read(horse, "weight", "Weight"),

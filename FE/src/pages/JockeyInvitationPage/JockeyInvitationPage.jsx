@@ -48,7 +48,7 @@ function JockeyInvitationPage() {
     if (activeTab === "pending") items = pending;
     else if (activeTab === "accepted") items = accepted;
     else if (activeTab === "declined") items = declined;
-    if (search.trim()) items = items.filter(i => (i.raceName || "").toLowerCase().includes(search.toLowerCase()) || (i.horseName || "").toLowerCase().includes(search.toLowerCase()));
+    if (search.trim()) items = items.filter(i => (i.raceName || "").toLowerCase().includes(search.toLowerCase()) || (i.horseName || "").toLowerCase().includes(search.toLowerCase()) || (i.ownerName || "").toLowerCase().includes(search.toLowerCase()));
     return items;
   }, [activeTab, invitations, pending, accepted, declined, search]);
 
@@ -156,6 +156,7 @@ function JockeyInvitationPage() {
                       <h3>{inv.raceName}</h3>
                       <p className="ji-card__meta">
                         {inv.horseName && <>Ngựa: <strong>{inv.horseName}</strong> · </>}
+                        {inv.ownerName && <>Chủ ngựa: <strong>{inv.ownerName}</strong> · </>}
                         {inv.scheduledAt ? formatJockeyDate(inv.scheduledAt) : ""}
                       </p>
                     </div>

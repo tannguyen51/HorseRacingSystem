@@ -24,7 +24,23 @@ public class JockeyInvitationRepositoryTests
 
         var horseId = Guid.NewGuid();
         var jockeyId = Guid.NewGuid();
-        db.Horses.Add(new Horse { Id = horseId, Name = "Test Horse", OwnerId = Guid.NewGuid(), ApprovalStatus = ApprovalStatus.Pending });
+        var ownerId = Guid.NewGuid();
+        var ownerUserId = Guid.NewGuid();
+        db.Users.Add(new User
+        {
+            Id = ownerUserId,
+            Email = "owner@example.com",
+            PasswordHash = "test",
+            FullName = "Nguyễn Văn Chủ",
+            Role = UserRole.HorseOwner
+        });
+        db.Owners.Add(new Owner
+        {
+            Id = ownerId,
+            UserId = ownerUserId,
+            OwnerCode = "OWNER-TEST"
+        });
+        db.Horses.Add(new Horse { Id = horseId, Name = "Test Horse", OwnerId = ownerId, ApprovalStatus = ApprovalStatus.Pending });
         db.Jockeys.Add(new Jockey { Id = jockeyId, UserId = Guid.NewGuid(), Status = "Active", ApprovalStatus = ApprovalStatus.Approved });
         await db.SaveChangesAsync();
 
@@ -50,5 +66,6 @@ public class JockeyInvitationRepositoryTests
         Assert.Contains(result, item => item.Status == JockeyInvitationStatus.Pending);
         Assert.Contains(result, item => item.Status == JockeyInvitationStatus.Accepted);
         Assert.Contains(result, item => item.Status == JockeyInvitationStatus.Declined);
+        Assert.All(result, item => Assert.Equal("Nguyễn Văn Chủ", item.Horse?.Owner?.User?.FullName));
     }
 }
