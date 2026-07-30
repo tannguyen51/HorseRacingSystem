@@ -267,6 +267,16 @@ public class RaceManagementService : IRaceManagementService
                 {
                     return ServiceResult<bool>.Fail(400, "Kỵ sĩ chưa được admin phê duyệt");
                 }
+
+                var alreadyInTournament = await _entryRepo.IsJockeyInTournamentAsync(
+                    jockey.Id,
+                    race.TournamentId);
+                if (alreadyInTournament)
+                {
+                    return ServiceResult<bool>.Fail(
+                        409,
+                        "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+                }
             }
 
             var entry = new RaceEntry
