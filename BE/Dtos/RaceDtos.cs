@@ -54,6 +54,50 @@ public class RaceDetailResponse
     public int ActiveRefereesCount { get; set; }
 }
 
+public class JockeyAssignedRaceResponse
+{
+    public Guid Id { get; set; }
+    public Guid RaceId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public bool OwnerConfirmed { get; set; }
+    public bool JockeyConfirmed { get; set; }
+    public JockeyAssignedRaceDetailResponse Race { get; set; } = new();
+    public JockeyAssignedHorseResponse Horse { get; set; } = new();
+}
+
+public class JockeyAssignedRaceDetailResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public DateTime ScheduledAt { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Location { get; set; }
+    public string? Description { get; set; }
+    public int MaxParticipants { get; set; }
+    public int Distance { get; set; }
+    public JockeyAssignedTournamentResponse? Tournament { get; set; }
+}
+
+public class JockeyAssignedTournamentResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+public class JockeyAssignedHorseResponse
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Breed { get; set; }
+    public string? Gender { get; set; }
+    public int Age { get; set; }
+    public decimal? Weight { get; set; }
+    public decimal? Height { get; set; }
+    public string? Color { get; set; }
+    public int TotalRaces { get; set; }
+    public int TotalWins { get; set; }
+}
+
 public class AssignHorseToRaceRequest
 {
     public Guid HorseId { get; set; }

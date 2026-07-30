@@ -180,7 +180,50 @@ public class JockeyService : IJockeyService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
         }
 
-        var races = await _raceEntries.GetByJockeyAsync(jockey.Id);
-        return ServiceResult<object>.Ok(races);
+        var entries = await _raceEntries.GetByJockeyAsync(jockey.Id);
+        var response = entries
+            .Where(entry => entry.Race != null && entry.Horse != null)
+            .Select(entry => new JockeyAssignedRaceResponse
+            {
+                Id = entry.Id,
+                RaceId = entry.RaceId,
+                Status = entry.Status.ToString(),
+                OwnerConfirmed = entry.OwnerConfirmed,
+                JockeyConfirmed = entry.JockeyConfirmed,
+                Race = new JockeyAssignedRaceDetailResponse
+                {
+                    Id = entry.Race!.Id,
+                    Name = entry.Race.Name,
+                    ScheduledAt = entry.Race.ScheduledAt,
+                    Status = entry.Race.Status.ToString(),
+                    Location = entry.Race.Location,
+                    Description = entry.Race.Description,
+                    MaxParticipants = entry.Race.MaxParticipants,
+                    Distance = entry.Race.Distance,
+                    Tournament = entry.Race.Tournament == null
+                        ? null
+                        : new JockeyAssignedTournamentResponse
+                        {
+                            Id = entry.Race.Tournament.Id,
+                            Name = entry.Race.Tournament.Name
+                        }
+                },
+                Horse = new JockeyAssignedHorseResponse
+                {
+                    Id = entry.Horse!.Id,
+                    Name = entry.Horse.Name,
+                    Breed = entry.Horse.Breed,
+                    Gender = entry.Horse.Gender,
+                    Age = entry.Horse.Age,
+                    Weight = entry.Horse.Weight,
+                    Height = entry.Horse.Height,
+                    Color = entry.Horse.Color,
+                    TotalRaces = entry.Horse.TotalRaces,
+                    TotalWins = entry.Horse.TotalWins
+                }
+            })
+            .ToList();
+
+        return ServiceResult<object>.Ok(response);
     }
 }
