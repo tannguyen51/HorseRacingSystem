@@ -298,16 +298,20 @@ public class HorseService : IHorseService
             .Where(invitation => invitation.Status == JockeyInvitationStatus.Accepted)
             .OrderByDescending(invitation => invitation.CreatedAt)
             .FirstOrDefault();
+        var registeringJockey = acceptedInvitation == null
+            ? await _jockeys.GetByUserIdAsync(userId)
+            : null;
+        var assignedJockeyId = acceptedInvitation?.JockeyId ?? registeringJockey?.Id;
 
         var entry = new RaceEntry
         {
             Id = Guid.NewGuid(),
             RaceId = raceId,
             HorseId = horseId,
-            JockeyId = acceptedInvitation?.JockeyId,
+            JockeyId = assignedJockeyId,
             Status = RegistrationStatus.Pending,
             OwnerConfirmed = request.OwnerConfirmed,
-            JockeyConfirmed = acceptedInvitation != null
+            JockeyConfirmed = assignedJockeyId.HasValue
         };
 
         await _raceEntries.AddAsync(entry);
