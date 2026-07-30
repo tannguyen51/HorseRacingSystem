@@ -276,7 +276,11 @@ public class HorseService : IHorseService
 
         // Check race is still open for registration
         var race = await _races.GetByIdAsync(raceId);
-        if (race != null && race.Status != RaceStatus.Scheduled)
+        if (race == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
+        }
+        if (race.Status != RaceStatus.Scheduled)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
         }
@@ -302,6 +306,13 @@ public class HorseService : IHorseService
             ? await _jockeys.GetByUserIdAsync(userId)
             : null;
         var assignedJockeyId = acceptedInvitation?.JockeyId ?? registeringJockey?.Id;
+        if (assignedJockeyId.HasValue &&
+            await _raceEntries.IsJockeyInTournamentAsync(assignedJockeyId.Value, race.TournamentId))
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+        }
 
         var entry = new RaceEntry
         {
