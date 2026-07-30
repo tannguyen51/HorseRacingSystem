@@ -46,9 +46,14 @@ public class RaceEntryRepository : IRaceEntryRepository
             .FirstOrDefaultAsync(e => e.RaceId == raceId && e.HorseId == horseId);
     }
 
-    public Task<List<RaceEntry>> GetByJockeyAsync(Guid jockeyId)
+    public async Task<List<RaceEntry>> GetByJockeyAsync(Guid jockeyId)
     {
-        return _db.RaceEntries
+        var jockeyUserId = await _db.Jockeys
+            .Where(jockey => jockey.Id == jockeyId)
+            .Select(jockey => (Guid?)jockey.UserId)
+            .FirstOrDefaultAsync();
+
+        return await _db.RaceEntries
             .Include(e => e.Race)
                 .ThenInclude(r => r!.Tournament)
             .Include(e => e.Horse)
@@ -57,7 +62,11 @@ public class RaceEntryRepository : IRaceEntryRepository
                 e.JockeyId == jockeyId ||
                 (e.Horse != null && e.Horse.JockeyInvitations.Any(invitation =>
                     invitation.JockeyId == jockeyId &&
-                    invitation.Status == JockeyInvitationStatus.Accepted)))
+                    invitation.Status == JockeyInvitationStatus.Accepted)) ||
+                (jockeyUserId.HasValue &&
+                 e.Horse != null &&
+                 e.Horse.Owner != null &&
+                 e.Horse.Owner.UserId == jockeyUserId.Value))
             .ToListAsync();
     }
 
