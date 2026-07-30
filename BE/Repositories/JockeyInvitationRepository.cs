@@ -22,7 +22,10 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
     {
         return _db.JockeyInvitations
             .Include(i => i.Horse)
+                .ThenInclude(h => h!.Owner)
+                .ThenInclude(o => o!.User)
             .Include(i => i.Race)
+                .ThenInclude(r => r!.Tournament)
             .Where(i =>
                 i.JockeyId == jockeyId &&
                 (i.Status == JockeyInvitationStatus.Pending ||

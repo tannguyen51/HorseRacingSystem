@@ -150,6 +150,7 @@ function JockeyInvitationDetailPage() {
                     <p>Hồ sơ ngựa được phân công cho lời mời này.</p>
                   </div>
                   <DetailRow label="Ngựa" value={invitation.horseName} />
+                  <DetailRow label="Chủ ngựa" value={invitation.ownerName} />
                   <DetailRow label="Giống" value={invitation.horseBreed} />
                   <DetailRow label="Tuổi" value={invitation.horseAge} />
                   <DetailRow label="Cân nặng" value={invitation.horseWeight} />
