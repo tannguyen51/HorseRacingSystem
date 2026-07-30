@@ -107,14 +107,6 @@ const navGroups = [
   ] },
 ];
 
-const roleCards = [
-  ["Admin", "Toàn quyền kiểm soát và quản lý hệ thống"],
-  ["Referee", "Điều khiển cuộc đua, xác nhận và kết quả"],
-  ["HorseOwner", "Quản lý chuồng ngựa và đăng ký giải đấu"],
-  ["Jockey", "Lời mời, lịch trình và thành tích"],
-  ["Spectator", "Lịch trình, xếp hạng, dự đoán và phần thưởng"],
-];
-
 const formatDate = (value) =>
   value
     ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value))
@@ -737,10 +729,7 @@ function Roles() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý người dùng" title="Quản lý vai trò" description="Tìm hiểu phạm vi quyền trên nền tảng RaceMaster." />
       <Notice message={message} />
-      <section className="admin-role-grid">{roleCards.map(([role, detail]) => <article key={role}><span>{role.slice(0, 1)}</span><h3>{role}</h3><p>{detail}</p><button disabled>Phân quyền qua API vai trò backend</button></article>)}</section>
-      <p className="admin-muted-note">Phân quyền hiển thị không khả dụng vì backend hiện tại chưa có endpoint cập nhật vai trò.</p>
       <section className="admin-panel">
         <div className="admin-panel__heading">
           <span>Quản lý kỵ sĩ</span>
