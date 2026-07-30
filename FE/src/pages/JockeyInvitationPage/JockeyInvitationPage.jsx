@@ -145,6 +145,7 @@ function JockeyInvitationPage() {
         <div className="ji-list">
           {filtered.map(inv => {
             const s = statusMeta(inv.status);
+            const canRespond = getBucket(inv.status) === "pending";
             return (
               <div key={inv.id} className={`ji-card ji-card--${s.cls}`}>
                 <div className="ji-card__main">
@@ -170,12 +171,12 @@ function JockeyInvitationPage() {
                   {inv.location && <span> · {inv.location}</span>}
                 </div>
                 <div className="ji-card__actions">
-                  <button className="ji-btn ji-btn--ghost" onClick={() => handleResponse(inv.id, false)} disabled={loadingId !== null}>
+                  {canRespond && <button className="ji-btn ji-btn--ghost" onClick={() => handleResponse(inv.id, false)} disabled={loadingId !== null}>
                     Từ chối
-                  </button>
-                  <button className="ji-btn ji-btn--primary" onClick={() => handleResponse(inv.id, true)} disabled={loadingId !== null}>
+                  </button>}
+                  {canRespond && <button className="ji-btn ji-btn--primary" onClick={() => handleResponse(inv.id, true)} disabled={loadingId !== null}>
                     {loadingId === inv.id ? "..." : "Chấp nhận"}
-                  </button>
+                  </button>}
                   <Link to={`/jockey/invitations/${inv.id}`} className="ji-btn ji-btn--outline">Chi tiết</Link>
                 </div>
               </div>
