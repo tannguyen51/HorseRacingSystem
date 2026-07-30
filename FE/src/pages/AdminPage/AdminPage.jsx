@@ -107,14 +107,6 @@ const navGroups = [
   ] },
 ];
 
-const roleCards = [
-  ["Admin", "Toàn quyền kiểm soát và quản lý hệ thống"],
-  ["Referee", "Điều khiển cuộc đua, xác nhận và kết quả"],
-  ["HorseOwner", "Quản lý chuồng ngựa và đăng ký giải đấu"],
-  ["Jockey", "Lời mời, lịch trình và thành tích"],
-  ["Spectator", "Lịch trình, xếp hạng, dự đoán và phần thưởng"],
-];
-
 const formatDate = (value) =>
   value
     ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value))
@@ -737,10 +729,7 @@ function Roles() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý người dùng" title="Quản lý vai trò" description="Tìm hiểu phạm vi quyền trên nền tảng RaceMaster." />
       <Notice message={message} />
-      <section className="admin-role-grid">{roleCards.map(([role, detail]) => <article key={role}><span>{role.slice(0, 1)}</span><h3>{role}</h3><p>{detail}</p><button disabled>Phân quyền qua API vai trò backend</button></article>)}</section>
-      <p className="admin-muted-note">Phân quyền hiển thị không khả dụng vì backend hiện tại chưa có endpoint cập nhật vai trò.</p>
       <section className="admin-panel">
         <div className="admin-panel__heading">
           <span>Quản lý kỵ sĩ</span>
@@ -1375,6 +1364,13 @@ function RegistrationManagement() {
     }),
   [query, items]);
 
+  const filteredEntries = useMemo(() =>
+    entryItems.filter((item) => {
+      const search = `${item.horseName ?? item.HorseName ?? ""} ${item.ownerName ?? item.OwnerName ?? ""} ${item.jockeyName ?? item.JockeyName ?? ""} ${item.tournamentName ?? item.TournamentName ?? ""} ${item.raceName ?? item.RaceName ?? ""}`.toLowerCase();
+      return search.includes(query.toLowerCase());
+    }),
+  [query, entryItems]);
+
   const approve = async (registration) => {
     const id = registration.id ?? registration.Id;
     try {
@@ -1425,7 +1421,7 @@ function RegistrationManagement() {
           <button style={tabStyle(regTab==="all")} onClick={() => setRegTab("all")}>Tất cả ND</button>
           <button style={tabStyle(regTab==="entries")} onClick={() => setRegTab("entries")}>Ngựa vào giải</button>
         </div>
-        <span>{regTab === "entries" ? entryItems.length : filtered.length} {regTab === "pending" ? "đang chờ" : regTab === "entries" ? "đăng ký" : "bản ghi"}</span>
+        <span>{regTab === "entries" ? filteredEntries.length : filtered.length} {regTab === "pending" ? "đang chờ" : regTab === "entries" ? "đăng ký" : "bản ghi"}</span>
       </div>
       <Notice message={message} />
 
@@ -1434,7 +1430,7 @@ function RegistrationManagement() {
           <table className="admin-table">
             <thead><tr><th>Ngựa</th><th>Chủ ngựa</th><th>Kỵ sĩ</th><th>Giải đấu</th><th>Cuộc đua</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
             <tbody>
-              {entryItems.map((item) => {
+              {filteredEntries.map((item) => {
                 const id = item.entryId ?? item.EntryId;
                 return (
                   <tr key={id}>
@@ -1453,8 +1449,8 @@ function RegistrationManagement() {
                   </tr>
                 );
               })}
-              {entryItems.length === 0 && (
-                <tr><td colSpan={7}>Không có đăng ký ngựa nào đang chờ.</td></tr>
+              {filteredEntries.length === 0 && (
+                <tr><td colSpan={7}>Không tìm thấy đăng ký ngựa nào.</td></tr>
               )}
             </tbody>
           </table>

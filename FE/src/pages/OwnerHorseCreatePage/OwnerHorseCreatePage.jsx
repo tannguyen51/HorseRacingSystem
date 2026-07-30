@@ -163,8 +163,8 @@ function OwnerHorseCreatePage() {
                 </div>
                 <div className="form-grid-three">
                   <div className="form-field">
-                    <label htmlFor="horse-age">Tuổi (tự động)</label>
-                    <input id="horse-age" className="form-input" type="number" placeholder="Tự động từ ngày sinh" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} />
+                    <label htmlFor="horse-age">Tuổi</label>
+                    <input id="horse-age" className="form-input" type="number" placeholder="Tuổi" value={formValues.age} readOnly style={{ background: "rgba(231,198,120,.04)", cursor: "not-allowed" }} />
                   </div>
                   <div className="form-field">
                     <label htmlFor="horse-weight">Cân nặng (kg)</label>
