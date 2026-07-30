@@ -53,7 +53,7 @@ public class RaceEntryRepository : IRaceEntryRepository
             .Select(jockey => (Guid?)jockey.UserId)
             .FirstOrDefaultAsync();
 
-        return await _db.RaceEntries
+        var entries = await _db.RaceEntries
             .Include(e => e.Race)
                 .ThenInclude(r => r!.Tournament)
             .Include(e => e.Horse)
@@ -68,6 +68,16 @@ public class RaceEntryRepository : IRaceEntryRepository
                  e.Horse.Owner != null &&
                  e.Horse.Owner.UserId == jockeyUserId.Value))
             .ToListAsync();
+
+        return entries
+            .Where(entry => entry.Race != null)
+            .GroupBy(entry => entry.Race!.TournamentId)
+            .Select(group => group
+                .OrderByDescending(entry => entry.JockeyId == jockeyId)
+                .ThenByDescending(entry => entry.JockeyConfirmed)
+                .ThenByDescending(entry => entry.Status == RegistrationStatus.Approved)
+                .First())
+            .ToList();
     }
 
     public Task<List<RaceEntry>> GetByHorseAsync(Guid horseId)
