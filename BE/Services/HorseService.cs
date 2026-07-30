@@ -201,7 +201,11 @@ public class HorseService : IHorseService
         {
             if (existingInvitation.Status == JockeyInvitationStatus.Declined)
             {
-                _db.JockeyInvitations.Remove(existingInvitation);
+                existingInvitation.RaceId = request.RaceId;
+                existingInvitation.Status = JockeyInvitationStatus.Pending;
+                existingInvitation.CreatedAt = DateTime.UtcNow;
+                existingInvitation.RespondedAt = null;
+                existingInvitation.ResponseNote = null;
             }
             else
             {
@@ -219,7 +223,7 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kỵ sĩ");
         }
 
-        var invitation = new JockeyInvitation
+        var invitation = existingInvitation ?? new JockeyInvitation
         {
             Id = Guid.NewGuid(),
             HorseId = horseId,
@@ -229,8 +233,24 @@ public class HorseService : IHorseService
             CreatedAt = DateTime.UtcNow
         };
 
-        await _invitations.AddAsync(invitation);
-        await _unitOfWork.SaveChangesAsync();
+        if (existingInvitation == null)
+        {
+            await _invitations.AddAsync(invitation);
+        }
+        try
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is Npgsql.PostgresException
+            {
+                SqlState: Npgsql.PostgresErrorCodes.UniqueViolation
+            })
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Lời mời cho ngựa và kỵ sĩ này đã tồn tại");
+        }
 
         await _notifications.CreateNotificationAsync(new CreateNotificationDto
         {

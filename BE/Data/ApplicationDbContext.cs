@@ -62,6 +62,10 @@ public class ApplicationDbContext : DbContext
             .Property(i => i.Status)
             .HasConversion<string>();
 
+        modelBuilder.Entity<JockeyInvitation>()
+            .HasIndex(i => new { i.HorseId, i.JockeyId })
+            .IsUnique();
+
         modelBuilder.Entity<Prediction>()
             .Property(p => p.Status)
             .HasConversion<string>();

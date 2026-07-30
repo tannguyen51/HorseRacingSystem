@@ -115,7 +115,15 @@ public class JockeyService : IJockeyService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy lời mời");
         }
 
+        if (invitation.Status != JockeyInvitationStatus.Pending)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Lời mời này đã được phản hồi");
+        }
+
         invitation.Status = request.Accept ? JockeyInvitationStatus.Accepted : JockeyInvitationStatus.Declined;
+        invitation.RespondedAt = DateTime.UtcNow;
 
         if (request.Accept && invitation.RaceId.HasValue)
         {
