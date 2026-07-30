@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   approveJockey,
-  approveRegistration,
   assignHorseToRace,
   cancelRace,
   createRace,
@@ -14,10 +13,8 @@ import {
   getAdminUser,
   getAdminUsers,
   getAdminTournaments,
-  getAllRegistrations,
   getOwnerHorse,
   getOwnerHorses,
-  getPendingRegistrations,
   getTournamentRaces,
   getTournamentRounds,
   publishRaceResult,
@@ -30,7 +27,6 @@ import {
   approveRaceEntry,
   rejectRaceEntry,
   rejectJockey,
-  rejectRegistration,
   setUserActive,
   startRace,
   updateOwnerHorseStatus,
@@ -107,14 +103,6 @@ const navGroups = [
   ] },
 ];
 
-const roleCards = [
-  ["Admin", "Toàn quyền kiểm soát và quản lý hệ thống"],
-  ["Referee", "Điều khiển cuộc đua, xác nhận và kết quả"],
-  ["HorseOwner", "Quản lý chuồng ngựa và đăng ký giải đấu"],
-  ["Jockey", "Lời mời, lịch trình và thành tích"],
-  ["Spectator", "Lịch trình, xếp hạng, dự đoán và phần thưởng"],
-];
-
 const formatDate = (value) =>
   value
     ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value))
@@ -125,14 +113,6 @@ const inputDate = (days = 0) => {
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 16);
 };
-
-const tabStyle = (active) => ({
-  padding: "5px 14px", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600,
-  cursor: "pointer", fontFamily: "inherit",
-  background: active ? "#fff" : "transparent",
-  color: active ? "#1a1d23" : "#64748b",
-  boxShadow: active ? "0 1px 3px rgba(0,0,0,0.06)" : "none"
-});
 
 const isGuid = (value) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -735,10 +715,7 @@ function Roles() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý người dùng" title="Quản lý vai trò" description="Tìm hiểu phạm vi quyền trên nền tảng RaceMaster." />
       <Notice message={message} />
-      <section className="admin-role-grid">{roleCards.map(([role, detail]) => <article key={role}><span>{role.slice(0, 1)}</span><h3>{role}</h3><p>{detail}</p><button disabled>Phân quyền qua API vai trò backend</button></article>)}</section>
-      <p className="admin-muted-note">Phân quyền hiển thị không khả dụng vì backend hiện tại chưa có endpoint cập nhật vai trò.</p>
       <section className="admin-panel">
         <div className="admin-panel__heading">
           <span>Quản lý kỵ sĩ</span>
@@ -1347,31 +1324,16 @@ function ScheduleManagement({ type }) {
 }
 
 function RegistrationManagement() {
-  const [items, setItems] = useState([]);
   const [entryItems, setEntryItems] = useState([]);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
-  const [regTab, setRegTab] = useState("pending");
 
-  const load = () => {
-    if (regTab === "entries") {
-      getPendingRaceEntries()
-        .then((data) => setEntryItems(Array.isArray(data) ? data : []))
-        .catch((err) => setMessage(err.message));
-      return;
-    }
-    const api = regTab === "all" ? getAllRegistrations() : getPendingRegistrations();
-    api.then((data) => setItems(Array.isArray(data) ? data : [])).catch((err) => setMessage(err.message));
-  };
+  const load = () =>
+    getPendingRaceEntries()
+      .then((data) => setEntryItems(Array.isArray(data) ? data : []))
+      .catch((err) => setMessage(err.message));
 
-  useEffect(() => { load(); }, [regTab]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const filtered = useMemo(() =>
-    items.filter((item) => {
-      const search = `${item.fullName ?? item.FullName ?? ""} ${item.email ?? item.Email ?? ""} ${item.requestedRole ?? item.RequestedRole ?? ""}`.toLowerCase();
-      return search.includes(query.toLowerCase());
-    }),
-  [query, items]);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredEntries = useMemo(() =>
     entryItems.filter((item) => {
@@ -1379,26 +1341,6 @@ function RegistrationManagement() {
       return search.includes(query.toLowerCase());
     }),
   [query, entryItems]);
-
-  const approve = async (registration) => {
-    const id = registration.id ?? registration.Id;
-    try {
-      await approveRegistration(id);
-      setMessage("Đăng ký đã được phê duyệt.");
-      load();
-    } catch (err) { setMessage(err.message); }
-  };
-
-  const reject = async (registration) => {
-    const id = registration.id ?? registration.Id;
-    const reason = window.prompt("Lý do từ chối (tùy chọn):");
-    if (reason === null) return;
-    try {
-      await rejectRegistration(id, reason || "Bị từ chối bởi quản trị viên");
-      setMessage("Đăng ký đã bị từ chối.");
-      load();
-    } catch (err) { setMessage(err.message); }
-  };
 
   const approveEntry = async (entry) => {
     const id = entry.entryId ?? entry.EntryId;
@@ -1422,20 +1364,14 @@ function RegistrationManagement() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý người dùng" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký người dùng và ngựa vào giải đấu." />
+      <PageTitle eyebrow="Quản lý giải đấu" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký ngựa vào giải đấu." />
       <div className="admin-toolbar">
-        <input placeholder="Tìm kiếm theo tên, email hoặc vai trò..." value={query} onChange={(e) => setQuery(e.target.value)} />
-        <div style={{display:"flex",gap:4,background:"rgba(0,0,0,0.03)",padding:3,borderRadius:8}}>
-          <button style={tabStyle(regTab==="pending")} onClick={() => setRegTab("pending")}>Người dùng chờ</button>
-          <button style={tabStyle(regTab==="all")} onClick={() => setRegTab("all")}>Tất cả ND</button>
-          <button style={tabStyle(regTab==="entries")} onClick={() => setRegTab("entries")}>Ngựa vào giải</button>
-        </div>
-        <span>{regTab === "entries" ? filteredEntries.length : filtered.length} {regTab === "pending" ? "đang chờ" : regTab === "entries" ? "đăng ký" : "bản ghi"}</span>
+        <input placeholder="Tìm kiếm theo ngựa, chủ ngựa, kỵ sĩ hoặc giải đấu..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <span>{filteredEntries.length} đăng ký</span>
       </div>
       <Notice message={message} />
 
-      {regTab === "entries" ? (
-        <div className="admin-table-wrap">
+      <div className="admin-table-wrap">
           <table className="admin-table">
             <thead><tr><th>Ngựa</th><th>Chủ ngựa</th><th>Kỵ sĩ</th><th>Giải đấu</th><th>Cuộc đua</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
             <tbody>
@@ -1463,38 +1399,7 @@ function RegistrationManagement() {
               )}
             </tbody>
           </table>
-        </div>
-      ) : (
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
-            <tbody>
-              {filtered.map((item) => {
-                const id = item.id ?? item.Id;
-                const status = item.status ?? item.Status ?? "Pending";
-                return (
-                  <tr key={id}>
-                    <td><strong>{item.fullName ?? item.FullName ?? "N/A"}</strong></td>
-                    <td>{item.email ?? item.Email}</td>
-                    <td>{item.requestedRole ?? item.RequestedRole}</td>
-                    <td><span className={`status status--${status.toLowerCase()}`}>{status}</span></td>
-                    <td>{formatDate(item.createdAt ?? item.CreatedAt)}</td>
-                    <td>
-                      <div className="admin-actions">
-                        <button disabled={status !== "Pending"} onClick={() => approve(item)}>Phê duyệt</button>
-                        <button className="admin-danger" disabled={status !== "Pending"} onClick={() => reject(item)}>Từ chối</button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <tr><td colSpan={6}>Không tìm thấy đăng ký đang chờ nào.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+      </div>
     </>
   );
 }
