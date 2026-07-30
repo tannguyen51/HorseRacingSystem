@@ -185,7 +185,7 @@ function JockeyInvitationDetailPage() {
                   <div className="jockey-response-panel__actions">
                     <button
                       type="button"
-                      className="ghost-button"
+                      className="jockey-response-button jockey-response-button--decline"
                       disabled={submitting}
                       onClick={() => handleResponse(false)}
                     >
@@ -193,7 +193,7 @@ function JockeyInvitationDetailPage() {
                     </button>
                     <button
                       type="button"
-                      className="primary-button"
+                      className="jockey-response-button jockey-response-button--accept"
                       disabled={submitting}
                       onClick={() => handleResponse(true)}
                     >
