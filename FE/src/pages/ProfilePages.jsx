@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { updateProfile, changePassword, getProfile, createDeposit, checkDeposit } from "../services/authApi";
+import { updateProfile, changePassword, getProfile, createDeposit, checkDeposit, getDepositHistory } from "../services/authApi";
 import { getMyPredictions } from "../services/spectatorApi";
 import { getBalance } from "../services/walletApi";
 import { saveBankAccount, getBankAccounts, createWithdrawal, getWithdrawalHistory } from "../services/withdrawalApi";
@@ -47,6 +47,8 @@ export function SpectatorProfilePage() {
   const [depositAmount, setDepositAmount] = useState("");
   const [depositTx, setDepositTx] = useState(null);
   const [depositStatus, setDepositStatus] = useState("idle");
+  const [depositHistory, setDepositHistory] = useState([]);
+  const [depositHistoryLoading, setDepositHistoryLoading] = useState(false);
   const depositSince = useRef(null);
   const pollRef = useRef(null);
 
@@ -64,6 +66,7 @@ export function SpectatorProfilePage() {
       setDepositTx(d);
       setDepositStatus("qr");
       depositSince.current = new Date();
+      loadDepositHistory();
 
       // Bắt đầu polling sau 5 giây, tối đa 60 lần (5 phút)
       let retries = 0;
@@ -87,6 +90,7 @@ export function SpectatorProfilePage() {
               clearInterval(pollRef.current);
               pollRef.current = null;
               setDepositStatus("success");
+              loadDepositHistory();
               // Refresh wallet balance
               try {
                 const bal = await getBalance();
@@ -149,6 +153,26 @@ export function SpectatorProfilePage() {
       getBankAccounts().then((d) => setWdAccounts(d?.data ?? d ?? [])),
       getWithdrawalHistory().then((d) => setWdHistory(d?.data ?? d ?? [])),
     ]).catch(() => { /* empty */ }).finally(() => setWdLoading(false));
+  }, [activeTab]);
+
+  const loadDepositHistory = async () => {
+    setDepositHistoryLoading(true);
+    try {
+      const response = await getDepositHistory();
+      const data = response?.data ?? response?.Data ?? response ?? [];
+      setDepositHistory(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Load deposit history failed:", err);
+      setDepositHistory([]);
+    } finally {
+      setDepositHistoryLoading(false);
+    }
+  };
+
+  /* ── load deposit history when switching to deposit tab ── */
+  useEffect(() => {
+    if (activeTab !== "deposit") return;
+    loadDepositHistory();
   }, [activeTab]);
 
   const showMsg = useCallback((type, text) => {
@@ -263,7 +287,11 @@ export function SpectatorProfilePage() {
           {walletBalance !== null && (
             <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(143,100,32,0.07)", border: "1px solid rgba(143,100,32,0.12)", textAlign: "center", marginBottom: 4 }}>
               <p style={{ margin: "0 0 2px", fontSize: 11, color: "#657086", textTransform: "uppercase" }}>Số dư ví</p>
+<<<<<<< HEAD
               <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} điểm</strong>
+=======
+              <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} Điểm</strong>
+>>>>>>> 5d23a47 (Fix chức năng quên mật khẩu của login)
             </div>
           )}
 
@@ -520,6 +548,59 @@ export function SpectatorProfilePage() {
                     </button>
                   </div>
                 )}
+
+                <div style={{ marginTop: 24, borderTop: "1px solid rgba(143,100,32,0.12)", paddingTop: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h3 style={{ margin: 0, color: "#172033", fontSize: 16 }}>Lịch sử nạp tiền</h3>
+                    <span style={{ fontSize: 12, color: "#657086" }}>Mới nhất trước</span>
+                  </div>
+                  {depositHistoryLoading ? (
+                    <p className="muted">Đang tải...</p>
+                  ) : depositHistory.length === 0 ? (
+                    <p className="muted" style={{ textAlign: "center", padding: "20px 0" }}>Chưa có giao dịch nạp tiền nào.</p>
+                  ) : (
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ textAlign: "left", color: "#657086", fontSize: 12 }}>
+                            <th style={{ padding: "8px 10px", borderBottom: "1px solid rgba(143,100,32,0.12)" }}>Ngày</th>
+                            <th style={{ padding: "8px 10px", borderBottom: "1px solid rgba(143,100,32,0.12)" }}>Mã tham chiếu</th>
+                            <th style={{ padding: "8px 10px", borderBottom: "1px solid rgba(143,100,32,0.12)" }}>Số tiền</th>
+                            <th style={{ padding: "8px 10px", borderBottom: "1px solid rgba(143,100,32,0.12)" }}>Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {depositHistory.map((item) => (
+                            <tr key={item.id ?? item.Id}>
+                              <td style={{ padding: "10px", borderBottom: "1px solid rgba(143,100,32,0.08)", color: "#34415b" }}>
+                                {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : "—"}
+                              </td>
+                              <td style={{ padding: "10px", borderBottom: "1px solid rgba(143,100,32,0.08)", color: "#34415b", fontFamily: "monospace" }}>
+                                {item.reference ?? item.Reference ?? "—"}
+                              </td>
+                              <td style={{ padding: "10px", borderBottom: "1px solid rgba(143,100,32,0.08)", color: "#8f6420", fontWeight: 600 }}>
+                                {Number(item.amount ?? item.Amount ?? 0).toLocaleString()}đ
+                              </td>
+                              <td style={{ padding: "10px", borderBottom: "1px solid rgba(143,100,32,0.08)" }}>
+                                <span style={{
+                                  display: "inline-block",
+                                  padding: "4px 8px",
+                                  borderRadius: 999,
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: (item.status ?? item.Status ?? "pending").toLowerCase() === "completed" ? "#1a7d1a" : "#8f6420",
+                                  background: (item.status ?? item.Status ?? "pending").toLowerCase() === "completed" ? "rgba(26,125,26,0.1)" : "rgba(143,100,32,0.12)"
+                                }}>
+                                  {(item.status ?? item.Status ?? "pending") === "completed" ? "Hoàn tất" : "Đang chờ"}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
           )}

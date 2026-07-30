@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { login, forgotPassword } from "../../services/authApi";
+import { login, forgotPassword, resetPassword } from "../../services/authApi";
 import {
   normalizeApiRole,
   unwrapResponseData,
@@ -15,6 +15,11 @@ function LoginPage() {
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -82,6 +87,7 @@ function LoginPage() {
     e.preventDefault();
     setErrorMessage("");
     setForgotSent(false);
+    setResetSuccess(false);
 
     if (!forgotEmail.trim()) {
       setErrorMessage("Vui lòng nhập email.");
@@ -91,8 +97,64 @@ function LoginPage() {
     try {
       await forgotPassword(forgotEmail.trim());
       setForgotSent(true);
+      setResetToken("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setErrorMessage(err?.message || "Có lỗi xảy ra.");
+      if (err?.status === 0) {
+        setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng hoặc thử lại sau.");
+      } else {
+        setErrorMessage(err?.message || "Có lỗi xảy ra.");
+      }
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    if (!forgotEmail.trim()) {
+      setErrorMessage("Vui lòng nhập email.");
+      return;
+    }
+    if (!resetToken.trim()) {
+      setErrorMessage("Vui lòng nhập mã đặt lại mật khẩu.");
+      return;
+    }
+    if (!newPassword.trim()) {
+      setErrorMessage("Vui lòng nhập mật khẩu mới.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setErrorMessage("Mật khẩu mới phải có ít nhất 8 ký tự.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("Xác nhận mật khẩu không khớp.");
+      return;
+    }
+
+    setIsResetting(true);
+
+    try {
+      await resetPassword({
+        email: forgotEmail.trim(),
+        token: resetToken.trim(),
+        newPassword,
+        confirmPassword,
+      });
+      setResetSuccess(true);
+      setResetToken("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      if (err?.status === 0) {
+        setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng hoặc thử lại sau.");
+      } else {
+        setErrorMessage(err?.message || "Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
+      }
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -152,10 +214,12 @@ function LoginPage() {
                 </p>
               </form>
             ) : (
-              <form className="auth-form" onSubmit={handleForgotPassword}>
+              <form className="auth-form" onSubmit={forgotSent ? handleResetPassword : handleForgotPassword}>
                 <h2>Quên mật khẩu</h2>
                 <p className="auth-form__subtitle">
-                  Nhập email của bạn, chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu.
+                  {forgotSent
+                    ? "Mã đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng nhập mã và thiết lập mật khẩu mới."
+                    : "Nhập email của bạn, chúng tôi sẽ gửi mã đặt lại mật khẩu."}
                 </p>
 
                 <div className="form-group">
@@ -172,18 +236,85 @@ function LoginPage() {
                 </div>
 
                 {forgotSent && (
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="reset-token" className="label-required">Mã đặt lại mật khẩu</label>
+                      <input
+                        id="reset-token"
+                        type="text"
+                        placeholder="Nhập mã từ email"
+                        className="form-input"
+                        value={resetToken}
+                        onChange={(e) => setResetToken(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="new-password" className="label-required">Mật khẩu mới</label>
+                      <input
+                        id="new-password"
+                        type="password"
+                        placeholder="Nhập mật khẩu mới"
+                        className="form-input"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="confirm-password" className="label-required">Xác nhận mật khẩu mới</label>
+                      <input
+                        id="confirm-password"
+                        type="password"
+                        placeholder="Nhập lại mật khẩu mới"
+                        className="form-input"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                {forgotSent && (
                   <p style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, background: "rgba(120,216,154,0.12)", border: "1px solid rgba(120,216,154,0.3)", color: "#166534" }}>
                     Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.
                   </p>
                 )}
 
-                {errorMessage && !forgotSent && <p className="form-error">{errorMessage}</p>}
+                {resetSuccess && (
+                  <p style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, background: "rgba(120,216,154,0.12)", border: "1px solid rgba(120,216,154,0.3)", color: "#166534" }}>
+                    Mật khẩu đã được cập nhật thành công. Bạn có thể đăng nhập lại ngay bây giờ.
+                  </p>
+                )}
 
-                <button type="submit" className="primary-button btn-block">
-                  Gửi yêu cầu
+                {errorMessage && <p className="form-error">{errorMessage}</p>}
+
+                <button type="submit" className="primary-button btn-block" disabled={isResetting}>
+                  {isResetting ? "Đang xử lý..." : forgotSent ? "Đặt lại mật khẩu" : "Gửi yêu cầu"}
                 </button>
 
-                <button type="button" onClick={() => { setShowForgot(false); setForgotSent(false); setErrorMessage(""); }} className="link-accent" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, textAlign: "center", padding: 0 }}>
+                {forgotSent && !resetSuccess && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotSent(false);
+                      setResetToken("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                      setErrorMessage("");
+                      setResetSuccess(false);
+                    }}
+                    className="link-accent"
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, textAlign: "center", padding: 0, marginTop: 8 }}
+                  >
+                    Gửi lại mã
+                  </button>
+                )}
+
+                <button type="button" onClick={() => { setShowForgot(false); setForgotSent(false); setResetToken(""); setNewPassword(""); setConfirmPassword(""); setErrorMessage(""); setResetSuccess(false); }} className="link-accent" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, textAlign: "center", padding: 0, marginTop: 8 }}>
                   Quay lại đăng nhập
                 </button>
               </form>
