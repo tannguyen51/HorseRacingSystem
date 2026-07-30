@@ -20,6 +20,7 @@ public class HorseService : IHorseService
     private readonly IRaceEntryRepository _raceEntries;
     private readonly IJockeyInvitationRepository _invitations;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationService _notifications;
     private readonly ApplicationDbContext _db;
 
     public HorseService(
@@ -30,6 +31,7 @@ public class HorseService : IHorseService
         IRaceEntryRepository raceEntries,
         IJockeyInvitationRepository invitations,
         IUnitOfWork unitOfWork,
+        INotificationService notifications,
         ApplicationDbContext db)
     {
         _horses = horses;
@@ -39,6 +41,7 @@ public class HorseService : IHorseService
         _raceEntries = raceEntries;
         _invitations = invitations;
         _unitOfWork = unitOfWork;
+        _notifications = notifications;
         _db = db;
     }
 
@@ -228,6 +231,18 @@ public class HorseService : IHorseService
 
         await _invitations.AddAsync(invitation);
         await _unitOfWork.SaveChangesAsync();
+
+        await _notifications.CreateNotificationAsync(new CreateNotificationDto
+        {
+            UserId = invitedJockey.UserId,
+            Title = "Bạn có lời mời đua mới",
+            Message = $"{owner.User?.FullName ?? "Chủ ngựa"} đã mời bạn làm kỵ sĩ cho ngựa {horse.Name}.",
+            Type = NotificationType.InApp,
+            Category = NotificationCategory.JockeyInvitation,
+            ActionUrl = $"/jockey/invitations/{invitation.Id}",
+            RelatedEntityId = invitation.Id,
+            RelatedEntityType = nameof(JockeyInvitation)
+        });
 
         return ServiceResult<object>.Ok(invitation);
     }

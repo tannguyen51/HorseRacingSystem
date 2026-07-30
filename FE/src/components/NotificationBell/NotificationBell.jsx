@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { getNotifications, getUnreadCount, markNotificationRead } from "../../services/notificationApi";
 
 export default function NotificationBell() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
@@ -12,7 +14,15 @@ export default function NotificationBell() {
     getUnreadCount().then((d) => setUnread(typeof d === "number" ? d : d?.count ?? d?.Count ?? 0)).catch(() => {});
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const intervalId = window.setInterval(load, 15000);
+    window.addEventListener("focus", load);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", load);
+    };
+  }, [load]);
 
   useEffect(() => {
     if (!open) return;
@@ -23,6 +33,15 @@ export default function NotificationBell() {
 
   const handleMark = async (id) => {
     try { await markNotificationRead(id); load(); } catch { /* ignore */ }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    const id = notification.id ?? notification.Id;
+    const isRead = notification.isRead ?? notification.IsRead ?? false;
+    const actionUrl = notification.actionUrl ?? notification.ActionUrl;
+    if (!isRead) await handleMark(id);
+    setOpen(false);
+    if (actionUrl) navigate(actionUrl);
   };
 
   return (
@@ -51,7 +70,7 @@ export default function NotificationBell() {
                 const id = n.id ?? n.Id;
                 const isRead = n.isRead ?? n.IsRead ?? false;
                 return (
-                  <div key={id} onClick={() => { if (!isRead) handleMark(id); }}
+                  <div key={id} onClick={() => handleNotificationClick(n)}
                     style={{
                       padding: "10px 12px", borderRadius: 10, cursor: "pointer", fontSize: 13,
                       background: isRead ? "transparent" : "rgba(242,210,139,0.06)",
