@@ -122,6 +122,22 @@ public class JockeyService : IJockeyService
                 return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy đăng ký tham gia cho ngựa này");
             }
 
+            if (entry.Race == null)
+            {
+                return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
+            }
+
+            var alreadyInTournament = await _raceEntries.IsJockeyInTournamentAsync(
+                jockey.Id,
+                entry.Race.TournamentId,
+                entry.Id);
+            if (alreadyInTournament)
+            {
+                return ServiceResult<object>.Fail(
+                    StatusCodes.Status409Conflict,
+                    "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+            }
+
             entry.JockeyId = jockey.Id;
             entry.JockeyConfirmed = true;
         }
