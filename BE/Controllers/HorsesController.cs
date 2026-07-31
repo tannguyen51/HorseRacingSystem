@@ -72,6 +72,7 @@ public class HorsesController : ControllerBase
         using var scope = HttpContext.RequestServices.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Data.ApplicationDbContext>();
         var horses = await db.Horses
+            .AsSplitQuery()
             .Where(h => h.ApprovalStatus == Models.ApprovalStatus.Approved)
             .Include(h => h.Owner).ThenInclude(o => o!.User)
             .Include(h => h.JockeyInvitations).ThenInclude(i => i.Jockey).ThenInclude(j => j!.User)

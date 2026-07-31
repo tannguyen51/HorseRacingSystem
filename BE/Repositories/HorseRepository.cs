@@ -21,6 +21,7 @@ public class HorseRepository : IHorseRepository
     public async Task<List<Horse>> GetByOwnerAsync(Guid ownerId)
     {
         var horses = await _db.Horses
+            .AsSplitQuery()
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
@@ -44,6 +45,7 @@ public class HorseRepository : IHorseRepository
     public async Task<Horse?> GetByIdAsync(Guid horseId)
     {
         var horse = await _db.Horses
+            .AsSplitQuery()
             .Include(h => h.Owner)
                 .ThenInclude(o => o!.User)
             .Include(h => h.JockeyInvitations)
@@ -68,6 +70,7 @@ public class HorseRepository : IHorseRepository
     public async Task<Horse?> GetOwnedHorseAsync(Guid horseId, Guid ownerId)
     {
         var horse = await _db.Horses
+            .AsSplitQuery()
             .Include(h => h.JockeyInvitations)
                 .ThenInclude(i => i.Jockey)
                     .ThenInclude(j => j!.User)
