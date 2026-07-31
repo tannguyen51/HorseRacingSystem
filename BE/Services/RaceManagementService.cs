@@ -525,22 +525,6 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(400, "Không thể bắt đầu cuộc đua khi chưa có trọng tài nào chấp nhận lời mời.");
             }
 
-            // Owner must confirm every horse before the race starts
-            var unconfirmedOwners = entries.Where(e => !e.OwnerConfirmed).ToList();
-            if (unconfirmedOwners.Count > 0)
-            {
-                var names = string.Join(", ", unconfirmedOwners.Select(e => e.Horse?.Name ?? "Ngựa"));
-                return ServiceResult<bool>.Fail(400, $"Chưa được chủ ngựa xác nhận: {names}. Chủ ngựa phải xác nhận cho ngựa tham gia cuộc đua.");
-            }
-
-            // Jockey assigned to a horse must confirm participation too
-            var unconfirmedJockeys = entries.Where(e => e.JockeyId.HasValue && !e.JockeyConfirmed).ToList();
-            if (unconfirmedJockeys.Count > 0)
-            {
-                var names = string.Join(", ", unconfirmedJockeys.Select(e => e.Horse?.Name ?? "Ngựa"));
-                return ServiceResult<bool>.Fail(400, $"Kỵ sĩ chưa xác nhận tham gia: {names}. Kỵ sĩ phải xác nhận trước khi đua.");
-            }
-
             // Đăng ký phải được admin duyệt trước khi đua
             var rejectedEntries = entries.Where(e => e.Status == RegistrationStatus.Rejected).ToList();
             if (rejectedEntries.Count > 0)
