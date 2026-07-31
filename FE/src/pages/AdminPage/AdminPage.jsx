@@ -876,7 +876,7 @@ function TournamentManagement() {
       </form>}
       <section className="admin-card-grid">{items.map((item) => {
         const id = item.id ?? item.Id;
-        return <article key={id} className="admin-tournament-card" style={{ position: "relative", overflow: "hidden", cursor:"pointer" }} onClick={() => viewT(item)}>
+        return <article key={id} className="admin-tournament-card" role="button" tabIndex={0} style={{ position: "relative", overflow: "hidden", cursor:"pointer" }} onClick={() => viewT(item)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); viewT(item); } }}>
           {item.imageUrl ?? item.ImageUrl ? <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${(item.imageUrl ?? item.ImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15, pointerEvents: "none" }} /> : null}
           <div style={{ position: "relative", zIndex: 1 }}><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Hoạt động" : "Không hoạt động"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "Không có mô tả"}</p></div><dl style={{ position: "relative", zIndex: 1 }}><div><dt>Bắt đầu</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Vòng đấu</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Cuộc đua</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions" style={{ position: "relative", zIndex: 1 }}><button onClick={() => edit(item)}>Sửa</button><button className="admin-danger" onClick={() => remove(id)}>Xóa</button></div></article>;
       })}</section>
@@ -1597,7 +1597,7 @@ function WithdrawalManagement() {
                   <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}>{w.userName ?? w.UserName ?? "-"}</td>
                   <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}>{w.bankName ?? w.BankName ?? "-"}</td>
                   <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}>{w.accountNumber ?? w.AccountNumber ?? "-"}</td>
-                  <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}><strong>{(w.amount ?? w.Amount ?? 0).toLocaleString()}đ</strong></td>
+                  <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}><strong>{(w.amount ?? w.Amount ?? 0).toLocaleString()} điểm</strong></td>
                   <td style={{ padding: 15, borderBottom: "1px solid rgba(231,198,120,.07)", fontSize: 13, color: "#34415b" }}>{w.createdAt ? new Date(w.createdAt).toLocaleDateString() : "-"}</td>
                   <td style={{ display: "flex", gap: 8 }}>
                     <button

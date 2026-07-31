@@ -6,6 +6,14 @@ import { saveBankAccount, getBankAccounts, createWithdrawal, getWithdrawalHistor
 import { Field, Detail, StatusBadge, msgBox, grid2, btnPrimary, btnSecondary, fieldStyle, fieldLabel, inputBase } from "./ProfileCommon";
 import "./ProfilePages.css";
 
+// QR động của VietQR (cùng engine Sepay) — template standee: logo ngân hàng + sẵn số tiền và nội dung
+const vietQrUrl = (tx, amount, reference) => {
+  const acc = encodeURIComponent(tx?.accountNumber ?? tx?.AccountNumber ?? "");
+  const bank = encodeURIComponent(tx?.bankCode ?? tx?.BankCode ?? "MB");
+  const holder = encodeURIComponent(tx?.accountHolder ?? tx?.AccountHolder ?? "");
+  return `https://vietqr.app/img?acc=${acc}&bank=${bank}&holder=${holder}&template=standee&amount=${Number(amount || 0)}&des=${encodeURIComponent(reference || "")}`;
+};
+
 /* ─── page component ─── */
 
 const TABS = [
@@ -462,12 +470,13 @@ export function SpectatorProfilePage() {
                   <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "start" }}>
                     <div>
                       <img
-                        src="/qr-nap-tien.png"
+                        src={vietQrUrl(depositTx, depositAmount, depositTx.reference)}
                         alt="QR chuyển khoản"
-                        style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                        style={{ width: 300, height: "auto", borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                        onError={(e) => { e.currentTarget.src = "/qr-nap-tien.png"; }}
                       />
                       <p style={{ margin: "8px 0 0", fontSize: 12, color: "#856404", background: "#fff3cd", padding: "8px 14px", borderRadius: 8 }}>
-                        Quét QR bằng ứng dụng ngân hàng, nhập đúng nội dung chuyển khoản để hệ thống tự ghi nhận.
+                        Số tiền và nội dung chuyển khoản đã điền sẵn trên QR. Nếu ngân hàng không tự điền, hãy nhập đúng nội dung bên phải.
                       </p>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -476,8 +485,10 @@ export function SpectatorProfilePage() {
                         <strong style={{ fontSize: 22, color: "#172033" }}>{Number(depositTx.amount).toLocaleString()} VNĐ</strong>
                       </div>
                       <div
+                        role="button" tabIndex={0}
                         style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(231,198,120,0.25)", cursor: "pointer" }}
                         onClick={() => { navigator.clipboard.writeText(depositTx.reference); showMsg("success", "Đã sao chép nội dung!"); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigator.clipboard.writeText(depositTx.reference); showMsg("success", "Đã sao chép nội dung!"); } }}
                         title="Click để sao chép"
                       >
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: "#657086", textTransform: "uppercase" }}>Nội dung chuyển khoản</p>
@@ -497,12 +508,13 @@ export function SpectatorProfilePage() {
                   <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "start" }}>
                     <div>
                       <img
-                        src="/qr-nap-tien.png"
+                        src={vietQrUrl(depositTx, depositAmount, depositTx.reference)}
                         alt="QR chuyển khoản"
-                        style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                        style={{ width: 300, height: "auto", borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                        onError={(e) => { e.currentTarget.src = "/qr-nap-tien.png"; }}
                       />
                       <p style={{ margin: "8px 0 0", fontSize: 12, color: "#856404", background: "#fff3cd", padding: "8px 14px", borderRadius: 8 }}>
-                        Quét QR bằng ứng dụng ngân hàng, nhập đúng nội dung chuyển khoản để hệ thống tự ghi nhận.
+                        Số tiền và nội dung chuyển khoản đã điền sẵn trên QR. Nếu ngân hàng không tự điền, hãy nhập đúng nội dung bên phải.
                       </p>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -511,8 +523,10 @@ export function SpectatorProfilePage() {
                         <strong style={{ fontSize: 22, color: "#172033" }}>{Number(depositTx.amount).toLocaleString()} VNĐ</strong>
                       </div>
                       <div
+                        role="button" tabIndex={0}
                         style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(231,198,120,0.25)", cursor: "pointer" }}
                         onClick={() => { navigator.clipboard.writeText(depositTx.reference); showMsg("success", "Đã sao chép nội dung!"); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigator.clipboard.writeText(depositTx.reference); showMsg("success", "Đã sao chép nội dung!"); } }}
                         title="Click để sao chép"
                       >
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: "#657086", textTransform: "uppercase" }}>Nội dung chuyển khoản</p>
@@ -707,8 +721,9 @@ export function SpectatorProfilePage() {
                     ) : (
                       <div>
                         {wdAccounts.map((acc) => (
-                          <div key={acc.id ?? acc.Id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderRadius: 10, marginBottom: 8, border: `1.5px solid ${wdSelectedAccount === (acc.id ?? acc.Id) ? "#8f6420" : "rgba(143,100,32,0.12)"}`, background: wdSelectedAccount === (acc.id ?? acc.Id) ? "rgba(143,100,32,0.06)" : "#fff", cursor: "pointer" }}
+                          <div key={acc.id ?? acc.Id} role="button" tabIndex={0} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderRadius: 10, marginBottom: 8, border: `1.5px solid ${wdSelectedAccount === (acc.id ?? acc.Id) ? "#8f6420" : "rgba(143,100,32,0.12)"}`, background: wdSelectedAccount === (acc.id ?? acc.Id) ? "rgba(143,100,32,0.06)" : "#fff", cursor: "pointer" }}
                             onClick={() => setWdSelectedAccount(acc.id ?? acc.Id)}
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setWdSelectedAccount(acc.id ?? acc.Id); } }}
                           >
                             <div>
                               <strong style={{ color: "#172033", fontSize: 14, display: "block" }}>{acc.bankName ?? acc.BankName}</strong>
@@ -735,11 +750,11 @@ export function SpectatorProfilePage() {
                         <h3 style={{ margin: 0, color: "#172033" }}>Yêu cầu rút tiền</h3>
                         {totalWon > 0 && (
                           <span style={{ fontSize: 13, color: "#1a7d1a", background: "#e6f7e6", padding: "4px 12px", borderRadius: 20 }}>
-                            Tổng thắng: {totalWon.toLocaleString()}đ
+                            Tổng thắng: {totalWon.toLocaleString()} điểm
                           </span>
                         )}
                       </div>
-                      <Field label="Số tiền rút" type="number" value={wdAmount} onChange={(e) => setWdAmount(e.target.value)} placeholder="Nhập số tiền muốn rút" />
+                      <Field label="Số điểm rút" type="number" value={wdAmount} onChange={(e) => setWdAmount(e.target.value)} placeholder="Nhập số điểm muốn rút (1.000đ = 1 điểm)" />
                       <div style={{ marginTop: 8 }}>
                         <button style={btnPrimary} onClick={submitWithdrawal}>Gửi yêu cầu</button>
                       </div>
@@ -775,7 +790,7 @@ export function SpectatorProfilePage() {
                                   <td>{w.createdAt ? new Date(w.createdAt).toLocaleDateString("vi-VN") : "-"}</td>
                                   <td>{w.bankName ?? w.BankName ?? "-"}</td>
                                   <td>{w.accountNumber ?? w.AccountNumber ?? "-"}</td>
-                                  <td>{(w.amount ?? w.Amount ?? 0).toLocaleString()}đ</td>
+                                  <td>{(w.amount ?? w.Amount ?? 0).toLocaleString()} điểm</td>
                                   <td><StatusBadge status={w.status ?? w.Status} /></td>
                                 </tr>
                               ))}

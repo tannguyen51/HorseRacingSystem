@@ -7,6 +7,7 @@ using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace HorseRacing.Services;
 
@@ -24,6 +25,7 @@ public class RaceManagementService : IRaceManagementService
     private readonly IPredictionService _predictionService;
     private readonly IWalletService _walletService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<RaceManagementService> _logger;
 
     public RaceManagementService(
         IRaceRepository raceRepo,
@@ -37,7 +39,8 @@ public class RaceManagementService : IRaceManagementService
         IRaceResultRepository raceResultRepo,
         IPredictionService predictionService,
         IWalletService walletService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<RaceManagementService> logger)
     {
         _raceRepo = raceRepo;
         _entryRepo = entryRepo;
@@ -51,6 +54,7 @@ public class RaceManagementService : IRaceManagementService
         _predictionService = predictionService;
         _walletService = walletService;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<ServiceResult<RaceDetailResponse>> CreateRaceAsync(CreateRaceRequest request)
@@ -88,7 +92,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi tạo cuộc đua: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, "Không thể tạo cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -106,7 +110,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi truy xuất cuộc đua: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, "Không thể tải thông tin cuộc đua.");
         }
     }
 
@@ -147,7 +151,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<RaceDetailResponse>.Fail(500, $"Lỗi cập nhật cuộc đua: {ex.Message}");
+            return ServiceResult<RaceDetailResponse>.Fail(500, "Không thể cập nhật cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -162,7 +166,7 @@ public class RaceManagementService : IRaceManagementService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RaceDetailResponse>>.Fail(
-                500, $"Lỗi truy xuất danh sách cuộc đua: {ex.Message}");
+                500, "Không thể tải danh sách cuộc đua.");
         }
     }
 
@@ -177,7 +181,7 @@ public class RaceManagementService : IRaceManagementService
         catch (Exception ex)
         {
             return ServiceResult<IEnumerable<RaceDetailResponse>>.Fail(
-                500, $"Lỗi truy xuất danh sách cuộc đua: {ex.Message}");
+                500, "Không thể tải danh sách cuộc đua.");
         }
     }
 
@@ -208,7 +212,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi xóa cuộc đua: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể xóa cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -327,7 +331,8 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi phân công ngựa: {ex.Message}");
+            _logger.LogError(ex, "Lỗi phân công ngựa vào cuộc đua {RaceId}", raceId);
+            return ServiceResult<bool>.Fail(500, "Không thể thêm ngựa vào cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -412,7 +417,8 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi thêm hàng loạt ngựa: {ex.Message}");
+            _logger.LogError(ex, "Lỗi thêm hàng loạt ngựa vào cuộc đua {RaceId}", raceId);
+            return ServiceResult<bool>.Fail(500, "Không thể thêm hàng loạt ngựa. Vui lòng thử lại.");
         }
     }
 
@@ -440,7 +446,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi xóa ngựa khỏi cuộc đua: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể gỡ ngựa khỏi cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -453,7 +459,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<List<Guid>>.Fail(500, $"Lỗi lấy danh sách ngựa bận: {ex.Message}");
+            return ServiceResult<List<Guid>>.Fail(500, "Không thể tải danh sách ngựa bận.");
         }
     }
 
@@ -475,7 +481,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi cập nhật tỷ lệ cược: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể cập nhật tỉ lệ cược. Vui lòng thử lại.");
         }
     }
 
@@ -547,7 +553,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi bắt đầu cuộc đua: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể bắt đầu cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -596,12 +602,12 @@ public class RaceManagementService : IRaceManagementService
             }
             catch (Exception ex)
             {
-                return ServiceResult<bool>.Fail(500, $"Lỗi thanh toán dự đoán: {ex.Message}");
+                return ServiceResult<bool>.Fail(500, "Lỗi thanh toán dự đoán. Vui lòng thử lại.");
             }
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi kết thúc cuộc đua: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể kết thúc cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -647,7 +653,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi hủy cuộc đua: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể hủy cuộc đua. Vui lòng thử lại.");
         }
     }
 
@@ -674,7 +680,7 @@ public class RaceManagementService : IRaceManagementService
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.Fail(500, $"Lỗi giải phóng ngựa: {ex.Message}");
+            return ServiceResult<bool>.Fail(500, "Không thể giải phóng ngựa. Vui lòng thử lại.");
         }
     }
 

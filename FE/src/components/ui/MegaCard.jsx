@@ -19,6 +19,8 @@ export function MegaCard({
 
   return (
     <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={{
         borderRadius: radius.card,
         background: colors.paper,
@@ -28,6 +30,13 @@ export function MegaCard({
         cursor: onClick ? "pointer" : "default",
       }}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if ((e.key === "Enter" || e.key === " ") && onClick) {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = shadows.cardHover;
       }}
@@ -80,7 +89,9 @@ export function MegaCard({
         {/* Context Menu Dropdown */}
         {showMenu && (
           <div
+            role="menu"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => { if (e.key === "Escape") setShowMenu(false); }}
             style={{
               position: "absolute",
               top: "52px",

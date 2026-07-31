@@ -70,7 +70,8 @@ export default function NotificationBell() {
                 const id = n.id ?? n.Id;
                 const isRead = n.isRead ?? n.IsRead ?? false;
                 return (
-                  <div key={id} onClick={() => handleNotificationClick(n)}
+                  <div key={id} role="button" tabIndex={0} onClick={() => handleNotificationClick(n)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNotificationClick(n); } }}
                     style={{
                       padding: "10px 12px", borderRadius: 10, cursor: "pointer", fontSize: 13,
                       background: isRead ? "transparent" : "rgba(242,210,139,0.06)",

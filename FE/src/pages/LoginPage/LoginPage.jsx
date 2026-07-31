@@ -280,7 +280,7 @@ function LoginPage() {
 
                 {forgotSent && (
                   <p style={{ padding: "10px 14px", borderRadius: 10, fontSize: 13, background: "rgba(120,216,154,0.12)", border: "1px solid rgba(120,216,154,0.3)", color: "#166534" }}>
-                    Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.
+                    Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn. Nếu không thấy trong hộp thư đến, hãy kiểm tra thư mục Spam/Junk.
                   </p>
                 )}
 

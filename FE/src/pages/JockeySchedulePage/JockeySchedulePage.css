@@ -352,3 +352,36 @@
 
 /* ── Ensure full width ── */
 .js-page { width: 100%; box-sizing: border-box; }
+
+/* ── Pending confirmations ── */
+.js-pending {
+  background: rgba(255,250,240,0.96);
+  border: 1px solid rgba(143,100,32,0.16);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.js-pending__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.js-pending__header h3 { margin: 0; font-size: 15px; font-weight: 700; color: #172033; }
+.js-pending__header span { font-size: 11px; color: #657086; }
+.js-pending__list { display: grid; gap: 8px; }
+.js-pending__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(143,100,32,0.12);
+  flex-wrap: wrap;
+}
+.js-pending__item strong { display: block; font-size: 13px; color: #172033; }
+.js-pending__item span { font-size: 11px; color: #657086; }

@@ -67,24 +67,25 @@ export default function TournamentDetail({ t, onBack, setMessage, getTournamentR
     : <div style={{display:"grid",gap:10}}>{races.map((race)=>{
       const id=race.id??race.Id;const st=(race.status??race.Status??"").toString().toLowerCase();
       const exp=expandedRaceId===id;const det=raceDetailData[id]||{};
+      const toggleExpand=async()=>{
+        if(exp){setExpandedRaceId(null);return;}setExpandedRaceId(id);
+        if(!raceDetailData[id]){try{
+          const[data,entries,refs,report]=await Promise.all([
+            request(`/api/races/management/${id}`),
+            request(`/api/referees/race/${id}/entries`),
+            request(`/api/referees/race/${id}/assignments`),
+            request(`/api/referees/race/${id}/report`).catch(()=>null),
+          ]);
+          setRaceDetailData(prev=>({...prev,[id]:{
+            detail:data?.data??data,
+            entries:Array.isArray(entries?.data??entries)?(entries?.data??entries):[],
+            refAssignments:Array.isArray(refs?.data??refs)?(refs?.data??refs):[],
+            report:report?.data??report,
+          }}));
+        }catch{ /* ignore */ }}
+      };
       return <div key={id} style={{borderRadius:12,border:"1px solid rgba(143,100,32,0.16)",background:"rgba(255,250,240,0.96)",overflow:"hidden"}}>
-        <div onClick={async()=>{
-          if(exp){setExpandedRaceId(null);return;}setExpandedRaceId(id);
-          if(!raceDetailData[id]){try{
-            const[data,entries,refs,report]=await Promise.all([
-              request(`/api/races/management/${id}`),
-              request(`/api/referees/race/${id}/entries`),
-              request(`/api/referees/race/${id}/assignments`),
-              request(`/api/referees/race/${id}/report`).catch(()=>null),
-            ]);
-            setRaceDetailData(prev=>({...prev,[id]:{
-              detail:data?.data??data,
-              entries:Array.isArray(entries?.data??entries)?(entries?.data??entries):[],
-              refAssignments:Array.isArray(refs?.data??refs)?(refs?.data??refs):[],
-              report:report?.data??report,
-            }}));
-          }catch{ /* ignore */ }}
-        }} style={{padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",flexWrap:"wrap",gap:8}}>
+        <div role="button" tabIndex={0} onClick={toggleExpand} onKeyDown={(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleExpand();}}} style={{padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",flexWrap:"wrap",gap:8}}>
           <div><strong style={{fontSize:15,color:"#172033"}}>{race.name??race.Name}</strong>
             <span style={{marginLeft:6,padding:"1px 8px",borderRadius:999,fontSize:10,fontWeight:700,background:raceStatusBg(st),color:raceStatusColor(st)}}>{raceStatusLabel(st)}</span>
             <p style={{margin:"2px 0 0",fontSize:12,color:"#657086"}}>{fmtDate2(race.scheduledAt??race.ScheduledAt)} · {(race.distance??race.Distance??0)}m</p></div>

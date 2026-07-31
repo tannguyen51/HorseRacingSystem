@@ -114,7 +114,7 @@ public class HorseRepository : IHorseRepository
         return Task.CompletedTask;
     }
 
-    private static void NormalizeHorseInvitations(Horse horse)
+    private void NormalizeHorseInvitations(Horse horse)
     {
         var filtered = horse.JockeyInvitations
             .Where(i => i.Status != JockeyInvitationStatus.Declined)
@@ -122,6 +122,15 @@ public class HorseRepository : IHorseRepository
             .Select(g => g.OrderByDescending(i => i.CreatedAt).First())
             .OrderByDescending(i => i.CreatedAt)
             .ToList();
+
+        // Detach các lời mời bị loại trước khi xóa khỏi collection:
+        // nếu giữ nguyên tracked, EF Core coi là "cắt quan hệ bắt buộc"
+        // (JockeyInvitation.HorseId là FK non-nullable) → lỗi khi SaveChanges.
+        var removed = horse.JockeyInvitations.Where(i => !filtered.Contains(i)).ToList();
+        foreach (var invitation in removed)
+        {
+            _db.Entry(invitation).State = EntityState.Detached;
+        }
 
         horse.JockeyInvitations.Clear();
         foreach (var invitation in filtered)

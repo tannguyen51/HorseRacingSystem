@@ -23,8 +23,9 @@ public class WithdrawalRequestDto
     [Required]
     public Guid BankAccountId { get; set; }
 
+    // Amount tính bằng điểm (1.000đ = 1 điểm)
     [Required]
-    [Range(1000, 100_000_000)]
+    [Range(1, 100_000_000)]
     public decimal Amount { get; set; }
 }
 

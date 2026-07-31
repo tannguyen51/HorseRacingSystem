@@ -239,7 +239,7 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
                 const isBusy = effectiveBusyHorseIds.includes(id);
                 const checked = selectedHorseIds.includes(id);
                 return (
-                  <label key={id} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:checked?"#f0fdf4":"transparent",border:`2px solid ${isBusy?(checked?"#fecaca":"#fecaca"):(checked?"#10b981":"#e5e7eb")}`,borderRadius:6,cursor:isBusy&&!checked?"not-allowed":"pointer",fontSize:13,opacity:isBusy&&!checked?0.5:1}}>
+                  <label key={id} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:checked?"#f0fdf4":"transparent",border:`2px solid ${isBusy?"#fecaca":(checked?"#10b981":"#e5e7eb")}`,borderRadius:6,cursor:isBusy&&!checked?"not-allowed":"pointer",fontSize:13,opacity:isBusy&&!checked?0.5:1}}>
                     <input type="checkbox" checked={checked} disabled={isBusy && !checked} onChange={(e) => { e.target.checked ? setSelectedHorseIds([...selectedHorseIds, id]) : setSelectedHorseIds(selectedHorseIds.filter((i) => i !== id)); }} />
                     <div><div style={{fontWeight:600}}>{h.name || h.Name}</div>{isBusy && !checked && <div style={{fontSize:10,color:"#ef4444"}}>⛔ Đang trong cuộc đua khác</div>}</div>
                   </label>

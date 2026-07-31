@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace HorseRacing.Controllers;
 
@@ -24,8 +25,9 @@ public class AuthController : ControllerBase
     private readonly IRefereeRepository _refereeRepo;
     private readonly ICloudStorageService _cloudStorage;
     private readonly IEmailService _emailService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IUserRepository userRepo, IJockeyRepository jockeyRepo, IRefereeRepository refereeRepo, ICloudStorageService cloudStorage, IEmailService emailService)
+    public AuthController(IAuthService authService, IUserRepository userRepo, IJockeyRepository jockeyRepo, IRefereeRepository refereeRepo, ICloudStorageService cloudStorage, IEmailService emailService, ILogger<AuthController> logger)
     {
         _authService = authService;
         _userRepo = userRepo;
@@ -33,6 +35,7 @@ public class AuthController : ControllerBase
         _refereeRepo = refereeRepo;
         _cloudStorage = cloudStorage;
         _emailService = emailService;
+        _logger = logger;
     }
 
     // Authentication
@@ -178,8 +181,9 @@ public class AuthController : ControllerBase
             {
                 await _emailService.SendAsync(request.Email.Trim(), "RaceMaster - Đặt lại mật khẩu", body);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Gửi email đặt lại mật khẩu thất bại tới {Email}", request.Email.Trim());
                 // Email failed — still return success for security
             }
         }
