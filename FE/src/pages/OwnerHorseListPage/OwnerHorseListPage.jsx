@@ -82,7 +82,11 @@ function OwnerHorseListPage() {
         });
         // Check race entries with jockey in active (non-finished) races
         entries.forEach(entry => {
-          const raceStatus = (entry.race?.status ?? entry.race?.Status ?? "").toLowerCase();
+          const rawStatus = entry.race?.status ?? entry.race?.Status ?? "";
+          // Backend serializes RaceStatus enum dưới dạng số (1=Scheduled, 3=Finished, 4=Cancelled)
+          const raceStatus = typeof rawStatus === "number"
+            ? ({ 3: "finished", 4: "cancelled" }[rawStatus] ?? "active")
+            : String(rawStatus).toLowerCase();
           const isActive = raceStatus !== "finished" && raceStatus !== "cancelled" && raceStatus !== "";
           if (isActive) {
             const jid = entry.jockey?.id ?? entry.jockey?.Id ?? entry.Jockey?.Id;
