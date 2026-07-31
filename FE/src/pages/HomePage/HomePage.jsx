@@ -1,70 +1,31 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getRaces } from "../../services/spectatorApi";
-import { unwrapResponseData } from "../../services/authRoleUtils";
+import { getActiveTournaments, getRaces } from "../../services/spectatorApi";
+import { request } from "../../services/apiClient";
 import heroImage from "../../assets/racing.png";
 import homeOneImage from "../../assets/home1.png";
 import homeTwoImage from "../../assets/home2.png";
 import jockeyImage from "../../assets/Jockey.png";
 import "./HomePage.css";
 
-const STATS = [
-  { value: "12+", label: "Giải Đấu Mỗi Mùa" },
-  { value: "48+", label: "Cuộc Đua Hàng Năm" },
-  { value: "200+", label: "Kỵ Sĩ Chuyên Nghiệp" },
-  { value: "150+", label: "Chủ Ngựa" },
-];
-
-const TOURNAMENTS = [
-  {
-    name: "Spring Championship 2026",
-    category: "Grade 1",
-    venue: "Churchill Downs",
-    races: 12,
-    prize: "$250,000",
-    status: "Đang diễn ra",
-  },
-  {
-    name: "Summer Derby Series",
-    category: "Grade 2",
-    venue: "Belmont Park",
-    races: 8,
-    prize: "$180,000",
-    status: "Sắp khai mạc",
-  },
-  {
-    name: "Royal Ascot Cup",
-    category: "Grade 1",
-    venue: "Ascot Racecourse",
-    races: 15,
-    prize: "$500,000",
-    status: "Đang diễn ra",
-  },
-];
-
 const MARQUEE_IMAGES = [heroImage, homeOneImage, homeTwoImage, jockeyImage];
 
-const TOP_JOCKEYS = [
-  { name: "Marcus Chen", wins: 82, races: 340, winRate: "24.1%", rank: "#1" },
-  { name: "Elena Rodriguez", wins: 48, races: 210, winRate: "22.9%", rank: "#2" },
-  { name: "David Park", wins: 65, races: 280, winRate: "23.2%", rank: "#3" },
-];
-
-const TOP_OWNERS = [
-  { name: "John Whitfield", horses: 3, wins: 14, entries: 36, rank: "#1" },
-  { name: "Sarah O'Brien", horses: 3, wins: 15, entries: 34, rank: "#2" },
-  { name: "Michael Torres", horses: 2, wins: 8, entries: 18, rank: "#3" },
-];
-
-/* eslint-disable no-unused-vars */
-const RECENT_RESULTS = [
-  { race: "Opening Sprint", horse: "Silver Comet", jockey: "Marcus Chen", time: "1:11.24", position: 1 },
-  { race: "Opening Sprint", horse: "Golden Arrow", jockey: "Elena Rodriguez", time: "1:11.89", position: 2 },
-  { race: "Opening Sprint", horse: "Thunder Strike", jockey: "Marcus Chen", time: "1:12.45", position: 3 },
-  { race: "Mid-Distance Classic", horse: "Storm Chaser", jockey: "Elena Rodriguez", time: "2:05.30", position: 1 },
-];
+const TOURNAMENT_STATUS = {
+  draft: "Bản nháp",
+  published: "Đã công bố",
+  ongoing: "Đang diễn ra",
+  started: "Đang diễn ra",
+  finished: "Đã kết thúc",
+  cancelled: "Đã hủy",
+};
 
 function HomePage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [races, setRaces] = useState([]);
+  const [topJockeys, setTopJockeys] = useState([]);
+  const [topOwners, setTopOwners] = useState([]);
+  const [jockeyCount, setJockeyCount] = useState(0);
+  const [ownerCount, setOwnerCount] = useState(0);
   const [recentRaces, setRecentRaces] = useState([]);
 
   const formatTime = (value) =>
@@ -73,18 +34,49 @@ function HomePage() {
       : "Chưa xác định";
 
   useEffect(() => {
-    getRaces()
-      .then((res) => {
-        const data = unwrapResponseData(res);
-        const all = Array.isArray(data) ? data : [];
-        const finished = all
-          .filter((r) => (r.status ?? r.Status) === "Finished")
-          .sort((a, b) => new Date(b.scheduledAt ?? b.ScheduledAt ?? 0) - new Date(a.scheduledAt ?? a.ScheduledAt ?? 0))
-          .slice(0, 5);
-        setRecentRaces(finished);
-      })
-      .catch(() => {});
+    Promise.all([
+      getActiveTournaments().catch(() => []),
+      getRaces().catch(() => []),
+      request("/api/leaderboard/jockeys").catch(() => []),
+      request("/api/leaderboard/horses").catch(() => []),
+    ]).then(([t, r, j, h]) => {
+      const tournamentList = Array.isArray(t) ? t : [];
+      const raceList = Array.isArray(r) ? r : [];
+      const jockeyList = Array.isArray(j) ? j : [];
+      const horseList = Array.isArray(h) ? h : [];
+
+      setTournaments(tournamentList);
+      setRaces(raceList);
+      setJockeyCount(jockeyList.length);
+      setTopJockeys(jockeyList.slice(0, 3));
+
+      // Gộp xếp hạng ngựa theo chủ sở hữu
+      const ownerMap = new Map();
+      horseList.forEach((horse) => {
+        const name = horse.ownerName || "Chưa xác định";
+        if (!ownerMap.has(name)) ownerMap.set(name, { name, horses: 0, wins: 0, entries: 0 });
+        const o = ownerMap.get(name);
+        o.horses += 1;
+        o.wins += Number(horse.wins || 0);
+        o.entries += Number(horse.totalRaces || 0);
+      });
+      setOwnerCount(ownerMap.size);
+      setTopOwners([...ownerMap.values()].sort((a, b) => b.wins - a.wins).slice(0, 3));
+
+      const finished = raceList
+        .filter((x) => (x.status ?? x.Status) === "Finished")
+        .sort((a, b) => new Date(b.scheduledAt ?? b.ScheduledAt ?? 0) - new Date(a.scheduledAt ?? a.ScheduledAt ?? 0))
+        .slice(0, 5);
+      setRecentRaces(finished);
+    });
   }, []);
+
+  const stats = [
+    { value: tournaments.length, label: "Giải đấu đang hoạt động" },
+    { value: races.length, label: "Cuộc đua" },
+    { value: jockeyCount, label: "Kỵ sĩ" },
+    { value: ownerCount, label: "Chủ ngựa" },
+  ];
 
   return (
     <div className="home-page">
@@ -111,7 +103,7 @@ function HomePage() {
       {/* ── Thống kê hệ thống ── */}
       <section className="stats-bar">
         <div className="stats-bar__grid">
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <div key={s.label} className="stat-item">
               <span className="stat-item__value">{s.value}</span>
               <span className="stat-item__label">{s.label}</span>
@@ -128,26 +120,29 @@ function HomePage() {
           <p>Những giải đấu danh giá nhất đang chờ đón bạn và chiến mã của mình.</p>
         </div>
         <div className="tournaments-grid">
-          {TOURNAMENTS.map((t) => (
-            <div key={t.name} className="tournament-card">
-              <div className="tournament-card__header">
-                <span className={`tournament-status ${t.status === "Đang diễn ra" ? "tournament-status--live" : "tournament-status--upcoming"}`}>
-                  {t.status}
-                </span>
-                <span className="tournament-category">{t.category}</span>
+          {tournaments.length === 0 ? (
+            <p className="muted">Chưa có giải đấu nào.</p>
+          ) : tournaments.slice(0, 3).map((t) => {
+            const statusKey = (t.statusName ?? t.StatusName ?? "draft").toLowerCase();
+            const statusLabel = TOURNAMENT_STATUS[statusKey] ?? t.statusName ?? "Đang mở";
+            const raceCount = t.raceCount ?? t.RaceCount ?? t.stats?.raceCount ?? 0;
+            return (
+              <div key={t.id ?? t.Id} className="tournament-card">
+                <div className="tournament-card__header">
+                  <span className={`tournament-status ${statusKey === "ongoing" || statusKey === "started" ? "tournament-status--live" : "tournament-status--upcoming"}`}>
+                    {statusLabel}
+                  </span>
+                  <span className="tournament-category">{t.startDate ? new Date(t.startDate).toLocaleDateString("vi-VN") : "—"}</span>
+                </div>
+                <h3>{t.name ?? t.Name}</h3>
+                <div className="tournament-card__meta">
+                  <span>🏁 {raceCount} cuộc đua</span>
+                </div>
+                <p className="tournament-card__desc">{t.description ?? t.Description ?? "Không có mô tả."}</p>
+                <Link to="/tournaments" className="tournament-card__link">Xem chi tiết →</Link>
               </div>
-              <h3>{t.name}</h3>
-              <div className="tournament-card__meta">
-                <span>📍 {t.venue}</span>
-                <span>🏁 {t.races} cuộc đua</span>
-              </div>
-              <div className="tournament-card__prize">
-                <span>Tổng giải thưởng</span>
-                <strong>{t.prize}</strong>
-              </div>
-              <Link to="/tournaments" className="tournament-card__link">Xem chi tiết →</Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -180,12 +175,14 @@ function HomePage() {
           <div className="leader-panel">
             <h3>🏇 Top Kỵ Sĩ</h3>
             <div className="leader-list">
-              {TOP_JOCKEYS.map((j) => (
-                <div key={j.name} className="leader-card">
-                  <span className="leader-card__rank">{j.rank}</span>
+              {topJockeys.length === 0 ? (
+                <p className="muted">Chưa có dữ liệu.</p>
+              ) : topJockeys.map((j, idx) => (
+                <div key={j.id ?? j.name} className="leader-card">
+                  <span className="leader-card__rank">#{idx + 1}</span>
                   <div className="leader-card__info">
                     <strong>{j.name}</strong>
-                    <span>{j.races} cuộc đua · {j.wins} thắng · Tỷ lệ {j.winRate}</span>
+                    <span>{j.totalRaces ?? 0} cuộc đua · {j.wins ?? 0} thắng · Tỷ lệ {j.winRate ?? 0}%</span>
                   </div>
                 </div>
               ))}
@@ -195,9 +192,11 @@ function HomePage() {
           <div className="leader-panel">
             <h3>🐎 Top Chủ Ngựa</h3>
             <div className="leader-list">
-              {TOP_OWNERS.map((o) => (
+              {topOwners.length === 0 ? (
+                <p className="muted">Chưa có dữ liệu.</p>
+              ) : topOwners.map((o, idx) => (
                 <div key={o.name} className="leader-card">
-                  <span className="leader-card__rank">{o.rank}</span>
+                  <span className="leader-card__rank">#{idx + 1}</span>
                   <div className="leader-card__info">
                     <strong>{o.name}</strong>
                     <span>{o.horses} ngựa · {o.wins} thắng · {o.entries} lượt đua</span>

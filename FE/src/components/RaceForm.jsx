@@ -232,16 +232,23 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
 
           {/* Horses */}
           <div style={{marginBottom:16}}>
-            <label style={{display:"block",fontSize:13,fontWeight:600,marginBottom:6,color:"#34415b"}}>Chọn ngựa ({selectedHorseIds.length})</label>
+            <label style={{display:"block",fontSize:13,fontWeight:600,marginBottom:6,color:"#34415b"}}>Chọn ngựa ({selectedHorseIds.length}) — chỉ ngựa đã có kỵ sĩ</label>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))",gap:8,maxHeight:200,overflowY:"auto",padding:8,border:"1px solid rgba(143,100,32,0.1)",borderRadius:8}}>
-              {horses.map((h) => {
+              {horses.filter((h) => h.assignedJockeyId || h.AssignedJockeyId).length === 0 ? (
+                <p style={{fontSize:12,color:"#657086",gridColumn:"1 / -1",margin:0,padding:8}}>Không có ngựa nào có kỵ sĩ. Hãy để chủ ngựa thuê kỵ sĩ trước khi thêm vào cuộc đua.</p>
+              ) : horses.filter((h) => h.assignedJockeyId || h.AssignedJockeyId).map((h) => {
                 const id = h.id || h.Id;
                 const isBusy = effectiveBusyHorseIds.includes(id);
                 const checked = selectedHorseIds.includes(id);
+                const jockeyName = h.assignedJockeyName || h.AssignedJockeyName;
                 return (
                   <label key={id} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:checked?"#f0fdf4":"transparent",border:`2px solid ${isBusy?"#fecaca":(checked?"#10b981":"#e5e7eb")}`,borderRadius:6,cursor:isBusy&&!checked?"not-allowed":"pointer",fontSize:13,opacity:isBusy&&!checked?0.5:1}}>
                     <input type="checkbox" checked={checked} disabled={isBusy && !checked} onChange={(e) => { e.target.checked ? setSelectedHorseIds([...selectedHorseIds, id]) : setSelectedHorseIds(selectedHorseIds.filter((i) => i !== id)); }} />
-                    <div><div style={{fontWeight:600}}>{h.name || h.Name}</div>{isBusy && !checked && <div style={{fontSize:10,color:"#ef4444"}}>⛔ Đang trong cuộc đua khác</div>}</div>
+                    <div>
+                      <div style={{fontWeight:600}}>{h.name || h.Name}</div>
+                      <div style={{fontSize:10,color:"#8f6420"}}>Kỵ sĩ: {jockeyName || "Đã có kỵ sĩ"}</div>
+                      {isBusy && !checked && <div style={{fontSize:10,color:"#ef4444"}}>⛔ Đang trong cuộc đua khác</div>}
+                    </div>
                   </label>
                 );
               })}

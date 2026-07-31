@@ -101,7 +101,9 @@ function LoginPage() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      if (err?.status === 0) {
+      if (err?.status === 429) {
+        setErrorMessage("Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút.");
+      } else if (err?.status === 0) {
         setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng kiểm tra mạng hoặc thử lại sau.");
       } else {
         setErrorMessage(err?.message || "Có lỗi xảy ra.");
@@ -299,18 +301,16 @@ function LoginPage() {
                 {forgotSent && !resetSuccess && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setForgotSent(false);
+                    onClick={(e) => {
                       setResetToken("");
                       setNewPassword("");
                       setConfirmPassword("");
-                      setErrorMessage("");
-                      setResetSuccess(false);
+                      handleForgotPassword(e);
                     }}
                     className="link-accent"
                     style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, textAlign: "center", padding: 0, marginTop: 8 }}
                   >
-                    Gửi lại mã
+                    Gửi lại mã cho {forgotEmail}
                   </button>
                 )}
 

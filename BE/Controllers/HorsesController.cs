@@ -71,8 +71,54 @@ public class HorsesController : ControllerBase
     {
         using var scope = HttpContext.RequestServices.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<Data.ApplicationDbContext>();
-        var horses = await db.Horses.Where(h => h.ApprovalStatus == Models.ApprovalStatus.Approved).Include(h => h.Owner).ThenInclude(o => o!.User).ToListAsync();
-        return Ok(new { success = true, data = horses });
+        var horses = await db.Horses
+            .Where(h => h.ApprovalStatus == Models.ApprovalStatus.Approved)
+            .Include(h => h.Owner).ThenInclude(o => o!.User)
+            .Include(h => h.JockeyInvitations).ThenInclude(i => i.Jockey).ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries).ThenInclude(e => e.Jockey).ThenInclude(j => j!.User)
+            .Include(h => h.RaceEntries).ThenInclude(e => e.Race)
+            .ToListAsync();
+
+        var result = horses.Select(h =>
+        {
+            // Kỵ sĩ hiện tại: lời mời mới nhất đang Pending/Accepted, fallback kỵ sĩ của cuộc đua gần nhất
+            var activeInv = h.JockeyInvitations
+                .Where(i => i.Status == Models.JockeyInvitationStatus.Accepted || i.Status == Models.JockeyInvitationStatus.Pending)
+                .OrderByDescending(i => i.CreatedAt)
+                .FirstOrDefault();
+            var raceJockey = h.RaceEntries
+                .Where(e => e.Jockey != null)
+                .OrderByDescending(e => e.Race?.ScheduledAt ?? DateTime.MinValue)
+                .Select(e => e.Jockey)
+                .FirstOrDefault();
+            var jockey = activeInv?.Jockey ?? raceJockey;
+
+            return new
+            {
+                h.Id,
+                h.Name,
+                h.Breed,
+                h.Gender,
+                h.DateOfBirth,
+                h.Age,
+                h.Weight,
+                h.Height,
+                h.Color,
+                h.TotalRaces,
+                h.TotalWins,
+                h.ImageUrl,
+                h.OwnerId,
+                h.ApprovalStatus,
+                h.ApprovalNote,
+                h.Owner,
+                h.RaceEntries,
+                h.JockeyInvitations,
+                AssignedJockeyId = jockey?.Id,
+                AssignedJockeyName = jockey?.User?.FullName
+            };
+        }).ToList();
+
+        return Ok(new { success = true, data = result });
     }
 
     [HttpGet("{id:guid}")]
