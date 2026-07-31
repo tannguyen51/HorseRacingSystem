@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { getMyHorses } from "../../services/ownerHorseApi";
+import {
+  getMyHorses,
+  getMyRaceEntries,
+  registerHorseForRace,
+} from "../../services/ownerHorseApi";
 import { getOwnerTournaments } from "../../services/ownerApi";
-import { request } from "../../services/apiClient";
+import { getTournamentRaces } from "../../services/adminApi";
 import "../OwnerSharedLayout.css";
 import "./OwnerTournamentRegisterPage.css";
 
@@ -14,12 +18,6 @@ const formatDate = (value) => {
         day: "numeric",
         year: "numeric",
       }).format(date);
-};
-
-const STATUS_LABEL = {
-  Pending: "Chờ duyệt",
-  Approved: "Đã duyệt",
-  Rejected: "Từ chối",
 };
 
 const mapTournament = (tournament) => ({
@@ -35,8 +33,10 @@ const mapTournament = (tournament) => ({
 function OwnerTournamentRegisterPage() {
   const [tournaments, setTournaments] = useState([]);
   const [horses, setHorses] = useState([]);
+  const [races, setRaces] = useState([]);
   const [selectedHorseId, setSelectedHorseId] = useState("");
   const [selectedTournamentId, setSelectedTournamentId] = useState("");
+  const [selectedRaceId, setSelectedRaceId] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [registrations, setRegistrations] = useState([]);
   const [isHorseLoading, setIsHorseLoading] = useState(true);
@@ -45,6 +45,23 @@ function OwnerTournamentRegisterPage() {
   const [tournamentError, setTournamentError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
+
+  const loadRaces = async () => {
+    if (!selectedTournamentId) {
+      setRaces([]);
+      return;
+    }
+    try {
+      const data = await getTournamentRaces(selectedTournamentId);
+      setRaces(Array.isArray(data) ? data : []);
+    } catch {
+      setRaces([]);
+    }
+  };
+
+  useEffect(() => {
+    loadRaces();
+  }, [selectedTournamentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let isMounted = true;
@@ -98,26 +115,32 @@ function OwnerTournamentRegisterPage() {
       }
 
       try {
-        const res = await request("/api/tournament-registrations/my");
-        const data = res?.data ?? res;
+        const data = await getMyRaceEntries();
         if (isMounted) {
           const list = Array.isArray(data) ? data : [];
-          setRegistrations(
-            list.map((entry) => ({
-              id: entry.id ?? entry.Id ?? Date.now(),
-              tournamentId: entry.tournamentId ?? entry.TournamentId,
-              horseId: entry.horseId ?? entry.HorseId,
-              horse: entry.horseName ?? entry.HorseName ?? "Không rõ",
-              tournament:
-                entry.tournamentName ?? entry.TournamentName ?? "Giải đấu",
-              status:
-                STATUS_LABEL[entry.status ?? entry.Status] ??
-                entry.status ??
-                entry.Status ??
-                "Chờ duyệt",
-              submitted: formatDate(entry.createdAt ?? entry.CreatedAt),
-            })),
-          );
+          const parsedRegistrations = list.map((entry) => ({
+            id: entry.entryId ?? entry.EntryId ?? entry.id ?? Date.now(),
+            horseId: entry.horseId ?? entry.HorseId,
+            raceId: entry.raceId ?? entry.RaceId,
+            horse: entry.horseName ?? entry.HorseName ?? "Không rõ",
+            tournament:
+              entry.tournamentName ??
+              entry.TournamentName ??
+              entry.tournament ??
+              "Giải đấu",
+            race: entry.raceName ?? entry.RaceName ?? "Cuộc đua",
+            status:
+              (entry.status ?? entry.Status ?? "Pending") === "Approved"
+                ? "Đã duyệt"
+                : (entry.status ?? entry.Status ?? "Pending") === "Rejected"
+                  ? "Từ chối"
+                  : "Chờ duyệt",
+            submitted:
+              entry.submittedDate ??
+              entry.SubmittedDate ??
+              new Date().toISOString().slice(0, 10),
+          }));
+          setRegistrations(parsedRegistrations);
         }
       } catch {
         if (isMounted) setRegistrations([]);
@@ -141,13 +164,13 @@ function OwnerTournamentRegisterPage() {
   );
 
   const hasExistingRegistration = useMemo(() => {
-    if (!selectedHorseId || !selectedTournamentId) return false;
+    if (!selectedHorseId || !selectedRaceId) return false;
     return registrations.some(
       (registration) =>
         String(registration.horseId) === String(selectedHorseId) &&
-        String(registration.tournamentId) === String(selectedTournamentId),
+        String(registration.raceId) === String(selectedRaceId),
     );
-  }, [registrations, selectedHorseId, selectedTournamentId]);
+  }, [registrations, selectedHorseId, selectedRaceId]);
 
   const eligibilityChecks = [
     {
@@ -168,34 +191,30 @@ function OwnerTournamentRegisterPage() {
       tone: selectedHorse ? "success" : "warning",
     },
     {
-      label: "Giải đấu",
+      label: "Cuộc đua giải đấu",
       value: selectedTournament
-        ? `${selectedTournament.name} · ${selectedTournament.raceCount} cuộc đua`
+        ? `${selectedTournament.raceCount} cuộc đua đã lên lịch`
         : "Không có giải đấu được chọn",
       tone: selectedTournament ? "success" : "warning",
     },
   ];
 
   const handleSubmitRegistration = async () => {
-    if (!selectedHorse || !selectedTournament) return;
+    if (!selectedHorse || !selectedTournament || !selectedRaceId) return;
     setIsSubmitting(true);
     setMsg("");
     try {
-      await request("/api/tournament-registrations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tournamentId: selectedTournament.id,
-          horseId: selectedHorse.id,
-        }),
-      });
+      await registerHorseForRace(selectedHorse.id, selectedRaceId, {});
       setRegistrations((current) => [
         {
           id: Date.now(),
-          tournamentId: selectedTournament.id,
           horseId: selectedHorse.id,
+          raceId: selectedRaceId,
           horse: selectedHorse.name,
           tournament: selectedTournament.name,
+          race:
+            races.find((r) => (r.id ?? r.Id) === selectedRaceId)?.name ??
+            selectedRaceId,
           status: "Chờ duyệt",
           submitted: new Date().toISOString().slice(0, 10),
         },
@@ -203,7 +222,13 @@ function OwnerTournamentRegisterPage() {
       ]);
       setMsg("Đăng ký đã được gửi thành công! Admin sẽ duyệt ngựa của bạn.");
     } catch (err) {
-      setMsg("Lỗi: " + (err?.message ?? "Không thể gửi đăng ký."));
+      if (err.message?.includes("already registered")) {
+        setMsg(
+          "Ngựa này đã được đăng ký cho cuộc đua này. Vui lòng chọn ngựa khác hoặc cuộc đua khác.",
+        );
+      } else {
+        setMsg("Lỗi: " + err.message);
+      }
     } finally {
       setIsSubmitting(false);
       setShowConfirm(false);
@@ -215,7 +240,7 @@ function OwnerTournamentRegisterPage() {
       <div>
         <div className="owner-content">
           <section className="page-header">
-            <h1>Đăng ký ngựa vào giải đấu</h1>
+            <h1>Đăng ký ngựa vào cuộc đua</h1>
             <p>Chọn ngựa, kiểm tra điều kiện và theo dõi từng yêu cầu.</p>
           </section>
 
@@ -223,7 +248,7 @@ function OwnerTournamentRegisterPage() {
             <form className="register-form">
               <div className="register-form__heading">
                 <span className="pill">Đăng ký mới</span>
-                <h2>Đăng ký giải đấu</h2>
+                <h2>Đăng ký cuộc đua</h2>
                 <p>Chỉ những ngựa đã được duyệt mới có thể đăng ký.</p>
               </div>
               <div className="form-field">
@@ -280,6 +305,32 @@ function OwnerTournamentRegisterPage() {
                   <p className="form-error">{tournamentError}</p>
                 ) : null}
               </div>
+              <div className="form-field">
+                <label className="label-required" htmlFor="select-race">
+                  Chọn cuộc đua
+                </label>
+                <select
+                  id="select-race"
+                  className="form-select"
+                  value={selectedRaceId}
+                  onChange={(event) => setSelectedRaceId(event.target.value)}
+                  disabled={!selectedTournamentId || races.length === 0}
+                >
+                  {!selectedTournamentId ? (
+                    <option value="">Chọn giải đấu trước</option>
+                  ) : races.length === 0 ? (
+                    <option value="">Không có cuộc đua nào</option>
+                  ) : (
+                    <option value="">-- Chọn cuộc đua --</option>
+                  )}
+                  {races.map((race) => (
+                    <option key={race.id ?? race.Id} value={race.id ?? race.Id}>
+                      {race.name ?? race.Name} ·{" "}
+                      {race.status ?? race.Status ?? "Đã lên lịch"}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="selection-summary">
                 <div>
                   <span>Ngựa</span>
@@ -321,6 +372,7 @@ function OwnerTournamentRegisterPage() {
                   disabled={
                     !selectedHorse ||
                     !selectedTournament ||
+                    !selectedRaceId ||
                     isSubmitting ||
                     hasExistingRegistration
                   }
@@ -333,7 +385,7 @@ function OwnerTournamentRegisterPage() {
                 </button>
                 {hasExistingRegistration && (
                   <p className="form-error">
-                    Ngựa này đã được đăng ký cho giải đấu đã chọn.
+                    Ngựa này đã được đăng ký cho cuộc đua đã chọn.
                   </p>
                 )}
               </div>
@@ -358,8 +410,7 @@ function OwnerTournamentRegisterPage() {
               <div className="eligibility-note">
                 <h4>Nhắc nhở</h4>
                 <p className="muted">
-                  Sau khi được admin duyệt, ngựa của bạn có thể được chọn vào
-                  các cuộc đua trong giải.
+                  Xác nhận lịch đua và tình trạng kỵ sĩ trước khi gửi.
                 </p>
               </div>
             </div>
@@ -368,7 +419,7 @@ function OwnerTournamentRegisterPage() {
           <section className="registration-status">
             <div className="section-heading">
               <h2>Trạng thái đăng ký</h2>
-              <p>Theo dõi yêu cầu giải đấu đã gửi từ chuồng ngựa.</p>
+              <p>Theo dõi yêu cầu cuộc đua đã gửi từ chuồng ngựa.</p>
             </div>
             <div className="registration-table">
               {registrations.length === 0 ? (
@@ -383,6 +434,10 @@ function OwnerTournamentRegisterPage() {
                     <div>
                       <span>Giải đấu</span>
                       <strong>{registration.tournament}</strong>
+                    </div>
+                    <div>
+                      <span>Cuộc đua</span>
+                      <strong>{registration.race}</strong>
                     </div>
                     <div>
                       <span>Đã gửi</span>
@@ -437,12 +492,15 @@ function OwnerTournamentRegisterPage() {
                 <p>{selectedTournament?.name}</p>
               </div>
               <div>
-                <h4>Mô tả</h4>
-                <p>{selectedTournament?.description}</p>
+                <h4>Cuộc đua</h4>
+                <p>
+                  {races.find((r) => (r.id ?? r.Id) === selectedRaceId)?.name ??
+                    "—"}
+                </p>
               </div>
               <div>
-                <h4>Cuộc đua trong giải</h4>
-                <p>{selectedTournament?.raceCount} đã lên lịch</p>
+                <h4>Mô tả</h4>
+                <p>{selectedTournament?.description}</p>
               </div>
             </div>
             <div className="modal-actions">
