@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Round> Rounds => Set<Round>();
     public DbSet<Race> Races => Set<Race>();
     public DbSet<RaceEntry> RaceEntries => Set<RaceEntry>();
+    public DbSet<TournamentHorseRegistration> TournamentHorseRegistrations => Set<TournamentHorseRegistration>();
     public DbSet<JockeyInvitation> JockeyInvitations => Set<JockeyInvitation>();
     public DbSet<Prediction> Predictions => Set<Prediction>();
     public DbSet<RaceResult> RaceResults => Set<RaceResult>();

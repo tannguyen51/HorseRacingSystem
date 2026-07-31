@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { request } from "../services/apiClient";
 import { Input } from "./ui/Primitives";
 
@@ -9,8 +9,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
   const [error, setError] = useState("");
   const [tracks, setTracks] = useState([]);
   const [referees, setReferees] = useState([]);
-  const [horses, setHorses] = useState([]);
-  const [busyHorseIds, setBusyHorseIds] = useState([]);
   const [showTrackForm, setShowTrackForm] = useState(false);
   const [newTrackName, setNewTrackName] = useState("");
 
@@ -38,13 +36,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
   });
 
   const [selectedRefereeIds, setSelectedRefereeIds] = useState(raceData?._selectedRefereeIds || []);
-  const [selectedHorseIds, setSelectedHorseIds] = useState(raceData?._selectedHorseIds || []);
-  const initialHorseIds = useMemo(() => raceData?._selectedHorseIds || [], [raceData]);
-
-  const effectiveBusyHorseIds = useMemo(() =>
-    isEdit ? busyHorseIds.filter(id => !initialHorseIds.includes(id)) : busyHorseIds,
-    [busyHorseIds, initialHorseIds, isEdit]
-  );
 
   const loadTracks = async () => {
     try {
@@ -60,26 +51,9 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
     } catch { /* empty */ }
   };
 
-  const loadHorses = async () => {
-    try {
-      const list = await request("/api/horses/all");
-      setHorses(Array.isArray(list?.data ?? list) ? (list?.data ?? list) : []);
-    } catch { /* empty */ }
-  };
-
-  const loadBusyHorses = async () => {
-    try {
-      const res = await request("/api/races/management/busy-horses");
-      const ids = Array.isArray(res) ? res : res?.data ?? [];
-      setBusyHorseIds(ids);
-    } catch { /* empty */ }
-  };
-
   useEffect(() => {
     loadTracks();
     loadReferees();
-    loadHorses();
-    loadBusyHorses();
   }, []);
 
   const updateForm = (field, value) => {
@@ -140,10 +114,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
       const raceId = raceData?.id || raceData?.Id;
       if (isEdit && raceId) {
         await request(`/api/races/management/${raceId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(racePayload) });
-        const toRemove = initialHorseIds.filter(id => !selectedHorseIds.includes(id));
-        const toAdd = selectedHorseIds.filter(id => !initialHorseIds.includes(id));
-        for (const horseId of toRemove) { await request(`/api/races/management/${raceId}/remove-horse/${horseId}`, { method: "DELETE" }).catch(() => {}); }
-        if (toAdd.length > 0) { await request(`/api/races/management/${raceId}/bulk-assign-horses`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ horseIds: toAdd }) }); }
         const initRefIds = raceData?._selectedRefereeIds || [];
         const refToRemove = initRefIds.filter(id => !selectedRefereeIds.includes(id));
         for (const refId of refToRemove) {
@@ -159,7 +129,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
         const newRaceId = raceRes?.data?.id ?? raceRes?.id;
         if (!newRaceId) throw new Error("Không lấy được ID cuộc đua");
         if (selectedRefereeIds.length > 0) { await Promise.all(selectedRefereeIds.map((refId) => request(`/api/races/${newRaceId}/referees`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refereeId: refId }) }))); }
-        if (selectedHorseIds.length > 0) { await request(`/api/races/management/${newRaceId}/bulk-assign-horses`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ horseIds: selectedHorseIds }) }); }
       }
       onSuccess();
     } catch (err) {
@@ -229,31 +198,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
 
           <Input label="Thời gian bắt đầu" type="datetime-local" value={form.scheduledAt} onChange={(e) => updateForm("scheduledAt", e.target.value)} required />
           <Input label="Thời gian kết thúc (dự kiến)" type="datetime-local" value={form.scheduledEndAt} onChange={(e) => updateForm("scheduledEndAt", e.target.value)} />
-
-          {/* Horses */}
-          <div style={{marginBottom:16}}>
-            <label style={{display:"block",fontSize:13,fontWeight:600,marginBottom:6,color:"#34415b"}}>Chọn ngựa ({selectedHorseIds.length}) — chỉ ngựa đã có kỵ sĩ</label>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))",gap:8,maxHeight:200,overflowY:"auto",padding:8,border:"1px solid rgba(143,100,32,0.1)",borderRadius:8}}>
-              {horses.filter((h) => h.assignedJockeyId || h.AssignedJockeyId).length === 0 ? (
-                <p style={{fontSize:12,color:"#657086",gridColumn:"1 / -1",margin:0,padding:8}}>Không có ngựa nào có kỵ sĩ. Hãy để chủ ngựa thuê kỵ sĩ trước khi thêm vào cuộc đua.</p>
-              ) : horses.filter((h) => h.assignedJockeyId || h.AssignedJockeyId).map((h) => {
-                const id = h.id || h.Id;
-                const isBusy = effectiveBusyHorseIds.includes(id);
-                const checked = selectedHorseIds.includes(id);
-                const jockeyName = h.assignedJockeyName || h.AssignedJockeyName;
-                return (
-                  <label key={id} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:checked?"#f0fdf4":"transparent",border:`2px solid ${isBusy?"#fecaca":(checked?"#10b981":"#e5e7eb")}`,borderRadius:6,cursor:isBusy&&!checked?"not-allowed":"pointer",fontSize:13,opacity:isBusy&&!checked?0.5:1}}>
-                    <input type="checkbox" checked={checked} disabled={isBusy && !checked} onChange={(e) => { e.target.checked ? setSelectedHorseIds([...selectedHorseIds, id]) : setSelectedHorseIds(selectedHorseIds.filter((i) => i !== id)); }} />
-                    <div>
-                      <div style={{fontWeight:600}}>{h.name || h.Name}</div>
-                      <div style={{fontSize:10,color:"#8f6420"}}>Kỵ sĩ: {jockeyName || "Đã có kỵ sĩ"}</div>
-                      {isBusy && !checked && <div style={{fontSize:10,color:"#ef4444"}}>⛔ Đang trong cuộc đua khác</div>}
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Referees */}
           <div style={{marginBottom:16}}>

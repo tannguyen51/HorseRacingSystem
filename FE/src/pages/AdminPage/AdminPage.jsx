@@ -19,9 +19,9 @@ import {
   getTournamentRounds,
   approveRaceResult,
   rejectRaceResult,
-  getPendingRaceEntries,
-  approveRaceEntry,
-  rejectRaceEntry,
+  getPendingTournamentRegistrations,
+  approveTournamentRegistration,
+  rejectTournamentRegistration,
   rejectJockey,
   setUserActive,
   startRace,
@@ -964,23 +964,13 @@ function ScheduleManagement({ type }) {
 
   useEffect(() => { getAdminTournaments().then((data) => { const list = Array.isArray(data) ? data : []; setTournaments(list); setSelected(list[0]?.id ?? list[0]?.Id ?? ""); }).catch((err) => setMessage(err.message)); }, []);
   useEffect(() => {
-    if (type !== "race") return;
+    if (type !== "race" || !selected) return;
 
     const loadAssignmentOptions = async () => {
       try {
-        const users = await getAdminUsers();
-        const owners = (Array.isArray(users) ? users : []).filter(
-          (user) => canOwnHorses(user.role ?? user.Role),
-        );
-        const horseGroups = await Promise.all(
-          owners.map((owner) => getOwnerHorses(owner.id ?? owner.Id)),
-        );
-        const horses = horseGroups
-          .flat()
-          .filter(
-            (horse) =>
-              (horse.approvalStatus ?? horse.ApprovalStatus) === "Approved",
-          );
+        // Chỉ hiển thị ngựa đã được admin duyệt cho giải đấu đang chọn
+        const res = await request(`/api/tournament-registrations/tournament/${selected}/approved-horses`);
+        const horses = Array.isArray(res?.data ?? res) ? (res?.data ?? res) : [];
         const jockeys = (await getAvailableJockeys()).filter(
           (jockey) =>
             jockey.approvalStatus === 2 ||
@@ -995,7 +985,7 @@ function ScheduleManagement({ type }) {
     };
 
     loadAssignmentOptions();
-  }, [type]);
+  }, [selected, type]);
   useEffect(() => {
     if (!selected) return;
     const fetcher = type === "round" ? getTournamentRounds : getTournamentRaces;
@@ -1353,34 +1343,34 @@ function RegistrationManagement() {
   const [message, setMessage] = useState("");
 
   const load = () =>
-    getPendingRaceEntries()
+    getPendingTournamentRegistrations()
       .then((data) => setEntryItems(Array.isArray(data) ? data : []))
       .catch((err) => setMessage(err.message));
 
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, []);
 
   const filteredEntries = useMemo(() =>
     entryItems.filter((item) => {
-      const search = `${item.horseName ?? item.HorseName ?? ""} ${item.ownerName ?? item.OwnerName ?? ""} ${item.jockeyName ?? item.JockeyName ?? ""} ${item.tournamentName ?? item.TournamentName ?? ""} ${item.raceName ?? item.RaceName ?? ""}`.toLowerCase();
+      const search = `${item.horseName ?? item.HorseName ?? ""} ${item.ownerName ?? item.OwnerName ?? ""} ${item.tournamentName ?? item.TournamentName ?? ""}`.toLowerCase();
       return search.includes(query.toLowerCase());
     }),
   [query, entryItems]);
 
   const approveEntry = async (entry) => {
-    const id = entry.entryId ?? entry.EntryId;
+    const id = entry.id ?? entry.Id;
     try {
-      await approveRaceEntry(id);
-      setMessage("Đã phê duyệt đăng ký ngựa vào giải đấu.");
+      await approveTournamentRegistration(id);
+      setMessage("Đã duyệt ngựa tham gia giải đấu.");
       load();
     } catch (err) { setMessage(err.message); }
   };
 
   const rejectEntry = async (entry) => {
-    const id = entry.entryId ?? entry.EntryId;
+    const id = entry.id ?? entry.Id;
     const reason = window.prompt("Lý do từ chối (tùy chọn):");
     if (reason === null) return;
     try {
-      await rejectRaceEntry(id, reason || "Bị từ chối bởi admin");
+      await rejectTournamentRegistration(id, reason || "Bị từ chối bởi admin");
       setMessage("Đã từ chối đăng ký.");
       load();
     } catch (err) { setMessage(err.message); }
@@ -1388,27 +1378,26 @@ function RegistrationManagement() {
 
   return (
     <>
-      <PageTitle eyebrow="Quản lý giải đấu" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt đăng ký ngựa vào giải đấu." />
+      <PageTitle eyebrow="Quản lý giải đấu" title="Phê duyệt đăng ký" description="Xem xét và phê duyệt ngựa tham gia giải đấu." />
       <div className="admin-toolbar">
-        <input placeholder="Tìm kiếm theo ngựa, chủ ngựa, kỵ sĩ hoặc giải đấu..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input placeholder="Tìm kiếm theo ngựa, chủ ngựa hoặc giải đấu..." value={query} onChange={(e) => setQuery(e.target.value)} />
         <span>{filteredEntries.length} đăng ký</span>
       </div>
       <Notice message={message} />
 
       <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Ngựa</th><th>Chủ ngựa</th><th>Kỵ sĩ</th><th>Giải đấu</th><th>Cuộc đua</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <thead><tr><th>Ngựa</th><th>Chủ ngựa</th><th>Giải đấu</th><th>Ngày đăng ký</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
             <tbody>
               {filteredEntries.map((item) => {
-                const id = item.entryId ?? item.EntryId;
+                const id = item.id ?? item.Id;
                 return (
                   <tr key={id}>
                     <td><strong>{item.horseName ?? item.HorseName ?? "N/A"}</strong></td>
                     <td>{item.ownerName ?? item.OwnerName ?? "-"}</td>
-                    <td>{item.jockeyName ?? item.JockeyName ?? "Chưa có"}</td>
                     <td>{item.tournamentName ?? item.TournamentName ?? "-"}</td>
-                    <td>{item.raceName ?? item.RaceName ?? "-"}</td>
-                    <td><span className="status status--pending">Pending</span></td>
+                    <td>{item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "-"}</td>
+                    <td><span className="status status--pending">Chờ duyệt</span></td>
                     <td>
                       <div className="admin-actions">
                         <button onClick={() => approveEntry(item)}>Phê duyệt</button>
@@ -1419,7 +1408,7 @@ function RegistrationManagement() {
                 );
               })}
               {filteredEntries.length === 0 && (
-                <tr><td colSpan={7}>Không tìm thấy đăng ký ngựa nào.</td></tr>
+                <tr><td colSpan={6}>Không có đăng ký ngựa nào đang chờ duyệt.</td></tr>
               )}
             </tbody>
           </table>

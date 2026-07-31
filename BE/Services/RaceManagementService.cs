@@ -86,6 +86,16 @@ public class RaceManagementService : IRaceManagementService
             };
 
             await _raceRepo.AddAsync(race);
+
+            // Tạo cuộc đua → giải đấu chuyển sang trạng thái hoạt động
+            if (tournament.Status == TournamentStatus.Draft || tournament.Status == TournamentStatus.Published)
+            {
+                tournament.Status = TournamentStatus.Ongoing;
+                tournament.IsActive = true;
+                tournament.StartedAt = DateTime.UtcNow;
+                await _tournamentRepo.UpdateAsync(tournament);
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return new ServiceResult<RaceDetailResponse>(201, ApiResult<RaceDetailResponse>.Ok(MapToDetailResponse(race)));
