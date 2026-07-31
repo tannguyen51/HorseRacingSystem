@@ -848,6 +848,18 @@ function TournamentManagement() {
     setSelectedT(item);
   };
 
+  const changeStatus = async (id, newStatus) => {
+    try {
+      await request(`/api/tournaments/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newStatus }),
+      });
+      setMessage("Đã cập nhật trạng thái giải đấu.");
+      load();
+    } catch (err) { setMessage(err.message); }
+  };
+
   return (
     <>
       <PageTitle eyebrow="Quản lý giải đấu" title="Giải đấu" description="Tạo giải đấu và điều phối vòng đấu, cuộc đua." action={<button className="primary-button" onClick={() => { setEditingId(""); setShowForm(true); }}>Tạo giải đấu</button>} />
@@ -878,7 +890,18 @@ function TournamentManagement() {
         const id = item.id ?? item.Id;
         return <article key={id} className="admin-tournament-card" role="button" tabIndex={0} style={{ position: "relative", overflow: "hidden", cursor:"pointer" }} onClick={() => viewT(item)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); viewT(item); } }}>
           {item.imageUrl ?? item.ImageUrl ? <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${(item.imageUrl ?? item.ImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15, pointerEvents: "none" }} /> : null}
-          <div style={{ position: "relative", zIndex: 1 }}><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Hoạt động" : "Không hoạt động"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "Không có mô tả"}</p></div><dl style={{ position: "relative", zIndex: 1 }}><div><dt>Bắt đầu</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Vòng đấu</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Cuộc đua</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions" style={{ position: "relative", zIndex: 1 }}><button onClick={() => edit(item)}>Sửa</button><button className="admin-danger" onClick={() => remove(id)}>Xóa</button></div></article>;
+          <div style={{ position: "relative", zIndex: 1 }}><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Hoạt động" : "Không hoạt động"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "Không có mô tả"}</p></div><dl style={{ position: "relative", zIndex: 1 }}><div><dt>Bắt đầu</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Vòng đấu</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Cuộc đua</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions" style={{ position: "relative", zIndex: 1 }}>
+            {(item.nextTransitions ?? item.NextTransitions ?? []).map((t) => (
+              <button
+                key={t.status}
+                style={{ background: t.isPrimary ? "rgba(16,185,129,0.12)" : "transparent", color: t.isPrimary ? "#0f7a5a" : "#34415b" }}
+                onClick={(e) => { e.stopPropagation(); changeStatus(id, t.status); }}
+              >
+                {t.label}
+              </button>
+            ))}
+            <button onClick={() => edit(item)}>Sửa</button><button className="admin-danger" onClick={() => remove(id)}>Xóa</button>
+          </div></article>;
       })}</section>
       {selectedT && (
         <TournamentDetail
