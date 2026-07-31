@@ -70,17 +70,19 @@ export default function TournamentDetail({ t, onBack, setMessage, getTournamentR
       const toggleExpand=async()=>{
         if(exp){setExpandedRaceId(null);return;}setExpandedRaceId(id);
         if(!raceDetailData[id]){try{
-          const[data,entries,refs,report]=await Promise.all([
+          const[data,entries,refs,report,result]=await Promise.all([
             request(`/api/races/management/${id}`),
             request(`/api/referees/race/${id}/entries`),
             request(`/api/referees/race/${id}/assignments`),
             request(`/api/referees/race/${id}/report`).catch(()=>null),
+            request(`/api/races/${id}/result`).catch(()=>null),
           ]);
           setRaceDetailData(prev=>({...prev,[id]:{
             detail:data?.data??data,
             entries:Array.isArray(entries?.data??entries)?(entries?.data??entries):[],
             refAssignments:Array.isArray(refs?.data??refs)?(refs?.data??refs):[],
             report:report?.data??report,
+            result:result?.data??result,
           }}));
         }catch{ /* ignore */ }}
       };
@@ -123,6 +125,8 @@ export default function TournamentDetail({ t, onBack, setMessage, getTournamentR
           </div>}
           {(race.roundNames||race.RoundNames)&&<div style={{marginTop:8}}><h4 style={{fontSize:12,margin:"0 0 4px",color:"#172033"}}>Vòng đấu</h4><div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{(race.roundNames||race.RoundNames||"").split(",").map((n,i)=><span key={i} style={{padding:"2px 8px",borderRadius:6,background:"rgba(143,100,32,0.08)",fontSize:11,color:"#172033"}}>{n.trim()}</span>)}</div></div>}
           {det.refAssignments?.length>0&&<div style={{marginTop:6}}><h4 style={{fontSize:12,margin:"0 0 4px",color:"#172033"}}>Trọng tài</h4>{det.refAssignments.map((r,i)=>{const ss=(r.status||r.Status||"").toLowerCase();return(<div key={i} style={{display:"flex",alignItems:"center",gap:4,marginBottom:2,fontSize:11}}><span style={{width:6,height:6,borderRadius:"50%",background:ss==="confirmed"?"#10b981":"#f59e0b"}}/><span style={{color:"#172033"}}>{r.refereeName||r.RefereeName}</span><span style={{color:"#657086"}}>{ss==="confirmed"?"✅":"⏳"}</span></div>)})}</div>}
+          {(st==="resultpendingapproval"||st==="resultapproved")&&det.result&&(()=>{const wid=det.result.winningHorseId||det.result.WinningHorseId;const we=det.entries.find(e=>(e.horseId||e.HorseId)===wid);return(<div style={{marginTop:8,padding:"8px 12px",borderRadius:8,background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.15)",fontSize:12}}><strong style={{color:"#0f7a5a"}}>Kết quả trọng tài nộp:</strong> <strong style={{color:"#172033"}}>{we?.horseName||we?.HorseName||"Chưa xác định"}</strong>{we?.jockeyName||we?.JockeyName?<span style={{color:"#657086"}}> — {we?.jockeyName||we?.JockeyName}</span>:null}{det.result.notes||det.result.Notes?<div style={{color:"#657086",marginTop:2}}>{det.result.notes||det.result.Notes}</div>:null}</div>)})()}
+          {det.report&&<div style={{marginTop:8,padding:"8px 12px",borderRadius:8,background:"rgba(139,92,246,0.06)",border:"1px solid rgba(139,92,246,0.15)",fontSize:12}}><strong style={{color:"#6d28d9"}}>📋 Báo cáo trọng tài</strong><p style={{margin:"4px 0 0",color:"#34415b"}}>{det.report.details||det.report.Details||"—"}</p>{(det.report.incidents||det.report.Incidents)&&<p style={{margin:"4px 0 0",color:"#657086"}}>Sự cố: {det.report.incidents||det.report.Incidents}</p>}<span style={{display:"block",marginTop:4,fontSize:10,color:"#94a3b8"}}>{det.report.refereeName||det.report.RefereeName||"Trọng tài"}{det.report.completedAt||det.report.CompletedAt?` · ${new Date(det.report.completedAt||det.report.CompletedAt).toLocaleString("vi-VN")}`:""}</span></div>}
         </div>}
       </div>;
     })}</div>}

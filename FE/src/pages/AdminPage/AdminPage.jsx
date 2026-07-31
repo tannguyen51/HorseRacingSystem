@@ -927,6 +927,8 @@ function ScheduleManagement({ type }) {
   const [raceEntries, setRaceEntries] = useState([]);
   const [raceReferees, setRaceReferees] = useState([]);
   const [raceViolations, setRaceViolations] = useState([]);
+  const [raceResult, setRaceResult] = useState(null);
+  const [raceReport, setRaceReport] = useState(null);
   const [assignedHorseIds, setAssignedHorseIds] = useState(new Set());
   const [busyHorseIdsAll, setBusyHorseIdsAll] = useState(new Set());
   const [showRaceForm, setShowRaceForm] = useState(false);
@@ -1248,17 +1250,21 @@ function ScheduleManagement({ type }) {
           if (expandedRaceId === itemId) { setExpandedRaceId(null); return; }
           setExpandedRaceId(itemId);
           try {
-            const [entriesRes, refsRes, violRes] = await Promise.all([
+            const [entriesRes, refsRes, violRes, resultRes, reportRes] = await Promise.all([
               request(`/api/referees/race/${itemId}/entries`),
               request(`/api/referees/race/${itemId}/assignments`),
               request(`/api/referees/race/${itemId}/violations`),
+              request(`/api/races/${itemId}/result`).catch(() => null),
+              request(`/api/referees/race/${itemId}/report`).catch(() => null),
             ]);
             setRaceEntries(Array.isArray(entriesRes) ? entriesRes : entriesRes?.data ?? []);
             const refs = Array.isArray(refsRes) ? refsRes : refsRes?.data ?? [];
             setRaceReferees(Array.isArray(refs) ? refs : []);
             const viols = Array.isArray(violRes) ? violRes : violRes?.data ?? [];
             setRaceViolations(Array.isArray(viols) ? viols : []);
-          } catch { setRaceEntries([]); setRaceReferees([]); setRaceViolations([]); }
+            setRaceResult(resultRes?.data ?? resultRes ?? null);
+            setRaceReport(reportRes?.data ?? reportRes ?? null);
+          } catch { setRaceEntries([]); setRaceReferees([]); setRaceViolations([]); setRaceResult(null); setRaceReport(null); }
         }}>
           <span className="badge">{raceStatusLabel[itemStatus] ?? item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
           <h3>{item.name ?? item.Name}</h3>
@@ -1360,6 +1366,33 @@ function ScheduleManagement({ type }) {
                       <p style={{margin:"4px 0 0",color:"#34415b"}}>{v.description ?? v.Description}</p>
                     </div>
                   ))}
+                </div>
+              )}
+              {(itemStatus === "resultpendingapproval" || itemStatus === "resultapproved") && raceResult && (() => {
+                const winnerHorseId = raceResult.winningHorseId ?? raceResult.WinningHorseId;
+                const winnerEntry = raceEntries.find(e => (e.horseId ?? e.HorseId) === winnerHorseId);
+                return (
+                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,background:"rgba(16,185,129,0.06)",border:"1px solid rgba(16,185,129,0.15)"}}>
+                    <h4 style={{fontSize:14,margin:"0 0 6px",color:"#0f7a5a"}}>Kết quả trọng tài nộp</h4>
+                    <p style={{margin:0,fontSize:13,color:"#172033"}}>
+                      🏆 <strong>{winnerEntry?.horseName ?? winnerEntry?.HorseName ?? "Chưa xác định"}</strong>
+                      {winnerEntry?.jockeyName ?? winnerEntry?.JockeyName ? <span> — Kỵ sĩ: {winnerEntry?.jockeyName ?? winnerEntry?.JockeyName}</span> : null}
+                      {raceResult.notes ?? raceResult.Notes ? <span style={{display:"block",fontSize:12,color:"#657086",marginTop:4}}>Ghi chú: {raceResult.notes ?? raceResult.Notes}</span> : null}
+                    </p>
+                  </div>
+                );
+              })()}
+              {raceReport && (
+                <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,background:"rgba(139,92,246,0.06)",border:"1px solid rgba(139,92,246,0.15)"}}>
+                  <h4 style={{fontSize:14,margin:"0 0 6px",color:"#6d28d9"}}>📋 Báo cáo trọng tài</h4>
+                  <p style={{margin:0,fontSize:13,color:"#34415b"}}>{raceReport.details ?? raceReport.Details ?? "—"}</p>
+                  {(raceReport.incidents ?? raceReport.Incidents) && (
+                    <p style={{margin:"6px 0 0",fontSize:12,color:"#657086"}}>Sự cố: {raceReport.incidents ?? raceReport.Incidents}</p>
+                  )}
+                  <span style={{display:"block",marginTop:6,fontSize:11,color:"#94a3b8"}}>
+                    {raceReport.refereeName ?? raceReport.RefereeName ?? "Trọng tài"}
+                    {raceReport.completedAt ?? raceReport.CompletedAt ? ` · ${new Date(raceReport.completedAt ?? raceReport.CompletedAt).toLocaleString("vi-VN")}` : ""}
+                  </span>
                 </div>
               )}
             </div>
