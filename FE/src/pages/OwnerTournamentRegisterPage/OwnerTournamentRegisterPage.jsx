@@ -44,7 +44,6 @@ function OwnerTournamentRegisterPage() {
   const [isTournamentLoading, setIsTournamentLoading] = useState(true);
   const [tournamentError, setTournamentError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRegistrationsLoading, setIsRegistrationsLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
   const loadRaces = async () => {
@@ -70,7 +69,6 @@ function OwnerTournamentRegisterPage() {
     const fetchOwnerData = async () => {
       setIsHorseLoading(true);
       setIsTournamentLoading(true);
-      setIsRegistrationsLoading(true);
       setHorseError("");
       setTournamentError("");
       setMsg("");
@@ -147,13 +145,9 @@ function OwnerTournamentRegisterPage() {
           }));
           setRegistrations(parsedRegistrations);
         }
-      } catch (fetchError) {
+      } catch {
         if (isMounted) {
           setRegistrations([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsRegistrationsLoading(false);
         }
       }
     };

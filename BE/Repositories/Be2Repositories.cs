@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HorseRacing.Data;
 using HorseRacing.Models;
+using Microsoft.EntityFrameworkCore;
 using HorseRacing.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -231,8 +232,19 @@ public class RefereeAssignmentRepository : IRefereeAssignmentRepository
     {
         return await _context.Set<RefereeAssignment>()
             .Where(a => a.RefereeId == refereeId)
-            .Include(a => a.Race)
+            .Include(a => a.Race)!.ThenInclude(r => r!.Tournament)
+            .Include(a => a.Race)!.ThenInclude(r => r!.Round)
             .Include(a => a.Referee)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<RefereeAssignment>> GetAllAsync()
+    {
+        return await _context.Set<RefereeAssignment>()
+            .Include(a => a.Race)!.ThenInclude(r => r!.Tournament)
+            .Include(a => a.Race)!.ThenInclude(r => r!.Round)
+            .Include(a => a.Referee)!.ThenInclude(r => r!.User)
+            .OrderByDescending(a => a.AssignedAt)
             .ToListAsync();
     }
 
@@ -447,8 +459,9 @@ public class RaceReportRepository : IRaceReportRepository
     public async Task<RaceReport?> GetByRaceAsync(Guid raceId)
     {
         return await _context.Set<RaceReport>()
-            .Where(r => r.RaceId == raceId && r.IsOfficialReport)
+            .Where(r => r.RaceId == raceId)
             .Include(r => r.Referee)
+            .OrderByDescending(r => r.CreatedAt)
             .FirstOrDefaultAsync();
     }
 

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HorseRacing.Data;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HorseRacing.Services;
 
@@ -16,8 +18,11 @@ public class TournamentService : ITournamentService
     private readonly IUserRepository _userRepo;
     private readonly IRaceRepository _raceRepo;
     private readonly IRaceEntryRepository _raceEntryRepo;
+    private readonly IRefereeAssignmentRepository _assignmentRepo;
+    private readonly IRoundRepository _roundRepo;
     private readonly IHorseRepository _horseRepo;
     private readonly IJockeyRepository _jockeyRepo;
+    private readonly ApplicationDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
 
     public TournamentService(
@@ -26,8 +31,11 @@ public class TournamentService : ITournamentService
         IUserRepository userRepo,
         IRaceRepository raceRepo,
         IRaceEntryRepository raceEntryRepo,
+        IRefereeAssignmentRepository assignmentRepo,
+        IRoundRepository roundRepo,
         IHorseRepository horseRepo,
         IJockeyRepository jockeyRepo,
+        ApplicationDbContext db,
         IUnitOfWork unitOfWork)
     {
         _tournamentRepo = tournamentRepo;
@@ -35,8 +43,11 @@ public class TournamentService : ITournamentService
         _userRepo = userRepo;
         _raceRepo = raceRepo;
         _raceEntryRepo = raceEntryRepo;
+        _assignmentRepo = assignmentRepo;
+        _roundRepo = roundRepo;
         _horseRepo = horseRepo;
         _jockeyRepo = jockeyRepo;
+        _db = db;
         _unitOfWork = unitOfWork;
     }
 
@@ -208,16 +219,28 @@ public class TournamentService : ITournamentService
             if (tournament == null)
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy giải đấu");
 
-            // Only allow delete when Draft and has 0 races
-            if (tournament.Status != TournamentStatus.Draft)
-                return ServiceResult<bool>.Fail(400, "Chỉ có thể xóa giải đấu ở trạng thái Bản nháp");
+            // Get all race IDs in this tournament
+            var raceIds = (await _raceRepo.GetByTournamentAsync(id)).Select(r => r.Id).ToList();
 
-            var races = await _raceRepo.GetByTournamentAsync(id);
-            if (races.Any())
-                return ServiceResult<bool>.Fail(400, "Không thể xóa giải đấu đã có cuộc đua");
+            // Delete in FK-safe order via raw SQL (bypasses RESTRICT constraints)
+            foreach (var raceId in raceIds)
+            {
+                await _db.ViolationRecords.Where(v => v.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.RaceResults.Where(r => r.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.RaceReports.Where(r => r.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.HorseHealthChecks.Where(h => h.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.RefereeAssignments.Where(a => a.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.Predictions.Where(p => p.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.RaceEntries.Where(e => e.RaceId == raceId).ExecuteDeleteAsync();
+                await _db.Races.Where(r => r.Id == raceId).ExecuteDeleteAsync();
+            }
 
-            await _tournamentRepo.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            // Delete rounds
+            await _db.Rounds.Where(r => r.TournamentId == id).ExecuteDeleteAsync();
+
+            // Delete tournament
+            await _db.Tournaments.Where(t => t.Id == id).ExecuteDeleteAsync();
+
             return ServiceResult<bool>.Ok(true);
         }
         catch (Exception ex)

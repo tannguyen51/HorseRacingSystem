@@ -75,5 +75,5 @@ public class JockeyInvitationCreateRequest
 
 public class RaceRegistrationRequest
 {
-    public bool OwnerConfirmed { get; set; } = true;
+    public bool OwnerConfirmed { get; set; } = false;
 }

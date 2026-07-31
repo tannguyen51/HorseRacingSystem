@@ -1,4 +1,4 @@
-import { colors, typography, radius } from "../../styles/designTokens";
+import { colors, typography } from "../../styles/designTokens";
 
 // WizardStepper - Progress indicator cho form wizard
 export function WizardStepper({ steps = [], current = 0, onStepClick }) {
@@ -43,7 +43,6 @@ export function WizardStepper({ steps = [], current = 0, onStepClick }) {
         {steps.map((step, idx) => {
           const isPast = idx < current;
           const isCurrent = idx === current;
-          const isFuture = idx > current;
 
           return (
             <div

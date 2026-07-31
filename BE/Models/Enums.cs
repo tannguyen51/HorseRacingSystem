@@ -20,7 +20,8 @@ public enum RaceStatus
     AwaitingResult = 5,
     ResultPendingApproval = 6,
     RegistrationOpen = 7,
-    RegistrationClosed = 8
+    RegistrationClosed = 8,
+    ResultApproved = 9
 }
 
 public enum TournamentStatus

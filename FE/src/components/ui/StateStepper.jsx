@@ -45,7 +45,6 @@ export function StateStepper({ states = [], currentStatus, onTransition }) {
         {states.map((state, idx) => {
           const isPast = idx < currentIndex;
           const isCurrent = idx === currentIndex;
-          const isFuture = idx > currentIndex;
           const isBranch = state.branch; // Cancelled state
 
           return (

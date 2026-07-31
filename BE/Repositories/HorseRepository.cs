@@ -87,6 +87,15 @@ public class HorseRepository : IHorseRepository
         return horse;
     }
 
+    public async Task<List<Horse>> GetAllApprovedAsync()
+    {
+        return await _db.Horses
+            .Where(h => h.ApprovalStatus == ApprovalStatus.Approved)
+            .Include(h => h.Owner)
+                .ThenInclude(o => o!.User)
+            .ToListAsync();
+    }
+
     public Task AddAsync(Horse horse)
     {
         _db.Horses.Add(horse);

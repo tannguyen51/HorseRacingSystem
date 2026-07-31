@@ -83,7 +83,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.BankAccount", b =>
@@ -117,7 +117,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("BankAccounts");
+                    b.ToTable("BankAccounts", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Contract", b =>
@@ -187,7 +187,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Horse", b =>
@@ -250,7 +250,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Horses");
+                    b.ToTable("Horses", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.HorseHealthCheck", b =>
@@ -294,7 +294,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("RefereeId");
 
-                    b.ToTable("HorseHealthChecks");
+                    b.ToTable("HorseHealthChecks", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.HorseTransfer", b =>
@@ -353,7 +353,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("ToOwnerId");
 
-                    b.ToTable("HorseTransfers");
+                    b.ToTable("HorseTransfers", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.InjuryRecord", b =>
@@ -436,7 +436,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("ReportedByUserId");
 
-                    b.ToTable("InjuryRecords");
+                    b.ToTable("InjuryRecords", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Jockey", b =>
@@ -523,7 +523,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Jockeys");
+                    b.ToTable("Jockeys", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.JockeyInvitation", b =>
@@ -561,14 +561,13 @@ namespace HorseRacing.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("HorseId");
+
                     b.HasIndex("JockeyId");
 
                     b.HasIndex("RaceId");
 
-                    b.HasIndex("HorseId", "JockeyId")
-                        .IsUnique();
-
-                    b.ToTable("JockeyInvitations");
+                    b.ToTable("JockeyInvitations", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Notification", b =>
@@ -640,7 +639,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Owner", b =>
@@ -704,7 +703,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Owners");
+                    b.ToTable("Owners", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Prediction", b =>
@@ -756,7 +755,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("SpectatorUserId");
 
-                    b.ToTable("Predictions");
+                    b.ToTable("Predictions", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Prize", b =>
@@ -813,7 +812,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Prizes");
+                    b.ToTable("Prizes", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Protest", b =>
@@ -878,7 +877,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("RuledByUserId");
 
-                    b.ToTable("Protests");
+                    b.ToTable("Protests", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Race", b =>
@@ -922,7 +921,14 @@ namespace HorseRacing.Migrations
                     b.Property<Guid?>("RoundId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("RoundNames")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("ScheduledEndAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Status")
@@ -930,6 +936,9 @@ namespace HorseRacing.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid>("TournamentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TrackId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -941,7 +950,9 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Races");
+                    b.HasIndex("TrackId");
+
+                    b.ToTable("Races", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.RaceEntry", b =>
@@ -1004,7 +1015,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("RaceId", "HorseId")
                         .IsUnique();
 
-                    b.ToTable("RaceEntries");
+                    b.ToTable("RaceEntries", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.RaceReport", b =>
@@ -1061,7 +1072,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("RefereeId");
 
-                    b.ToTable("RaceReports");
+                    b.ToTable("RaceReports", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.RaceResult", b =>
@@ -1122,7 +1133,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("WinningHorseId");
 
-                    b.ToTable("RaceResults");
+                    b.ToTable("RaceResults", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Referee", b =>
@@ -1174,7 +1185,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Referees");
+                    b.ToTable("Referees", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.RefereeAssignment", b =>
@@ -1217,7 +1228,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("RefereeId");
 
-                    b.ToTable("RefereeAssignments");
+                    b.ToTable("RefereeAssignments", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Round", b =>
@@ -1257,7 +1268,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Rounds");
+                    b.ToTable("Rounds", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Tournament", b =>
@@ -1335,7 +1346,33 @@ namespace HorseRacing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tournaments");
+                    b.ToTable("Tournaments", (string)null);
+                });
+
+            modelBuilder.Entity("HorseRacing.Models.Track", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("Length")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tracks", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Transaction", b =>
@@ -1391,7 +1428,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("UserId", "Status", "CompletedAt");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.User", b =>
@@ -1457,7 +1494,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.UserRegistration", b =>
@@ -1516,7 +1553,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("ReviewedByUserId");
 
-                    b.ToTable("UserRegistrations");
+                    b.ToTable("UserRegistrations", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.ViolationRecord", b =>
@@ -1562,7 +1599,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("RefereeId");
 
-                    b.ToTable("ViolationRecords");
+                    b.ToTable("ViolationRecords", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.Wallet", b =>
@@ -1588,7 +1625,7 @@ namespace HorseRacing.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wallets");
+                    b.ToTable("Wallets", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.WithdrawalRequest", b =>
@@ -1632,7 +1669,7 @@ namespace HorseRacing.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WithdrawalRequests");
+                    b.ToTable("WithdrawalRequests", (string)null);
                 });
 
             modelBuilder.Entity("HorseRacing.Models.AuditLog", b =>
@@ -1930,9 +1967,15 @@ namespace HorseRacing.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HorseRacing.Models.Track", "Track")
+                        .WithMany()
+                        .HasForeignKey("TrackId");
+
                     b.Navigation("Round");
 
                     b.Navigation("Tournament");
+
+                    b.Navigation("Track");
                 });
 
             modelBuilder.Entity("HorseRacing.Models.RaceEntry", b =>

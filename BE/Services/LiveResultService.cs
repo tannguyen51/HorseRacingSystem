@@ -178,7 +178,7 @@ public class LiveResultService : ILiveResultService
                 return ServiceResult<bool>.Error("Ngựa thắng không có trong danh sách tham gia cuộc đua này", 400);
             }
 
-            if (race.Status != RaceStatus.AwaitingResult && race.Status != RaceStatus.ResultPendingApproval)
+            if (race.Status != RaceStatus.AwaitingResult && race.Status != RaceStatus.ResultPendingApproval && race.Status != RaceStatus.InProgress)
             {
                 return ServiceResult<bool>.Error($"Không thể cập nhật kết quả cho cuộc đua với trạng thái '{race.Status}'.", 400);
             }
@@ -195,6 +195,7 @@ public class LiveResultService : ILiveResultService
                 existingResult.RejectedReason = null;
                 await _raceResultRepo.UpdateAsync(existingResult);
                 race.Status = RaceStatus.ResultPendingApproval;
+                if (race.ActualEndTime is null) race.ActualEndTime = DateTime.UtcNow;
                 race.UpdatedAt = DateTime.UtcNow;
                 await _raceRepo.UpdateAsync(race);
                 await _unitOfWork.SaveChangesAsync();
@@ -214,6 +215,7 @@ public class LiveResultService : ILiveResultService
 
             await _raceResultRepo.AddAsync(result);
             race.Status = RaceStatus.ResultPendingApproval;
+            if (race.ActualEndTime is null) race.ActualEndTime = DateTime.UtcNow;
             race.UpdatedAt = DateTime.UtcNow;
             await _raceRepo.UpdateAsync(race);
             await _unitOfWork.SaveChangesAsync();

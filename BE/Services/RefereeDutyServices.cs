@@ -35,16 +35,22 @@ public class RefereeHealthCheckService : IRefereeHealthCheckService
     {
         try
         {
+            if (!Enum.TryParse<HealthCheckStatus>(request.HealthCheckStatus, out var status))
+            {
+                return ServiceResult<HealthCheckResponse>.Error(
+                    $"Trạng thái không hợp lệ: {request.HealthCheckStatus}", 400);
+            }
+
             var healthCheck = new HorseHealthCheck
             {
                 Id = Guid.NewGuid(),
                 HorseId = request.HorseId,
                 RaceId = request.RaceId,
                 RefereeId = request.RefereeId,
-                Status = Enum.Parse<HealthCheckStatus>(request.HealthCheckStatus),
+                Status = status,
                 CheckedAt = DateTime.UtcNow,
                 Observations = request.Observations,
-                ApprovedToRace = request.HealthCheckStatus == "Passed"
+                ApprovedToRace = status == HealthCheckStatus.Passed
             };
 
             await _healthCheckRepo.AddAsync(healthCheck);

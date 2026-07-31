@@ -55,6 +55,42 @@ public class JockeysController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpGet("me")]
+    [Authorize(Roles = "Jockey")]
+    public async Task<ActionResult> GetMyProfile()
+    {
+        var userId = GetUserId();
+        var result = await _jockeyService.GetMyProfileAsync(userId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpGet("entries/pending")]
+    [Authorize(Roles = "Jockey")]
+    public async Task<ActionResult> GetPendingEntries()
+    {
+        var userId = GetUserId();
+        var result = await _jockeyService.GetPendingRaceEntriesAsync(userId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("entries/{entryId:guid}/confirm")]
+    [Authorize(Roles = "Jockey")]
+    public async Task<ActionResult> ConfirmEntry(Guid entryId)
+    {
+        var userId = GetUserId();
+        var result = await _jockeyService.ConfirmRaceEntryAsync(userId, entryId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("entries/{entryId:guid}/decline")]
+    [Authorize(Roles = "Jockey")]
+    public async Task<ActionResult> DeclineEntry(Guid entryId)
+    {
+        var userId = GetUserId();
+        var result = await _jockeyService.DeclineRaceEntryAsync(userId, entryId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     private Guid GetUserId()
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -22,6 +22,7 @@ function OwnerRaceConfirmationPage() {
           raceId: entry.raceId ?? entry.RaceId,
           raceName: entry.raceName ?? entry.RaceName ?? entry.raceId ?? entry.RaceId,
           status: entry.status ?? entry.Status ?? "Pending",
+          ownerConfirmed: Boolean(entry.ownerConfirmed ?? entry.OwnerConfirmed),
           gateNumber: entry.gateNumber ?? entry.GateNumber,
           jockeyConfirmed: entry.jockeyConfirmed ?? entry.JockeyConfirmed,
         }));
@@ -37,7 +38,10 @@ function OwnerRaceConfirmationPage() {
   }, []);
 
   const statusCounts = useMemo(
-    () => entries.reduce((counts, e) => ({ ...counts, [e.status]: (counts[e.status] ?? 0) + 1 }), {}),
+    () => ({
+      pending: entries.filter((e) => !e.ownerConfirmed).length,
+      confirmed: entries.filter((e) => e.ownerConfirmed).length,
+    }),
     [entries],
   );
 
@@ -45,7 +49,7 @@ function OwnerRaceConfirmationPage() {
     try {
       await confirmRaceEntry(raceId, entryId);
       setMsg("Đã xác nhận đăng ký!");
-      setEntries((prev) => prev.map((e) => e.entryId === entryId ? { ...e, status: "Confirmed" } : e));
+      setEntries((prev) => prev.map((e) => e.entryId === entryId ? { ...e, ownerConfirmed: true } : e));
     } catch (e) {
       setMsg("Lỗi: " + e.message);
     }
@@ -82,11 +86,11 @@ function OwnerRaceConfirmationPage() {
           <div className="orc-hero__stats">
             <div>
               <span>Chờ xác nhận</span>
-              <strong>{statusCounts.Pending ?? 0}</strong>
+              <strong>{statusCounts.pending}</strong>
             </div>
             <div>
               <span>Đã xác nhận</span>
-              <strong>{statusCounts.Confirmed ?? 0}</strong>
+              <strong>{statusCounts.confirmed}</strong>
             </div>
             <div>
               <span>Tổng số</span>
@@ -117,8 +121,8 @@ function OwnerRaceConfirmationPage() {
                       <h3>{entry.horseName}</h3>
                       <p className="muted">{entry.raceName}</p>
                     </div>
-                    <span className={`orc-badge orc-badge--${(entry.status || "pending").toLowerCase()}`}>
-                      {entry.status === "Confirmed" ? "Đã xác nhận" : entry.status === "Pending" ? "Chờ xác nhận" : entry.status}
+                    <span className={`orc-badge ${entry.ownerConfirmed ? "orc-badge--confirmed" : "orc-badge--pending"}`}>
+                      {entry.ownerConfirmed ? "Đã xác nhận" : "Chờ xác nhận"}
                     </span>
                   </div>
                   <div className="orc-card__meta">
@@ -128,9 +132,9 @@ function OwnerRaceConfirmationPage() {
                   <button
                     className="orc-btn"
                     onClick={() => handleConfirm(entry.raceId, entry.entryId)}
-                    disabled={entry.status === "Confirmed"}
+                    disabled={entry.ownerConfirmed}
                   >
-                    {entry.status === "Confirmed" ? "✓ Đã xác nhận" : "Xác nhận tham gia"}
+                    {entry.ownerConfirmed ? "✓ Đã xác nhận" : "Xác nhận tham gia"}
                   </button>
                 </article>
               ))}

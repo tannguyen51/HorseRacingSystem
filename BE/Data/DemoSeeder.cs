@@ -12,7 +12,11 @@ namespace HorseRacing.Data;
 
 public static class DemoSeeder
 {
-    private const string AdminPwd = "Admin@123";
+    // Ưu tiên env var ADMIN_PASSWORD / REFEREE_PASSWORD để tránh mật khẩu mặc định trong production
+    private static string AdminPwd =>
+        Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "Admin@123";
+    private static string RefereePwd =>
+        Environment.GetEnvironmentVariable("REFEREE_PASSWORD") ?? "Referee@123";
 
     /// <summary>
     /// Production: tạo tài khoản admin và trọng tài nếu chưa tồn tại.
@@ -30,13 +34,13 @@ public static class DemoSeeder
         if (!await db.Users.AnyAsync(u => u.Role == UserRole.Admin))
         {
             AddUser(db, hasher, "admin@horseracing.com", AdminPwd, "System Admin", UserRole.Admin, now);
-            logger.LogInformation("Admin account created: admin@horseracing.com / Admin@123");
+            logger.LogInformation("Admin account created: admin@horseracing.com (password từ env ADMIN_PASSWORD nếu có)");
             changed = true;
         }
 
         if (!await db.Users.AnyAsync(u => u.Role == UserRole.Referee))
         {
-            var refereeUser = AddUser(db, hasher, "trongtai@horseracing.com", "Referee@123", "Nguyen Van Trong Tai", UserRole.Referee, now);
+            var refereeUser = AddUser(db, hasher, "trongtai@horseracing.com", RefereePwd, "Nguyen Van Trong Tai", UserRole.Referee, now);
             await db.SaveChangesAsync();
             db.Referees.Add(new Referee
             {
@@ -46,7 +50,7 @@ public static class DemoSeeder
                 Rating = 4.0m, TotalOfficiated = 0, Specialization = "Chief Referee",
                 Nationality = "Vietnam", CreatedAt = now
             });
-            logger.LogInformation("Referee account created: trongtai@horseracing.com / Referee@123");
+            logger.LogInformation("Referee account created: trongtai@horseracing.com (password từ env REFEREE_PASSWORD nếu có)");
             changed = true;
         }
 

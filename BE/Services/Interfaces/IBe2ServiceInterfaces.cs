@@ -45,10 +45,9 @@ public interface IRaceManagementService
     Task<ServiceResult<bool>> BulkAssignHorsesToRaceAsync(Guid raceId, BulkAssignHorsesToRaceRequest request);
     Task<ServiceResult<bool>> RemoveHorseFromRaceAsync(Guid raceId, Guid horseId);
     Task<ServiceResult<List<Guid>>> GetBusyHorseIdsAsync();
+    Task<ServiceResult<bool>> UpdateOddsAsync(Guid raceId, Guid horseId, decimal odds);
     
     // Race Status
-    Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId);
-    Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId);
     Task<ServiceResult<bool>> StartRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> EndRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> CancelRaceAsync(Guid raceId);
@@ -71,6 +70,7 @@ public interface IRefereeService
     Task<ServiceResult<RefereeAssignmentResponse>> AssignRefereeToRaceAsync(AssignRefereeRequest request);
     Task<ServiceResult<IEnumerable<RefereeAssignmentResponse>>> GetRaceAssignmentsAsync(Guid raceId);
     Task<ServiceResult<IEnumerable<RefereeAssignmentResponse>>> GetRefereeAssignmentsAsync(Guid refereeId);
+    Task<ServiceResult<IEnumerable<RefereeAssignmentResponse>>> GetAllAssignmentsAsync();
     Task<ServiceResult<RefereeAssignmentResponse>> ConfirmAssignmentAsync(ConfirmRefereeAssignmentRequest request);
 }
 
@@ -136,10 +136,9 @@ public interface IAdminService
 
     // Operations
     Task<ServiceResult<RefereeAssignmentResponse>> AssignRefereeToRaceAsync(AssignRefereeRequest request);
-    Task<ServiceResult<bool>> PublishRaceResultAsync(Guid raceId, RaceResultRequest request);
-    Task<ServiceResult<bool>> SettlePredictionsAsync(Guid raceId, RaceResultRequest request);
     Task<ServiceResult<bool>> ApproveRaceResultAsync(Guid raceId);
     Task<ServiceResult<bool>> RejectRaceResultAsync(Guid raceId, string reason);
+    Task<ServiceResult<object>> GetPredictionsAsync();
 }
 
 public interface ILiveResultService

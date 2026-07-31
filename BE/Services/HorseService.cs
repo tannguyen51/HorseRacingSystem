@@ -57,6 +57,12 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(horses);
     }
 
+    public async Task<ServiceResult<object>> GetAllApprovedHorsesAsync()
+    {
+        var horses = await _horses.GetAllApprovedAsync();
+        return ServiceResult<object>.Ok(horses);
+    }
+
     public async Task<ServiceResult<object>> GetHorseAsync(Guid userId, Guid horseId)
     {
         var owner = await GetOwnerProfileAsync(userId);
@@ -341,8 +347,8 @@ public class HorseService : IHorseService
             HorseId = horseId,
             JockeyId = assignedJockeyId,
             Status = RegistrationStatus.Pending,
-            OwnerConfirmed = request.OwnerConfirmed,
-            JockeyConfirmed = assignedJockeyId.HasValue
+            OwnerConfirmed = false,
+            JockeyConfirmed = false
         };
 
         await _raceEntries.AddAsync(entry);

@@ -64,9 +64,43 @@ function OwnerHorseListPage() {
       } catch {
         // The backend still enforces this rule if local auth data is unavailable.
       }
+      const horseId = horse.id ?? horse.Id;
+
+      // Find jockeys already assigned to OTHER horses (in active races)
+      const busyJockeyIds = new Set();
+      horses.forEach(h => {
+        if ((h.id ?? h.Id) === horseId) return; // skip the horse being assigned
+        const invs = h.jockeyInvitations ?? h.JockeyInvitations ?? [];
+        const entries = h.raceEntries ?? h.RaceEntries ?? [];
+        // Check active invitation (Pending or Accepted)
+        invs.forEach(inv => {
+          const st = inv.status ?? inv.Status;
+          if (st === 1 || st === 2 || st === "Pending" || st === "Accepted") {
+            const jid = inv.jockey?.id ?? inv.jockey?.Id ?? inv.Jockey?.Id;
+            if (jid) busyJockeyIds.add(String(jid).toLowerCase());
+          }
+        });
+        // Check race entries with jockey in active (non-finished) races
+        entries.forEach(entry => {
+          const raceStatus = (entry.race?.status ?? entry.race?.Status ?? "").toLowerCase();
+          const isActive = raceStatus !== "finished" && raceStatus !== "cancelled" && raceStatus !== "";
+          if (isActive) {
+            const jid = entry.jockey?.id ?? entry.jockey?.Id ?? entry.Jockey?.Id;
+            if (jid) busyJockeyIds.add(String(jid).toLowerCase());
+          }
+        });
+      });
+
       setJockeys(
         Array.isArray(data)
-          ? data.filter(j => String(j.userId ?? j.UserId ?? "").toLowerCase() !== currentUserId)
+          ? data.filter(j => {
+              const jid = String(j.id ?? j.Id ?? "").toLowerCase();
+              const jUserId = String(j.userId ?? j.UserId ?? "").toLowerCase();
+              // Exclude self and jockeys already assigned to other horses
+              if (jUserId === currentUserId) return false;
+              if (busyJockeyIds.has(jid)) return false;
+              return true;
+            })
           : [],
       );
     } catch (e) {

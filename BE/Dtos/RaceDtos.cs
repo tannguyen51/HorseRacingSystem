@@ -18,22 +18,26 @@ public class CreateRaceRequest
     public Guid TournamentId { get; set; }
     public Guid? RoundId { get; set; }
     public DateTime ScheduledAt { get; set; }
+    public DateTime? ScheduledEndAt { get; set; }
+    public Guid? TrackId { get; set; }
     public string? Location { get; set; }
     public string? Description { get; set; }
     public int MaxParticipants { get; set; } = 12;
     public int Distance { get; set; } = 2000;
+    public string? RoundNames { get; set; }
 }
 
 public class UpdateRaceRequest
 {
     public string? Name { get; set; }
     public DateTime? ScheduledAt { get; set; }
-    public DateTime? ActualStartTime { get; set; }
-    public DateTime? ActualEndTime { get; set; }
+    public DateTime? ScheduledEndAt { get; set; }
+    public Guid? TrackId { get; set; }
     public string? Location { get; set; }
     public string? Description { get; set; }
     public int? MaxParticipants { get; set; }
     public int? Distance { get; set; }
+    public string? RoundNames { get; set; }
 }
 
 public class RaceDetailResponse
@@ -43,6 +47,9 @@ public class RaceDetailResponse
     public Guid TournamentId { get; set; }
     public Guid? RoundId { get; set; }
     public DateTime ScheduledAt { get; set; }
+    public DateTime? ScheduledEndAt { get; set; }
+    public Guid? TrackId { get; set; }
+    public string? TrackName { get; set; }
     public DateTime? ActualStartTime { get; set; }
     public DateTime? ActualEndTime { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -52,6 +59,7 @@ public class RaceDetailResponse
     public int Distance { get; set; }
     public int EntriesCount { get; set; }
     public int ActiveRefereesCount { get; set; }
+    public string? RoundNames { get; set; }
 }
 
 public class JockeyAssignedRaceResponse
@@ -107,4 +115,9 @@ public class AssignHorseToRaceRequest
 public class BulkAssignHorsesToRaceRequest
 {
     public Guid[] HorseIds { get; set; } = Array.Empty<Guid>();
+}
+
+public class UpdateOddsRequest
+{
+    public decimal Odds { get; set; }
 }

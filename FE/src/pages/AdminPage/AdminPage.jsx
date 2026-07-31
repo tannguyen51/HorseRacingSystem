@@ -17,12 +17,8 @@ import {
   getOwnerHorses,
   getTournamentRaces,
   getTournamentRounds,
-  publishRaceResult,
   approveRaceResult,
   rejectRaceResult,
-  getActiveReferees,
-  getRaceRefereeAssignments,
-  assignRefereeToRace,
   getPendingRaceEntries,
   approveRaceEntry,
   rejectRaceEntry,
@@ -45,6 +41,11 @@ import {
 import { AuditLogViewer, NotificationManager } from "./AdminAudit";
 import TournamentForm from "../../components/TournamentForm";
 import RaceForm from "../../components/RaceForm";
+import RaceResultsPage from "./pages/RaceResultsPage";
+import HorseManagementPage from "./pages/HorseManagementPage";
+import RefereeManagementPage from "./pages/RefereeManagementPage";
+import TournamentDetail from "./pages/TournamentDetail";
+import PredictionsManagementPage from "./pages/PredictionsManagementPage";
 import "./AdminPage.css";
 
 function AdminHorseImage({ imageUrl, name, className = "" }) {
@@ -85,7 +86,12 @@ const navGroups = [
     { to: "/admin/tournaments", label: "Giải đấu", icon: "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" },
     { to: "/admin/rounds", label: "Vòng đấu", icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" },
     { to: "/admin/races", label: "Cuộc đua", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+    { to: "/admin/race-results", label: "Kết quả", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
     { to: "/admin/referee-assign", label: "Phân công trọng tài", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" },
+  ] },
+  { label: "Management", items: [
+    { to: "/admin/horses", label: "Ngựa", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
+    { to: "/admin/referees", label: "Trọng tài", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
   ] },
   { label: "Operations", items: [
     { to: "/admin/prizes", label: "Tiền thưởng", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
@@ -99,6 +105,7 @@ const navGroups = [
     { to: "/admin/notifications", label: "Thông báo", icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" },
   ] },
   { label: "Finance", items: [
+    { to: "/admin/predictions", label: "Dự đoán", icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { to: "/admin/withdrawals", label: "Rút tiền", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" },
   ] },
 ];
@@ -785,6 +792,7 @@ function TournamentManagement() {
   const [editingId, setEditingId] = useState("");
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [selectedT, setSelectedT] = useState(null);
   const [form, setForm] = useState({ name: "", description: "", venue: "", startDate: inputDate(7), endDate: inputDate(14), prizePool: 0, imageUrl: "" });
   const load = () => getAdminTournaments().then((data) => setItems(Array.isArray(data) ? data : [])).catch((err) => setMessage(err.message));
   useEffect(() => {
@@ -836,6 +844,10 @@ function TournamentManagement() {
     try { await deleteTournament(id); setMessage("Đã xóa giải đấu."); load(); } catch (err) { setMessage(err.message); }
   };
 
+  const viewT = async (item) => {
+    setSelectedT(item);
+  };
+
   return (
     <>
       <PageTitle eyebrow="Quản lý giải đấu" title="Giải đấu" description="Tạo giải đấu và điều phối vòng đấu, cuộc đua." action={<button className="primary-button" onClick={() => { setEditingId(""); setShowForm(true); }}>Tạo giải đấu</button>} />
@@ -864,10 +876,18 @@ function TournamentManagement() {
       </form>}
       <section className="admin-card-grid">{items.map((item) => {
         const id = item.id ?? item.Id;
-        return <article key={id} className="admin-tournament-card" style={{ position: "relative", overflow: "hidden" }}>
+        return <article key={id} className="admin-tournament-card" style={{ position: "relative", overflow: "hidden", cursor:"pointer" }} onClick={() => viewT(item)}>
           {item.imageUrl ?? item.ImageUrl ? <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${(item.imageUrl ?? item.ImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15, pointerEvents: "none" }} /> : null}
           <div style={{ position: "relative", zIndex: 1 }}><span className={(item.isActive ?? item.IsActive) ? "status status--active" : "status status--inactive"}>{(item.isActive ?? item.IsActive) ? "Hoạt động" : "Không hoạt động"}</span><h3>{item.name ?? item.Name}</h3><p>{item.description ?? item.Description ?? "Không có mô tả"}</p></div><dl style={{ position: "relative", zIndex: 1 }}><div><dt>Bắt đầu</dt><dd>{formatDate(item.startDate ?? item.StartDate)}</dd></div><div><dt>Vòng đấu</dt><dd>{item.roundCount ?? item.RoundCount ?? 0}</dd></div><div><dt>Cuộc đua</dt><dd>{item.raceCount ?? item.RaceCount ?? 0}</dd></div></dl><div className="admin-actions" style={{ position: "relative", zIndex: 1 }}><button onClick={() => edit(item)}>Sửa</button><button className="admin-danger" onClick={() => remove(id)}>Xóa</button></div></article>;
       })}</section>
+      {selectedT && (
+        <TournamentDetail
+          t={selectedT}
+          onBack={() => setSelectedT(null)}
+          setMessage={setMessage}
+          getTournamentRaces={getTournamentRaces}
+        />
+      )}
     </>
   );
 }
@@ -880,10 +900,6 @@ function ScheduleManagement({ type }) {
   const [approvedJockeys, setApprovedJockeys] = useState([]);
   const [message, setMessage] = useState("");
   const [assignment, setAssignment] = useState({ raceId: "", horseId: "", jockeyId: "" });
-  const [publishRaceId, setPublishRaceId] = useState(null);
-  const [publishWinnerId, setPublishWinnerId] = useState("");
-  const [publishLoading, setPublishLoading] = useState(false);
-  const [publishEntries, setPublishEntries] = useState([]);
   const [expandedRaceId, setExpandedRaceId] = useState(null);
   const [raceEntries, setRaceEntries] = useState([]);
   const [raceReferees, setRaceReferees] = useState([]);
@@ -891,6 +907,7 @@ function ScheduleManagement({ type }) {
   const [assignedHorseIds, setAssignedHorseIds] = useState(new Set());
   const [busyHorseIdsAll, setBusyHorseIdsAll] = useState(new Set());
   const [showRaceForm, setShowRaceForm] = useState(false);
+  const [assignmentsByRace, setAssignmentsByRace] = useState(new Map());
 
   const refreshBusyHorses = async () => {
     try {
@@ -900,7 +917,23 @@ function ScheduleManagement({ type }) {
     } catch { /* non-critical */ }
   };
 
+  const refreshRefereeAssignments = async () => {
+    try {
+      const res = await request("/api/referees/assignments");
+      const list = Array.isArray(res?.data ?? res) ? (res?.data ?? res) : [];
+      const map = new Map();
+      list.forEach((a) => {
+        const raceId = a.raceId ?? a.RaceId;
+        if (!raceId) return;
+        if (!map.has(raceId)) map.set(raceId, []);
+        map.get(raceId).push(a);
+      });
+      setAssignmentsByRace(map);
+    } catch { /* non-critical */ }
+  };
+
   useEffect(() => { refreshBusyHorses(); }, [type]);
+  useEffect(() => { refreshRefereeAssignments(); }, [type]);
 
   useEffect(() => {
     if (!assignment.raceId) { setAssignedHorseIds(new Set()); return; }
@@ -913,13 +946,18 @@ function ScheduleManagement({ type }) {
   }, [assignment.raceId]);
 
   const VIOLATION_LABELS = { 1: "Hành vi nguy hiểm", 2: "Xuất phát sai", 3: "Can thiệp", 4: "Phúc lợi động vật", 5: "Vi phạm thiết bị", 6: "Khác" };
+  const raceStatusLabel = {
+    scheduled: "Sắp diễn ra",
+    registrationopen: "Mở đăng ký",
+    registrationclosed: "Đóng đăng ký",
+    inprogress: "Đang đua",
+    awaitingresult: "Chờ kết quả",
+    resultpendingapproval: "Chờ duyệt",
+    resultapproved: "Đã duyệt KQ",
+    finished: "Đã kết thúc",
+    cancelled: "Đã hủy",
+  };
 
-  useEffect(() => {
-    if (!publishRaceId) return;
-    request(`/api/referees/race/${publishRaceId}/entries`)
-      .then(d => { const arr = Array.isArray(d) ? d : d?.data ?? []; setPublishEntries(arr); })
-      .catch(() => setPublishEntries([]));
-  }, [publishRaceId]);
   const [form, setForm] = useState(type === "round"
     ? { name: "", roundNumber: 1, scheduledStartDate: inputDate(7), scheduledEndDate: inputDate(8), description: "" }
     : { name: "", roundId: "", scheduledAt: inputDate(7), location: "", description: "", maxParticipants: 12, distance: 2000, imageUrl: "" });
@@ -1059,13 +1097,12 @@ function ScheduleManagement({ type }) {
   };
 
   const handleRaceAction = async (raceId, action) => {
-    const labels = { start: "bắt đầu", end: "kết thúc", cancel: "hủy", publish: "công bố kết quả", approve: "duyệt kết quả", reject: "từ chối kết quả" };
-    if (action === "publish") { setPublishRaceId(raceId); setPublishWinnerId(""); return; }
+    const labels = { start: "bắt đầu", end: "kết thúc", cancel: "hủy", approve: "duyệt kết quả", reject: "từ chối kết quả" };
     if (action === "approve") {
-      if (!window.confirm("Duyệt kết quả này? Dự đoán sẽ được thanh toán ngay sau khi duyệt.")) return;
+      if (!window.confirm("Duyệt kết quả này? Sau khi duyệt, bạn có thể kết thúc cuộc đua để thanh toán dự đoán.")) return;
       try {
         await approveRaceResult(raceId);
-        setMessage("Kết quả đã được duyệt và thanh toán thành công.");
+        setMessage("Kết quả đã được duyệt. Kết thúc cuộc đua để thanh toán dự đoán.");
         setItems(await getTournamentRaces(selected));
         refreshBusyHorses();
       } catch (err) { setMessage(err.message); }
@@ -1082,7 +1119,9 @@ function ScheduleManagement({ type }) {
       } catch (err) { setMessage(err.message); }
       return;
     }
-    if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} cuộc đua này?`)) return;
+    if (action === "end") {
+      if (!window.confirm("Kết thúc cuộc đua? Kết quả sẽ được công bố cho khán giả và dự đoán sẽ được thanh toán theo tỉ lệ cược.")) return;
+    } else if (!window.confirm(`${labels[action].charAt(0).toUpperCase() + labels[action].slice(1)} cuộc đua này?`)) return;
     try {
       if (action === "start") await startRace(raceId);
       else if (action === "end") await endRace(raceId);
@@ -1178,36 +1217,6 @@ function ScheduleManagement({ type }) {
         </p>
       ) : null}
 
-      {/* Publish Result Modal */}
-      {publishRaceId && (
-        <div className="modal-overlay" onClick={() => setPublishRaceId(null)}>
-          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{background:"rgba(255,255,255,0.96)",borderRadius:18,padding:24,maxWidth:420,width:"100%",boxShadow:"0 30px 60px rgba(0,0,0,0.12)"}}>
-            <h3 style={{margin:"0 0 12px",fontSize:17,fontWeight:700,color:"#1a1d23"}}>Công bố kết quả</h3>
-            <p style={{fontSize:13,color:"#64748b",margin:"0 0 16px"}}>Chọn ngựa chiến thắng. Kết quả cần được admin duyệt trước khi thanh toán dự đoán.</p>
-            <select className="admin-select" value={publishWinnerId} onChange={(e) => setPublishWinnerId(e.target.value)} style={{width:"100%",boxSizing:"border-box",marginBottom:12,padding:"10px 14px",borderRadius:10,border:"1px solid rgba(143,100,32,0.2)"}}>
-              <option value="">-- Chọn ngựa thắng --</option>
-              {publishEntries.map(e => <option key={e.horseId ?? e.HorseId} value={e.horseId ?? e.HorseId}>{e.horseName ?? e.HorseName} (odds: {e.odds ?? e.Odds}x)</option>)}
-            </select>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-              <button className="ghost-button" onClick={() => setPublishRaceId(null)}>Huỷ</button>
-              <button className="primary-button" disabled={!publishWinnerId || publishLoading} onClick={async () => {
-                setPublishLoading(true);
-                try {
-                  await publishRaceResult(publishRaceId, { winningHorseId: publishWinnerId });
-                  setMessage("Kết quả đã được công bố!");
-                  setPublishRaceId(null);
-                  setItems(await getTournamentRaces(selected));
-                  refreshBusyHorses();
-                } catch (err) { setMessage(err.message); }
-                finally { setPublishLoading(false); }
-              }}>
-                {publishLoading ? "Đang xử lý..." : "Xác nhận"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <section className="admin-card-grid">{items.map((item) => {
         const itemId = item.id ?? item.Id;
         const itemStatus = (item.status ?? item.Status ?? "").toLowerCase();
@@ -1228,44 +1237,59 @@ function ScheduleManagement({ type }) {
             setRaceViolations(Array.isArray(viols) ? viols : []);
           } catch { setRaceEntries([]); setRaceReferees([]); setRaceViolations([]); }
         }}>
-          <span className="badge">{item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
+          <span className="badge">{raceStatusLabel[itemStatus] ?? item.status ?? item.Status ?? `#${item.roundNumber ?? item.RoundNumber ?? ""}`}</span>
           <h3>{item.name ?? item.Name}</h3>
           <p>{formatDate(item.scheduledAt ?? item.ScheduledAt ?? item.scheduledStartDate ?? item.ScheduledStartDate)}</p>
           <small>{type === "round" ? `${item.raceCount ?? item.RaceCount ?? 0} cuộc đua` : `${item.entriesCount ?? item.EntriesCount ?? 0} ngựa đã phân công`}</small>
-          {type === "race" && (
-            <div className="admin-actions admin-race-actions">
-              {itemStatus !== "inprogress" && itemStatus !== "finished" && itemStatus !== "awaitingresult" && itemStatus !== "resultpendingapproval" && (
-                <button onClick={() => handleRaceAction(itemId, "start")} disabled={itemStatus === "cancelled"}>
-                  Bắt đầu
-                </button>
-              )}
-              {itemStatus === "inprogress" && (
-                <button onClick={() => handleRaceAction(itemId, "end")}>
-                  Kết thúc
-                </button>
-              )}
-              {(itemStatus === "finished" || itemStatus === "awaitingresult") && (
-                <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "publish")}>
-                  Công bố KQ
-                </button>
-              )}
-              {itemStatus === "resultpendingapproval" && (
-                <>
-                  <button style={{background:"rgba(16,185,129,0.1)",color:"#0f7a5a"}} onClick={() => handleRaceAction(itemId, "approve")}>
-                    Duyệt KQ
+          {type === "race" && (() => {
+            const refAssigns = assignmentsByRace.get(itemId) ?? [];
+            const confirmedReferees = refAssigns.filter(a => (a.status ?? a.Status) === "Confirmed").length;
+            const canStart = confirmedReferees >= 1;
+            return (
+              <div className="admin-actions admin-race-actions">
+                {itemStatus !== "inprogress" && itemStatus !== "finished" && itemStatus !== "awaitingresult" && itemStatus !== "resultpendingapproval" && itemStatus !== "resultapproved" && itemStatus !== "cancelled" && (
+                  <>
+                    <button onClick={() => handleRaceAction(itemId, "start")} disabled={!canStart} title={canStart ? "" : "Chờ trọng tài chấp nhận lời mời"}>
+                      Bắt đầu
+                    </button>
+                    {!canStart && (
+                      <span style={{ fontSize: 12, color: "#657086", alignSelf: "center" }}>
+                        {refAssigns.length === 0
+                          ? "Chưa có trọng tài - hãy thêm trọng tài trước khi bắt đầu"
+                          : `Chờ trọng tài xác nhận (${confirmedReferees}/${refAssigns.length})`}
+                      </span>
+                    )}
+                  </>
+                )}
+                {itemStatus === "inprogress" && (
+                  <span style={{ fontSize: 12, color: "#92400e", alignSelf: "center" }}>Đang đua - chờ trọng tài nộp kết quả và báo cáo.</span>
+                )}
+                {itemStatus === "awaitingresult" && (
+                  <span style={{ fontSize: 12, color: "#92400e", alignSelf: "center" }}>Chờ trọng tài nộp lại kết quả.</span>
+                )}
+                {itemStatus === "resultapproved" && (
+                  <button style={{ background: "rgba(16,185,129,0.1)", color: "#0f7a5a" }} onClick={() => handleRaceAction(itemId, "end")}>
+                    Kết thúc
                   </button>
-                  <button style={{background:"rgba(239,68,68,0.1)",color:"#dc2626"}} onClick={() => handleRaceAction(itemId, "reject")}>
-                    Từ chối
+                )}
+                {itemStatus === "resultpendingapproval" && (
+                  <>
+                    <button style={{ background: "rgba(16,185,129,0.1)", color: "#0f7a5a" }} onClick={() => handleRaceAction(itemId, "approve")}>
+                      Duyệt KQ
+                    </button>
+                    <button style={{ background: "rgba(239,68,68,0.1)", color: "#dc2626" }} onClick={() => handleRaceAction(itemId, "reject")}>
+                      Từ chối
+                    </button>
+                  </>
+                )}
+                {itemStatus !== "finished" && itemStatus !== "cancelled" && (
+                  <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
+                    Hủy
                   </button>
-                </>
-              )}
-              {itemStatus !== "finished" && itemStatus !== "cancelled" && (
-                <button className="admin-danger" onClick={() => handleRaceAction(itemId, "cancel")}>
-                  Hủy
-                </button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            );
+          })()}
           {type === "race" && expandedRaceId === itemId && (
             <div style={{marginTop:12,padding:12,borderTop:"1px solid rgba(143,100,32,0.1)"}} onClick={e => e.stopPropagation()}>
               <h4 style={{fontSize:14,margin:"0 0 8px",color:"#172033"}}>Ngựa tham gia</h4>
@@ -1413,9 +1437,12 @@ function AdminPage() {
   else if (location.pathname.startsWith("/admin/users/")) content = <UserDetail />;
   else if (location.pathname === "/admin/roles") content = <Roles />;
   else if (location.pathname === "/admin/tournaments") content = <TournamentManagement />;
+  else if (location.pathname === "/admin/race-results") content = <RaceResultsPage />;
+  else if (location.pathname === "/admin/horses") content = <HorseManagementPage />;
+  else if (location.pathname === "/admin/referees") content = <RefereeManagementPage />;
+  else if (location.pathname === "/admin/referee-assign") content = <RefereeAssignmentManagement />;
   else if (location.pathname === "/admin/rounds") content = <ScheduleManagement type="round" />;
   else if (location.pathname === "/admin/races") content = <ScheduleManagement type="race" />;
-  else if (location.pathname === "/admin/referee-assign") content = <RefereeAssignmentManagement />;
   else if (location.pathname === "/admin/prizes") content = <PrizeManagement />;
   else if (location.pathname === "/admin/protests") content = <ProtestManagement />;
   else if (location.pathname === "/admin/transfers") content = <TransferManagement />;
@@ -1424,6 +1451,7 @@ function AdminPage() {
   else if (location.pathname === "/admin/audit") content = <AuditLogViewer />;
   else if (location.pathname === "/admin/notifications") content = <NotificationManager />;
   else if (location.pathname === "/admin/withdrawals") content = <WithdrawalManagement />;
+  else if (location.pathname === "/admin/predictions") content = <PredictionsManagementPage />;
 
   return <AdminShell>{content}</AdminShell>;
 }
@@ -1432,146 +1460,74 @@ export default AdminPage;
 
 /* ─── Referee Assignment Management ─── */
 function RefereeAssignmentManagement() {
-  const [tournaments, setTournaments] = useState([]);
-  const [races, setRaces] = useState([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
-  const [selectedRace, setSelectedRace] = useState("");
-  const [referees, setReferees] = useState([]);
   const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [assigning, setAssigning] = useState(false);
-  const [form, setForm] = useState({ refereeId: "", role: "Chief Referee", notes: "" });
 
-  useEffect(() => {
-    getAdminTournaments().then(d => setTournaments(Array.isArray(d) ? d : [])).catch(() => {});
-    getActiveReferees().then(d => setReferees(Array.isArray(d) ? d : [])).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!selectedTournament) return;
-    getTournamentRaces(selectedTournament)
-      .then(d => setRaces(Array.isArray(d) ? d : []))
-      .catch(() => {});
-    setSelectedRace("");
-  }, [selectedTournament]);
-
-  const loadAssignments = async () => {
-    if (!selectedRace) return;
+  const loadAssignments = () => {
     setLoading(true);
-    try {
-      const d = await getRaceRefereeAssignments(selectedRace);
-      setAssignments(Array.isArray(d) ? d : []);
-    } catch { setAssignments([]); }
-    setLoading(false);
+    request("/api/referees/assignments")
+      .then(d => {
+        const list = Array.isArray(d?.data ?? d) ? (d?.data ?? d) : [];
+        setAssignments(list);
+      })
+      .catch(err => setMessage(err.message))
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadAssignments(); }, [selectedRace]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleAssign = async (e) => {
-    e.preventDefault();
-    if (!selectedRace || !form.refereeId) return;
-    setAssigning(true);
-    try {
-      await assignRefereeToRace({ raceId: selectedRace, refereeId: form.refereeId, role: form.role, notes: form.notes });
-      setMessage("Đã phân công trọng tài.");
-      setForm({ refereeId: "", role: "Chief Referee", notes: "" });
-      loadAssignments();
-    } catch (err) { setMessage(err.message); }
-    setAssigning(false);
-  };
+  useEffect(() => { loadAssignments(); }, []);
 
   const statusLabels = { "Assigned": "Đã phân công", "Confirmed": "Đã xác nhận", "Completed": "Hoàn thành", "Cancelled": "Đã hủy" };
+  const roleLabels = { "Chief Referee": "Trọng tài trưởng", "Assistant": "Trợ lý" };
+
+  const sorted = [...assignments].sort((a, b) =>
+    (a.tournamentName ?? a.TournamentName ?? "").localeCompare(b.tournamentName ?? b.TournamentName ?? "") ||
+    (a.refereeName ?? a.RefereeName ?? "").localeCompare(b.refereeName ?? b.RefereeName ?? ""));
 
   return (
     <>
-      <PageTitle eyebrow="Giải đấu" title="Phân công trọng tài" description="Gán trọng tài vào từng cuộc đua." />
+      <PageTitle eyebrow="Giải đấu" title="Phân công trọng tài" description="Danh sách trọng tài được phân công cho từng giải đấu." />
       <Notice message={message} />
-
-      <div style={{ display: "grid", gap: 16, marginBottom: 24 }}>
-        <label style={{ fontSize: 13, color: "#657086" }}>
-          Chọn giải đấu:
-          <select value={selectedTournament} onChange={e => setSelectedTournament(e.target.value)}
-            style={{ display: "block", marginTop: 4, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(143,100,32,0.2)", maxWidth: 400 }}>
-            <option value="">-- Chọn giải đấu --</option>
-            {tournaments.map(t => <option key={t.id ?? t.Id} value={t.id ?? t.Id}>{t.name ?? t.Name}</option>)}
-          </select>
-        </label>
-
-        <label style={{ fontSize: 13, color: "#657086" }}>
-          Chọn cuộc đua:
-          <select value={selectedRace} onChange={e => setSelectedRace(e.target.value)}
-            style={{ display: "block", marginTop: 4, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(143,100,32,0.2)", maxWidth: 400 }}>
-            <option value="">-- Chọn cuộc đua --</option>
-            {races.map(r => <option key={r.id ?? r.Id} value={r.id ?? r.Id}>{r.name ?? r.Name} ({r.status ?? r.Status})</option>)}
-          </select>
-        </label>
+      <div className="admin-toolbar"><span>{assignments.length} phân công</span></div>
+      <div style={{ overflowX: "auto", border: "1px solid rgba(231,198,120,.1)", borderRadius: 16 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", background: "rgba(255,250,240,0.96)" }}>
+          <thead>
+            <tr>
+              <th style={th}>Trọng tài</th>
+              <th style={th}>Giải đấu</th>
+              <th style={th}>Vòng</th>
+              <th style={th}>Cuộc đua</th>
+              <th style={th}>Vai trò</th>
+              <th style={th}>Trạng thái</th>
+              <th style={th}>Ngày phân công</th>
+              <th style={th}>Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={8} style={{ padding: 20, textAlign: "center", color: "#657086" }}>Đang tải...</td></tr>
+            ) : sorted.length === 0 ? (
+              <tr><td colSpan={8} style={{ padding: 20, textAlign: "center", color: "#657086" }}>Chưa có phân công nào.</td></tr>
+            ) : sorted.map(a => {
+              const st = a.status ?? a.Status;
+              const stColor = st === "Confirmed" ? "#166534" : st === "Completed" ? "#4f46e5" : st === "Cancelled" ? "#c41e1e" : "#92400e";
+              const stBg = st === "Confirmed" ? "rgba(22,101,52,.12)" : st === "Completed" ? "rgba(79,70,229,.12)" : st === "Cancelled" ? "rgba(196,30,30,.12)" : "rgba(245,158,11,.12)";
+              return (
+                <tr key={a.id ?? a.Id}>
+                  <td style={td}><strong>{a.refereeName ?? a.RefereeName ?? "-"}</strong></td>
+                  <td style={td}>{a.tournamentName ?? a.TournamentName ?? "-"}</td>
+                  <td style={td}>{a.roundName ?? a.RoundName ?? "-"}</td>
+                  <td style={td}>{a.raceName ?? a.RaceName ?? "-"}</td>
+                  <td style={td}>{roleLabels[a.role] ?? a.role ?? "-"}</td>
+                  <td style={td}><span style={{ padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: stBg, color: stColor }}>{statusLabels[st] ?? st}</span></td>
+                  <td style={td}>{a.assignedAt ? formatDate(a.assignedAt) : "-"}</td>
+                  <td style={td}>{a.notes ?? a.Notes ?? "-"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-
-      {selectedRace && (
-        <form onSubmit={handleAssign} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 24, padding: 20, borderRadius: 16, border: "1px solid rgba(143,100,32,0.16)", background: "rgba(255,250,240,0.96)" }}>
-          <label style={{ fontSize: 13, color: "#657086" }}>
-            Trọng tài:
-            <select value={form.refereeId} onChange={e => setForm({ ...form, refereeId: e.target.value })}
-              required style={{ display: "block", marginTop: 4, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(143,100,32,0.2)", minWidth: 200 }}>
-              <option value="">-- Chọn --</option>
-              {referees.map(r => <option key={r.id ?? r.Id} value={r.id ?? r.Id}>{r.userFullName ?? r.UserFullName}</option>)}
-            </select>
-          </label>
-          <label style={{ fontSize: 13, color: "#657086" }}>
-            Vai trò:
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}
-              style={{ display: "block", marginTop: 4, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(143,100,32,0.2)", minWidth: 150 }}>
-              <option value="Chief Referee">Trọng tài trưởng</option>
-              <option value="Assistant">Trợ lý</option>
-            </select>
-          </label>
-          <label style={{ fontSize: 13, color: "#657086" }}>
-            Ghi chú:
-            <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
-              placeholder="VD: Phụ trách kiểm tra sức khỏe"
-              style={{ display: "block", marginTop: 4, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(143,100,32,0.2)", minWidth: 250 }} />
-          </label>
-          <button type="submit" disabled={assigning}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#8f6420", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
-            {assigning ? "Đang phân công..." : "Phân công"}
-          </button>
-        </form>
-      )}
-
-      {selectedRace && (
-        <div style={{ overflowX: "auto", border: "1px solid rgba(231,198,120,.1)", borderRadius: 16 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", background: "rgba(255,250,240,0.96)" }}>
-            <thead>
-              <tr>
-                <th style={th}>Trọng tài</th>
-                <th style={th}>Vai trò</th>
-                <th style={th}>Trạng thái</th>
-                <th style={th}>Ghi chú</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#657086" }}>Đang tải...</td></tr>
-              ) : assignments.length === 0 ? (
-                <tr><td colSpan={4} style={{ padding: 20, textAlign: "center", color: "#657086" }}>Chưa có trọng tài nào được phân công.</td></tr>
-              ) : assignments.map(a => {
-                const st = a.status ?? a.Status;
-                const stColor = st === "Confirmed" ? "#166534" : st === "Completed" ? "#4f46e5" : st === "Cancelled" ? "#c41e1e" : "#92400e";
-                const stBg = st === "Confirmed" ? "rgba(22,101,52,.12)" : st === "Completed" ? "rgba(79,70,229,.12)" : st === "Cancelled" ? "rgba(196,30,30,.12)" : "rgba(245,158,11,.12)";
-                return (
-                  <tr key={a.id ?? a.Id}>
-                    <td style={td}>{a.refereeName ?? a.RefereeName ?? "-"}</td>
-                    <td style={td}>{a.role === "Chief Referee" ? "Trọng tài trưởng" : a.role === "Assistant" ? "Trợ lý" : a.role ?? "-"}</td>
-                    <td style={td}><span style={{ padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: stBg, color: stColor }}>{statusLabels[st] ?? st}</span></td>
-                    <td style={td}>{a.notes ?? a.Notes ?? "-"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </>
   );
 }

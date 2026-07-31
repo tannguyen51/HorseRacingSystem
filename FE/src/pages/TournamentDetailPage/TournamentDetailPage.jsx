@@ -337,7 +337,6 @@ function StateStepper({ currentStatus }) {
         {states.map((state, idx) => {
           const isPast = state.value < currentStatus;
           const isCurrent = state.value === currentStatus;
-          const isFuture = state.value > currentStatus;
 
           return (
             <div key={state.value} style={{ flex: 1, display: "flex", alignItems: "center" }}>
@@ -427,6 +426,7 @@ function statusBg(s) {
     cancelled: "rgba(239,68,68,0.1)",
     awaitingresult: "rgba(139,92,246,0.1)",
     resultpendingapproval: "rgba(245,158,11,0.1)",
+    resultapproved: "rgba(16,185,129,0.1)",
   };
   return m[(s || "").toString().toLowerCase()] || m[s] || "rgba(100,116,139,0.1)";
 }
@@ -444,6 +444,7 @@ function statusColor(s) {
     cancelled: "#ef4444",
     awaitingresult: "#8b5cf6",
     resultpendingapproval: "#f59e0b",
+    resultapproved: "#047857",
   };
   return m[(s || "").toString().toLowerCase()] || m[s] || "#64748b";
 }
@@ -461,6 +462,7 @@ function statusLabel_(s) {
     cancelled: "Đã hủy",
     awaitingresult: "Chờ kết quả",
     resultpendingapproval: "Chờ duyệt",
+    resultapproved: "Đã duyệt KQ",
   };
   return m[(s || "").toString().toLowerCase()] || m[s] || s || "Không xác định";
 }

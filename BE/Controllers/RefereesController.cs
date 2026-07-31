@@ -83,8 +83,13 @@ public class RefereesController : ControllerBase
     public async Task<ActionResult> GetRaceAssignments(Guid raceId)
         => OkR(await _refereeService.GetRaceAssignmentsAsync(raceId));
 
+    [HttpGet("assignments")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> GetAllAssignments()
+        => OkR(await _refereeService.GetAllAssignmentsAsync());
+
     [HttpGet("{refereeId:guid}/assignments")]
-    [Authorize(Roles = "Referee")]
+    [Authorize(Roles = "Admin,Referee")]
     public async Task<ActionResult> GetRefereeAssignments(Guid refereeId)
         => OkR(await _refereeService.GetRefereeAssignmentsAsync(refereeId));
 
@@ -130,9 +135,23 @@ public class RefereesController : ControllerBase
         if (string.IsNullOrWhiteSpace(r.Response) || r.Response is not ("Accept" or "Reject"))
             return BadRequest(new { message = "Phản hồi phải là 'Accept' hoặc 'Reject'." });
 
+        var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (uid is null || !Guid.TryParse(uid, out var userId))
+            return Unauthorized(new { message = "Token không hợp lệ" });
+
+        var referee = await _refereeRepo.GetByUserIdAsync(userId);
+        if (referee is null)
+            return NotFound(new { message = "Không tìm thấy hồ sơ trọng tài" });
+
         var assignment = await _assignmentRepo.GetByIdAsync(assignmentId);
         if (assignment is null)
             return NotFound(new { message = "Không tìm thấy phân công trọng tài." });
+
+        if (assignment.RefereeId != referee.Id)
+            return Forbid();
+
+        if (assignment.Status != RefereeAssignmentStatus.Assigned)
+            return BadRequest(new { message = "Phân công này đã được xử lý trước đó." });
 
         if (string.Equals(r.Response, "Accept", StringComparison.OrdinalIgnoreCase))
         {

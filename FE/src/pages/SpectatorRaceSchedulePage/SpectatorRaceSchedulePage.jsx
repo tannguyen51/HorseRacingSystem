@@ -60,6 +60,7 @@ const STATUS_META = {
   Cancelled: { label: "Đã hủy", className: "srs-badge--canceled" },
   AwaitingResult: { label: "Chờ kết quả", className: "srs-badge--awaiting" },
   ResultPendingApproval: { label: "Chờ duyệt", className: "srs-badge--pending-approval" },
+  ResultApproved: { label: "Đã duyệt kết quả", className: "srs-badge--pending-approval" },
 };
 
 const getStatusMeta = (status) => {

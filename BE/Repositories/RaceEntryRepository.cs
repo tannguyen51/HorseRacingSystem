@@ -80,6 +80,15 @@ public class RaceEntryRepository : IRaceEntryRepository
             .ToList();
     }
 
+    public Task<List<RaceEntry>> GetPendingConfirmationsByJockeyAsync(Guid jockeyId)
+    {
+        return _db.RaceEntries
+            .Include(e => e.Race)!.ThenInclude(r => r!.Tournament)
+            .Include(e => e.Horse)
+            .Where(e => e.JockeyId == jockeyId && !e.JockeyConfirmed)
+            .ToListAsync();
+    }
+
     public Task<List<RaceEntry>> GetByHorseAsync(Guid horseId)
     {
         return _db.RaceEntries

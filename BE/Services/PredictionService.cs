@@ -52,6 +52,18 @@ public class PredictionService : IPredictionService
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Cuộc đua không mở cho dự đoán");
         }
 
+        // Khóa cược: không đặt trong vòng 5 phút trước giờ đua
+        if (race.ScheduledAt - DateTime.UtcNow < TimeSpan.FromMinutes(5))
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Dự đoán đã đóng. Không thể đặt cược trong vòng 5 phút trước giờ đua.");
+        }
+
+        // Chặn cược trùng: mỗi khán giả chỉ đặt 1 dự đoán cho mỗi cuộc đua
+        if (await _predictions.ExistsAsync(request.RaceId, userId))
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Bạn đã đặt dự đoán cho cuộc đua này rồi.");
+        }
+
         var horseInRace = race.Entries.Any(e => e.HorseId == request.PredictedHorseId);
         if (!horseInRace)
         {
@@ -88,13 +100,11 @@ public class PredictionService : IPredictionService
         await _predictions.AddAsync(prediction);
         await _unitOfWork.SaveChangesAsync();
 
-        // THEN deduct funds — if this fails, we have the prediction record to reconcile
+        // THEN deduct funds — if this fails, remove the prediction record
         var deductResult = await _walletService.DeductFundsAsync(userId, request.BetAmount, $"bet_{request.RaceId}");
         if (!deductResult.IsSuccess)
         {
-            // Rollback: mark prediction as refunded
-            prediction.Status = PredictionStatus.Lost; // Use Lost as "voided"
-            prediction.SettledAt = DateTime.UtcNow;
+            await _predictions.DeleteAsync(prediction.Id);
             await _unitOfWork.SaveChangesAsync();
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Số dư không đủ để đặt cược.");
         }

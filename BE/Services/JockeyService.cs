@@ -125,6 +125,22 @@ public class JockeyService : IJockeyService
         invitation.Status = request.Accept ? JockeyInvitationStatus.Accepted : JockeyInvitationStatus.Declined;
         invitation.RespondedAt = DateTime.UtcNow;
 
+        if (!request.Accept)
+        {
+            // Từ chối lời mời → gỡ kỵ sĩ khỏi các cuộc đua đã phân công cho ngựa này
+            var horseEntries = await _raceEntries.GetByHorseAsync(invitation.HorseId);
+            var affected = horseEntries.Where(e => e.JockeyId == jockey.Id).ToList();
+            if (affected.Count > 0)
+            {
+                foreach (var e in affected)
+                {
+                    e.JockeyId = null;
+                    e.JockeyConfirmed = false;
+                }
+                await _raceEntries.UpdateRangeAsync(affected);
+            }
+        }
+
         if (request.Accept && invitation.RaceId.HasValue)
         {
             var entry = await _raceEntries.GetByRaceHorseAsync(invitation.RaceId.Value, invitation.HorseId);
@@ -233,5 +249,105 @@ public class JockeyService : IJockeyService
             .ToList();
 
         return ServiceResult<object>.Ok(response);
+    }
+
+    public async Task<ServiceResult<object>> GetPendingRaceEntriesAsync(Guid userId)
+    {
+        var jockey = await _jockeys.GetByUserIdAsync(userId);
+        if (jockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
+        }
+
+        var entries = await _raceEntries.GetPendingConfirmationsByJockeyAsync(jockey.Id);
+        var response = entries
+            .Where(entry => entry.Race != null)
+            .Select(entry => new
+            {
+                entryId = entry.Id,
+                raceId = entry.RaceId,
+                raceName = entry.Race!.Name,
+                tournamentName = entry.Race.Tournament?.Name,
+                scheduledAt = entry.Race.ScheduledAt,
+                status = entry.Race.Status.ToString(),
+                horseId = entry.HorseId,
+                horseName = entry.Horse?.Name ?? "Ngựa"
+            })
+            .ToList();
+
+        return ServiceResult<object>.Ok(response);
+    }
+
+    public async Task<ServiceResult<object>> ConfirmRaceEntryAsync(Guid userId, Guid entryId)
+    {
+        var jockey = await _jockeys.GetByUserIdAsync(userId);
+        if (jockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
+        }
+
+        var entry = await _raceEntries.GetByIdAsync(entryId);
+        if (entry == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy đăng ký cuộc đua");
+        }
+        if (entry.JockeyId != jockey.Id)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status403Forbidden, "Bạn không phải kỵ sĩ của ngựa này");
+        }
+
+        entry.JockeyConfirmed = true;
+        await _raceEntries.UpdateAsync(entry);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult<object>.Ok(entry);
+    }
+
+    public async Task<ServiceResult<object>> DeclineRaceEntryAsync(Guid userId, Guid entryId)
+    {
+        var jockey = await _jockeys.GetByUserIdAsync(userId);
+        if (jockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
+        }
+
+        var entry = await _raceEntries.GetByIdAsync(entryId);
+        if (entry == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy đăng ký cuộc đua");
+        }
+        if (entry.JockeyId != jockey.Id)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status403Forbidden, "Bạn không phải kỵ sĩ của ngựa này");
+        }
+
+        entry.JockeyId = null;
+        entry.JockeyConfirmed = false;
+        await _raceEntries.UpdateAsync(entry);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult<object>.Ok(entry);
+    }
+
+    public async Task<ServiceResult<object>> GetMyProfileAsync(Guid userId)
+    {
+        var jockey = await _jockeys.GetByUserIdAsync(userId);
+        if (jockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
+        }
+
+        return ServiceResult<object>.Ok(new
+        {
+            id = jockey.Id,
+            fullName = jockey.User?.FullName,
+            email = jockey.User?.Email,
+            licenseNumber = jockey.LicenseNumber,
+            totalRaces = jockey.TotalRaces,
+            totalWins = jockey.TotalWins,
+            winRate = jockey.WinRate,
+            rank = jockey.Rank,
+            approvalStatus = jockey.ApprovalStatus.ToString()
+        });
     }
 }

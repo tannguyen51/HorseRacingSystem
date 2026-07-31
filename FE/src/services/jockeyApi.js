@@ -178,3 +178,15 @@ export const respondJockeyInvitation = async (invitationId, accept) =>
 
 export const getJockeyAssignedRaces = async () =>
   asArray(await request("/api/jockeys/races")).map(normalizeAssignedRace);
+
+export const getJockeyPendingEntries = async () =>
+  asArray(await request("/api/jockeys/entries/pending"));
+
+export const getMyJockeyProfile = async () =>
+  unwrapResponseData(await request("/api/jockeys/me"));
+
+export const confirmJockeyEntry = async (entryId) =>
+  request(`/api/jockeys/entries/${entryId}/confirm`, { method: "POST" });
+
+export const declineJockeyEntry = async (entryId) =>
+  request(`/api/jockeys/entries/${entryId}/decline`, { method: "POST" });

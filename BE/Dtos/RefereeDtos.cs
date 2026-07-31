@@ -61,6 +61,8 @@ public class RefereeAssignmentResponse
     public Guid RaceId { get; set; }
     public string RaceName { get; set; } = string.Empty;
     public string RaceStatus { get; set; } = string.Empty;
+    public string? RoundName { get; set; }
+    public string? TournamentName { get; set; }
     public Guid RefereeId { get; set; }
     public string? RefereeName { get; set; }
     public string Role { get; set; } = string.Empty;

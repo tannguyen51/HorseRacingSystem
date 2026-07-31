@@ -11,7 +11,9 @@ public interface IPredictionRepository
     Task AddAsync(Prediction prediction);
     Task<List<Prediction>> GetByUserAsync(Guid spectatorUserId);
     Task<List<Prediction>> GetByRaceAsync(Guid raceId);
+    Task<List<Prediction>> GetAllAsync();
     Task ExecuteUpdateLosersAsync(Guid raceId, Guid winningHorseId);
     Task ExecuteUpdateWinnersAsync(Guid raceId, Guid winningHorseId);
     Task<List<Prediction>> GetWinnersByRaceAsync(Guid raceId);
+    Task DeleteAsync(Guid id);
 }

@@ -65,16 +65,6 @@ public class RaceService : IRaceService
         return ServiceResult<object>.Ok(tournaments);
     }
 
-    public async Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId)
-    {
-        return await _raceManagement.OpenRegistrationAsync(raceId);
-    }
-
-    public async Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId)
-    {
-        return await _raceManagement.CloseRegistrationAsync(raceId);
-    }
-
     public async Task<ServiceResult<bool>> ReleaseHorseAsync(Guid raceId, Guid horseId)
     {
         return await _raceManagement.ReleaseHorseAsync(raceId, horseId);

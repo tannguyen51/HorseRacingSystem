@@ -46,22 +46,6 @@ public class RacesController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
-    [HttpPost("{id:guid}/open-registration")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> OpenRegistration(Guid id)
-    {
-        var result = await _raceService.OpenRegistrationAsync(id);
-        return StatusCode(result.StatusCode, result.Result);
-    }
-
-    [HttpPost("{id:guid}/close-registration")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> CloseRegistration(Guid id)
-    {
-        var result = await _raceService.CloseRegistrationAsync(id);
-        return StatusCode(result.StatusCode, result.Result);
-    }
-
     [HttpDelete("{id:guid}/horses/{horseId:guid}/release")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult> ReleaseHorse(Guid id, Guid horseId)

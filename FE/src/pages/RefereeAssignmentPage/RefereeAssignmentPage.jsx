@@ -2,46 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMyAssignments, respondToRefereeAssignment } from "../../services/refereeAssignmentApi";
 import "./RefereeAssignmentPage.css";
 
-/* ── Fallback data when API fails ── */
-const fallbackAssignments = [
-  {
-    id: "fb1",
-    raceName: "Vòng loại 1 - Chiều 15/06",
-    raceDate: "2026-06-15T14:00:00Z",
-    location: "Trường đua Bình Dương",
-    role: "Trọng tài chính",
-    status: "Confirmed",
-    assignedAt: "2026-06-10T08:00:00Z",
-  },
-  {
-    id: "fb2",
-    raceName: "Bán kết - Sáng 22/06",
-    raceDate: "2026-06-22T09:00:00Z",
-    location: "Trường đua Thống Nhất",
-    role: "Trọng tài phụ",
-    status: "Assigned",
-    assignedAt: "2026-06-15T10:00:00Z",
-  },
-  {
-    id: "fb3",
-    raceName: "Chung kết - 30/06",
-    raceDate: "2026-06-30T16:00:00Z",
-    location: "Trường đua Quốc gia",
-    role: "Trọng tài xuất phát",
-    status: "Completed",
-    assignedAt: "2026-06-01T07:00:00Z",
-  },
-  {
-    id: "fb4",
-    raceName: "Vòng 2 - Chiều 18/06",
-    raceDate: "2026-06-18T13:30:00Z",
-    location: "Trường đua Phú Thọ",
-    role: "Giám sát",
-    status: "Assigned",
-    assignedAt: "2026-06-12T09:00:00Z",
-  },
-];
-
 /* ── Status config ── */
 const statusConfig = {
   Assigned: { label: "Chờ xử lý", className: "ra-badge--pending" },
@@ -51,6 +11,7 @@ const statusConfig = {
   Completed: { label: "Hoàn thành", className: "ra-badge--completed" },
   Rejected: { label: "Đã từ chối", className: "ra-badge--rejected" },
   Declined: { label: "Đã từ chối", className: "ra-badge--rejected" },
+  Cancelled: { label: "Đã từ chối", className: "ra-badge--rejected" },
 };
 
 /* ── Helpers ── */
@@ -111,7 +72,7 @@ export default function RefereeAssignmentPage() {
       } catch (e) {
         if (!cancelled) {
           setError(e.message);
-          setAssignments(fallbackAssignments);
+          setAssignments([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -140,7 +101,7 @@ export default function RefereeAssignmentPage() {
         setAssignments((prev) =>
           prev.map((a) =>
             a.id === assignmentId
-              ? { ...a, status: accept ? "Confirmed" : "Rejected" }
+              ? { ...a, status: accept ? "Confirmed" : "Cancelled" }
               : a
           )
         );
@@ -226,7 +187,7 @@ export default function RefereeAssignmentPage() {
         ? "ra-card--confirmed"
         : a.status === "Completed"
           ? "ra-card--completed"
-          : a.status === "Rejected" || a.status === "Declined"
+          : a.status === "Rejected" || a.status === "Declined" || a.status === "Cancelled"
             ? "ra-card--rejected"
             : "ra-card--pending";
 
@@ -404,9 +365,9 @@ export default function RefereeAssignmentPage() {
         )}
 
         {/* ── Error banner ── */}
-        {error && assignments.length > 0 && (
+        {error && (
           <div className="ra-info">
-            Đã xảy ra lỗi khi tải dữ liệu từ máy chủ. Hiển thị dữ liệu mẫu.
+            Không thể tải dữ liệu từ máy chủ: {error}
           </div>
         )}
 

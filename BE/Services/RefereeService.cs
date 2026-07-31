@@ -239,6 +239,23 @@ public class RefereeService : IRefereeService
         }
     }
 
+    public async Task<ServiceResult<IEnumerable<RefereeAssignmentResponse>>> GetAllAssignmentsAsync()
+    {
+        try
+        {
+            var assignments = await _assignmentRepo.GetAllAsync();
+            var responses = assignments.Select(a =>
+                MapToAssignmentResponse(a, a.Race, a.Referee)).ToList();
+
+            return ServiceResult<IEnumerable<RefereeAssignmentResponse>>.Ok(responses);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<IEnumerable<RefereeAssignmentResponse>>.Fail(
+                500, $"Lỗi truy xuất phân công: {ex.Message}");
+        }
+    }
+
     public async Task<ServiceResult<RefereeAssignmentResponse>> ConfirmAssignmentAsync(ConfirmRefereeAssignmentRequest request)
     {
         try
@@ -293,6 +310,8 @@ public class RefereeService : IRefereeService
             RaceId = assignment.RaceId,
             RaceName = race?.Name,
             RaceStatus = race?.Status.ToString() ?? string.Empty,
+            RoundName = race?.Round?.Name,
+            TournamentName = race?.Tournament?.Name,
             RefereeId = assignment.RefereeId,
             RefereeName = referee?.User?.FullName,
             Role = assignment.Role,

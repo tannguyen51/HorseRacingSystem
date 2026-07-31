@@ -108,12 +108,6 @@ export const getAllRegistrations = async () =>
 export const getRegistrationDetail = async (id) =>
   unwrap(await request(`/api/admin/registrations/${id}`));
 
-export const publishRaceResult = (raceId, payload) =>
-  request(`/api/admin/races/${raceId}/publish-result`, {
-    method: "POST",
-    body: JSON.stringify(payload || {}),
-  });
-
 // Referee management
 export const getActiveReferees = async () =>
   unwrap(await request("/api/referees/active"));
@@ -138,12 +132,6 @@ export const rejectRaceEntry = (entryId, reason) =>
   request(`/api/admin/race-entries/${entryId}/reject`, {
     method: "POST",
     body: JSON.stringify({ reason }),
-  });
-
-export const settlePredictions = (raceId, winningHorseId) =>
-  request(`/api/admin/races/${raceId}/settle-predictions`, {
-    method: "POST",
-    body: JSON.stringify({ winningHorseId }),
   });
 
 export const approveRaceResult = (raceId) =>

@@ -11,7 +11,7 @@ import { getRaceEntries } from "../../services/refereeApi";
 import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
-const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt" };
+const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt", resultapproved: "Đã duyệt kết quả" };
 
 const formatCountdown = (value) => {
   if (!value) return "--:--";
@@ -152,7 +152,13 @@ function SpectatorPredictionFormPage() {
     return races
       .filter((race) => {
         const tid = race?.tournamentId ?? race?.TournamentId;
-        return !selectedTournament || tid === selectedTournament;
+        if (selectedTournament && tid !== selectedTournament) return false;
+        // Only show races that can be bet on: Scheduled only
+        const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
+        if (status === "finished" || status === "cancelled" || status === "inprogress" ||
+            status === "awaitingresult" || status === "resultpendingapproval" ||
+            status === "registrationclosed") return false;
+        return true;
       })
       .map((race) => {
         const id = race?.id ?? race?.Id;

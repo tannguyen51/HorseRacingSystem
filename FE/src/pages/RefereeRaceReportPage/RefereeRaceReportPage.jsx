@@ -42,11 +42,25 @@ const MONTH_FULL = [
   "Tháng 6",
 ];
 
+const RACE_STATUS_LABEL = {
+  Scheduled: "Đã lên lịch",
+  RegistrationOpen: "Mở đăng ký",
+  RegistrationClosed: "Đóng đăng ký",
+  InProgress: "Đang đua",
+  AwaitingResult: "Chờ kết quả",
+  ResultPendingApproval: "Chờ duyệt",
+  ResultApproved: "Đã duyệt",
+  Finished: "Đã kết thúc",
+  Cancelled: "Đã hủy",
+};
+
+const CAN_SUBMIT_RESULT = ["InProgress", "AwaitingResult", "ResultPendingApproval"];
+
 export default function RefereeRaceReportPage() {
   const [assignments, setAssignments] = useState([]);
   const [selectedRaceId, setSelectedRaceId] = useState("");
   const [existingReport, setExistingReport] = useState(null);
-  const [form, setForm] = useState({ content: "", rating: 5, notes: "" });
+  const [form, setForm] = useState({ content: "", notes: "" });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState("");
@@ -160,20 +174,18 @@ export default function RefereeRaceReportPage() {
     try {
       await createReport({
         raceId: selectedRaceId,
-        content: form.content,
-        rating: Number(form.rating),
-        notes: form.notes,
+        details: form.content,
+        incidents: form.notes,
       });
       setMsg("Đã gửi báo cáo thành công!");
       const newReport = {
         raceId: selectedRaceId,
-        content: form.content,
-        rating: Number(form.rating),
-        notes: form.notes,
+        details: form.content,
+        incidents: form.notes,
         createdAt: new Date().toISOString(),
       };
       setRecentReports((prev) => [newReport, ...prev].slice(0, 10));
-      setForm({ content: "", rating: 5, notes: "" });
+      setForm({ content: "", notes: "" });
       getRaceReport(selectedRaceId)
         .then((d) => setExistingReport(d))
         .catch(() => {});
@@ -211,6 +223,14 @@ export default function RefereeRaceReportPage() {
       (a) => (a.raceId || a.RaceId) === selectedRaceId
     )?.RaceName ||
     "Cuộc đua đã chọn";
+
+  const currentRaceStatus =
+    assignments.find((a) => (a.raceId || a.RaceId) === selectedRaceId)
+      ?.raceStatus ||
+    assignments.find((a) => (a.raceId || a.RaceId) === selectedRaceId)
+      ?.RaceStatus ||
+    "";
+  const canSubmitResult = CAN_SUBMIT_RESULT.includes(currentRaceStatus);
 
   return (
     <div className="rr-wrap">
@@ -279,29 +299,12 @@ export default function RefereeRaceReportPage() {
               <div className="rr-existing">
                 <div className="rr-existing-row">
                   <span className="rr-existing-label">Nội dung</span>
-                  <span>{existingReport.content || existingReport.Content || "-"}</span>
+                  <span>{existingReport.details || existingReport.Details || "-"}</span>
                 </div>
-                <div className="rr-existing-row">
-                  <span className="rr-existing-label">Đánh giá</span>
-                  <span className="rr-rating-stars">
-                    {Array.from(
-                      { length: 5 },
-                      (_, i) =>
-                        i < (existingReport.rating || existingReport.Rating || 0)
-                    ).map((filled, i) => (
-                      <span key={i} className={filled ? "star-filled" : "star-empty"}>
-                        ★
-                      </span>
-                    ))}
-                    <span className="rr-rating-num">
-                      {existingReport.rating || existingReport.Rating || "-"}/5
-                    </span>
-                  </span>
-                </div>
-                {existingReport.notes && (
+                {(existingReport.incidents || existingReport.Incidents) && (
                   <div className="rr-existing-row">
-                    <span className="rr-existing-label">Ghi chú</span>
-                    <span>{existingReport.notes}</span>
+                    <span className="rr-existing-label">Sự cố</span>
+                    <span>{existingReport.incidents || existingReport.Incidents}</span>
                   </div>
                 )}
               </div>
@@ -328,32 +331,14 @@ export default function RefereeRaceReportPage() {
                 />
               </div>
               <div className="rr-field">
-                <label>Đánh giá</label>
-                <div className="rr-rating-group">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      className={`rr-star-btn${
-                        n <= form.rating ? " rr-star-btn--on" : ""
-                      }`}
-                      onClick={() => setForm((p) => ({ ...p, rating: n }))}
-                    >
-                      ★
-                    </button>
-                  ))}
-                  <span className="rr-rating-val">{form.rating}/5</span>
-                </div>
-              </div>
-              <div className="rr-field">
-                <label>Ghi chú thêm</label>
+                <label>Sự cố / ghi chú thêm</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, notes: e.target.value }))
                   }
-                  placeholder="Ghi chú bổ sung (không bắt buộc)..."
-                  rows={2}
+                  placeholder="Các sự cố xảy ra trong cuộc đua (không bắt buộc)..."
+                  rows={3}
                 />
               </div>
               <button
@@ -380,6 +365,12 @@ export default function RefereeRaceReportPage() {
               <p className="rr-muted" style={{ marginBottom: 12 }}>
                 Chọn ngựa thắng cuộc. Kết quả sẽ được gửi lên admin duyệt.
               </p>
+              {currentRaceStatus && (
+                <p className="rr-muted" style={{ marginBottom: 12, fontWeight: 600, color: canSubmitResult ? "#166534" : "#b45309" }}>
+                  Trạng thái cuộc đua: {RACE_STATUS_LABEL[currentRaceStatus] ?? currentRaceStatus}
+                  {!canSubmitResult && " — chưa thể nộp kết quả lúc này"}
+                </p>
+              )}
               <div className="rr-field">
                 <label>Ngựa thắng cuộc</label>
                 <select
@@ -452,19 +443,9 @@ export default function RefereeRaceReportPage() {
                       </span>
                     </div>
                     <p className="rr-recent-excerpt">
-                      {r.content?.slice(0, 100)}
-                      {(r.content?.length || 0) > 100 ? "..." : ""}
+                      {r.details?.slice(0, 100)}
+                      {(r.details?.length || 0) > 100 ? "..." : ""}
                     </p>
-                    {r.rating && (
-                      <span className="rr-recent-rating">
-                        {Array.from({ length: r.rating }, (_, i) => (
-                          <span key={i}>★</span>
-                        ))}
-                        <span className="rr-recent-rating-num">
-                          {r.rating}/5
-                        </span>
-                      </span>
-                    )}
                   </div>
                 ))}
               </div>

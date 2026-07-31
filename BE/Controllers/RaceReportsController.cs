@@ -1,6 +1,9 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using HorseRacing.Dtos;
+using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services;
 using HorseRacing.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -13,12 +16,39 @@ namespace HorseRacing.Controllers;
 public class RaceReportsController : ControllerBase
 {
     private readonly IRaceReportService _service;
-    public RaceReportsController(IRaceReportService service) => _service = service;
+    private readonly IRefereeRepository _refereeRepo;
+    private readonly IRefereeAssignmentRepository _assignmentRepo;
+
+    public RaceReportsController(
+        IRaceReportService service,
+        IRefereeRepository refereeRepo,
+        IRefereeAssignmentRepository assignmentRepo)
+    {
+        _service = service;
+        _refereeRepo = refereeRepo;
+        _assignmentRepo = assignmentRepo;
+    }
 
     [HttpPost("reports")]
     [Authorize(Roles = "Referee")]
     public async Task<ActionResult> Create([FromBody] CreateRaceReportRequest r)
-        => OkR(await _service.CreateReportAsync(r));
+    {
+        var uid = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (uid is null || !Guid.TryParse(uid, out var userId))
+            return Unauthorized(new { message = "Token không hợp lệ" });
+
+        var referee = await _refereeRepo.GetByUserIdAsync(userId);
+        if (referee is null)
+            return NotFound(new { message = "Không tìm thấy hồ sơ trọng tài" });
+
+        var assignments = await _assignmentRepo.GetByRefereeAsync(referee.Id);
+        var isAssigned = assignments.Any(a => a.RaceId == r.RaceId);
+        if (!isAssigned)
+            return Forbid();
+
+        r.RefereeId = referee.Id;
+        return OkR(await _service.CreateReportAsync(r));
+    }
 
     [HttpGet("reports/{id:guid}")]
     [AllowAnonymous]

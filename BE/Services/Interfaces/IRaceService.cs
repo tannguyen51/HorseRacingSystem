@@ -11,7 +11,5 @@ public interface IRaceService
     Task<ServiceResult<object>> GetTournamentsAsync();
 
     // Race Registration Management
-    Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId);
-    Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId);
     Task<ServiceResult<bool>> ReleaseHorseAsync(Guid raceId, Guid horseId);
 }

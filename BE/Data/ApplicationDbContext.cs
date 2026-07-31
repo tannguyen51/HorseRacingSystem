@@ -37,6 +37,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Wallet> Wallets => Set<Wallet>();
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<WithdrawalRequest> WithdrawalRequests => Set<WithdrawalRequest>();
+    public DbSet<Track> Tracks => Set<Track>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

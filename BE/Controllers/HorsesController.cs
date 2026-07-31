@@ -12,12 +12,13 @@ using HorseRacing.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HorseRacing.Controllers;
 
 [ApiController]
 [Route("api/horses")]
-[Authorize(Roles = "HorseOwner,Jockey")]
+[Authorize(Roles = "HorseOwner,Jockey,Admin")]
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
@@ -62,6 +63,16 @@ public class HorsesController : ControllerBase
         var ownerId = GetUserId();
         var result = await _horseService.GetMyHorsesAsync(ownerId);
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> GetAllHorses()
+    {
+        using var scope = HttpContext.RequestServices.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<Data.ApplicationDbContext>();
+        var horses = await db.Horses.Where(h => h.ApprovalStatus == Models.ApprovalStatus.Approved).Include(h => h.Owner).ThenInclude(o => o!.User).ToListAsync();
+        return Ok(new { success = true, data = horses });
     }
 
     [HttpGet("{id:guid}")]

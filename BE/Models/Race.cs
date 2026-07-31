@@ -25,10 +25,15 @@ public class Race
     public Round? Round { get; set; }
 
     public DateTime ScheduledAt { get; set; }
+    public DateTime? ScheduledEndAt { get; set; }
     public DateTime? ActualStartTime { get; set; }
     public DateTime? ActualEndTime { get; set; }
 
     public RaceStatus Status { get; set; }
+
+    public Guid? TrackId { get; set; }
+
+    public Track? Track { get; set; }
 
     [MaxLength(500)]
     public string? Location { get; set; }
@@ -38,6 +43,9 @@ public class Race
 
     [MaxLength(2000)]
     public string? Description { get; set; }
+
+    [MaxLength(500)]
+    public string? RoundNames { get; set; }
 
     public int MaxParticipants { get; set; } = 12;
 

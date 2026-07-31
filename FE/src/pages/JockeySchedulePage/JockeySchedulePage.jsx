@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatJockeyDate, getJockeyAssignedRaces } from "../../services/jockeyApi";
+import {
+  formatJockeyDate,
+  getJockeyAssignedRaces,
+  getJockeyPendingEntries,
+  confirmJockeyEntry,
+  declineJockeyEntry,
+} from "../../services/jockeyApi";
 import "./JockeySchedulePage.css";
-
-const fallbackRaces = [
-  { id: "s1", title: "Coastal Derby", scheduledAt: "2026-06-12T09:30:00Z", location: "Gulfstream Park", tournamentName: "Summer Racing Cup", status: "Assigned", jockeyConfirmed: true, ownerConfirmed: true, horseName: "Silver Comet", horseBreed: "Thoroughbred", horseGender: "Female", horseAge: 4, horseWeight: 462, horseHeight: 161, horseTotalRaces: 12, horseTotalWins: 4, distance: 1600, maxParticipants: 12 },
-  { id: "s2", title: "Golden Mile", scheduledAt: "2026-06-17T08:00:00Z", location: "Santa Anita", tournamentName: "Elite Track Series", status: "Scheduled", jockeyConfirmed: true, ownerConfirmed: false, horseName: "Midnight Runner", horseBreed: "Arabian", horseGender: "Male", horseAge: 5, horseWeight: 470, horseHeight: 164, horseTotalRaces: 18, horseTotalWins: 6, distance: 2000, maxParticipants: 10 },
-];
 
 function DetailBlock({ icon, label, value }) {
   return (
@@ -21,12 +22,26 @@ function DetailBlock({ icon, label, value }) {
 
 export default function JockeySchedulePage() {
   const [races, setRaces] = useState([]);
+  const [pendingEntries, setPendingEntries] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedRace, setSelectedRace] = useState(null);
   const [detailMode, setDetailMode] = useState("race");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [showTimeline, setShowTimeline] = useState(false);
+
+  const loadPending = async () => {
+    setPendingLoading(true);
+    try {
+      const data = await getJockeyPendingEntries();
+      setPendingEntries(Array.isArray(data) ? data : []);
+    } catch {
+      setPendingEntries([]);
+    } finally {
+      setPendingLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -36,12 +51,40 @@ export default function JockeySchedulePage() {
         const data = await getJockeyAssignedRaces();
         if (!cancelled) { setRaces(data); setSelectedRace(data[0] ?? null); }
       } catch {
-        if (!cancelled) { setRaces(fallbackRaces); setSelectedRace(fallbackRaces[0]); }
+        if (!cancelled) { setRaces([]); setSelectedRace(null); }
       } finally { if (!cancelled) setLoading(false); }
     };
     load();
+    loadPending();
     return () => { cancelled = true; };
   }, []);
+
+  const handleConfirmEntry = async (entryId) => {
+    try {
+      await confirmJockeyEntry(entryId);
+      await loadPending();
+      const data = await getJockeyAssignedRaces();
+      setRaces(data);
+      setSelectedRace((prev) => {
+        if (prev && (prev.id ?? prev.entryId) === entryId) return data.find(r => (r.id ?? r.entryId) === entryId) ?? prev;
+        return prev;
+      });
+    } catch (err) {
+      alert(err?.message ?? "Không thể xác nhận.");
+    }
+  };
+
+  const handleDeclineEntry = async (entryId) => {
+    if (!window.confirm("Từ chối tham gia cuộc đua này?")) return;
+    try {
+      await declineJockeyEntry(entryId);
+      await loadPending();
+      const data = await getJockeyAssignedRaces();
+      setRaces(data);
+    } catch (err) {
+      alert(err?.message ?? "Không thể từ chối.");
+    }
+  };
 
   const sortedRaces = useMemo(() =>
     [...races].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()),
@@ -80,6 +123,34 @@ export default function JockeySchedulePage() {
           <span className="js-sum-chip"><strong>{todayCount}</strong> Hôm nay</span>
         </div>
       </div>
+
+      {/* Pending confirmations */}
+      {pendingLoading ? null : pendingEntries.length > 0 && (
+        <div className="js-pending">
+          <div className="js-pending__header">
+            <h3>Chờ bạn xác nhận tham gia ({pendingEntries.length})</h3>
+            <span>Cuộc đua chỉ bắt đầu khi kỵ sĩ xác nhận</span>
+          </div>
+          <div className="js-pending__list">
+            {pendingEntries.map((p) => (
+              <div key={p.entryId ?? p.EntryId} className="js-pending__item">
+                <div>
+                  <strong>{p.raceName ?? p.RaceName ?? "Cuộc đua"}</strong>
+                  <span>
+                    {p.horseName ?? p.HorseName ?? "Ngựa"}
+                    {p.tournamentName ? ` · ${p.tournamentName}` : ""}
+                    {p.scheduledAt ? ` · ${formatJockeyDate(p.scheduledAt, "")}` : ""}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="js-btn js-btn--primary" onClick={() => handleConfirmEntry(p.entryId ?? p.EntryId)}>Xác nhận</button>
+                  <button className="js-btn js-btn--outline" onClick={() => handleDeclineEntry(p.entryId ?? p.EntryId)}>Từ chối</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="js-toolbar">
@@ -175,7 +246,11 @@ export default function JockeySchedulePage() {
                   )}
 
                   <div className="js-detail-actions">
-                    <button className="js-btn js-btn--primary" onClick={() => window.open("#", "_blank")}>Xem chi tiết cuộc đua</button>
+                    {!selectedRace.jockeyConfirmed && (
+                      <button className="js-btn js-btn--primary" onClick={() => handleConfirmEntry(selectedRace.id ?? selectedRace.entryId)}>
+                        Xác nhận tham gia cuộc đua
+                      </button>
+                    )}
                     <button className="js-btn js-btn--outline" onClick={() => setDetailMode(detailMode === "race" ? "horse" : "race")}>
                       {detailMode === "race" ? "Xem hồ sơ ngựa" : "Xem thông tin đua"}
                     </button>

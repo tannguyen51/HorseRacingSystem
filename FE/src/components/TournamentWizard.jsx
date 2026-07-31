@@ -10,18 +10,6 @@ function TournamentWizard({ onClose, onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const [form, setForm] = useState(() => {
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      try {
-        return JSON.parse(draft);
-      } catch {
-        return getDefaultForm();
-      }
-    }
-    return getDefaultForm();
-  });
-
   function getDefaultForm() {
     const now = new Date();
     const startDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -40,6 +28,18 @@ function TournamentWizard({ onClose, onSuccess }) {
       prizePool: 0,
     };
   }
+
+  const [form, setForm] = useState(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try {
+        return JSON.parse(draft);
+      } catch {
+        return getDefaultForm();
+      }
+    }
+    return getDefaultForm();
+  });
 
   // Auto-save draft every 5 seconds
   useEffect(() => {

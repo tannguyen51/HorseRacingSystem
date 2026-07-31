@@ -45,6 +45,16 @@ public class PredictionRepository : IPredictionRepository
             .ToListAsync();
     }
 
+    public Task<List<Prediction>> GetAllAsync()
+    {
+        return _db.Predictions
+            .Include(p => p.Race)!.ThenInclude(r => r!.Tournament)
+            .Include(p => p.PredictedHorse)
+            .Include(p => p.Spectator)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+    }
+
     public Task ExecuteUpdateLosersAsync(Guid raceId, Guid winningHorseId)
     {
         return _db.Predictions
@@ -76,5 +86,11 @@ public class PredictionRepository : IPredictionRepository
             .Include(p => p.PredictedHorse)
             .Where(p => p.RaceId == raceId && p.Status == PredictionStatus.Won)
             .ToListAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var prediction = await _db.Predictions.FindAsync(id);
+        if (prediction != null) { _db.Predictions.Remove(prediction); }
     }
 }

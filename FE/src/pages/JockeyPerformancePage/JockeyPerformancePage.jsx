@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { getJockeyAssignedRaces } from "../../services/jockeyApi";
+import { getJockeyAssignedRaces, getMyJockeyProfile } from "../../services/jockeyApi";
 import "./JockeyPerformancePage.css";
-
-const fallbackRaces = [
-  { id: "s1", title: "Coastal Derby", scheduledAt: "2026-06-12T09:30:00Z", location: "Gulfstream Park", horseName: "Silver Comet", horseTotalRaces: 12, horseTotalWins: 4, status: "Assigned", jockeyConfirmed: true, distance: 1600 },
-  { id: "s2", title: "Golden Mile", scheduledAt: "2026-06-17T08:00:00Z", location: "Santa Anita", horseName: "Midnight Runner", horseTotalRaces: 18, horseTotalWins: 6, status: "Scheduled", jockeyConfirmed: true, distance: 2000 },
-  { id: "s3", title: "Spring Trophy", scheduledAt: "2026-07-01T10:00:00Z", location: "Churchill Downs", horseName: "Thunder Strike", horseTotalRaces: 8, horseTotalWins: 5, status: "Assigned", jockeyConfirmed: false, distance: 1800 },
-];
 
 export default function JockeyPerformancePage() {
   const [races, setRaces] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
@@ -19,21 +14,27 @@ export default function JockeyPerformancePage() {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      try { setLoading(true); const data = await getJockeyAssignedRaces(); if (!cancelled) setRaces(data); }
-      catch { if (!cancelled) setRaces(fallbackRaces); }
-      finally { if (!cancelled) setLoading(false); }
+      try {
+        setLoading(true);
+        const data = await getJockeyAssignedRaces();
+        if (!cancelled) setRaces(data);
+      } catch {
+        if (!cancelled) setRaces([]);
+      } finally { if (!cancelled) setLoading(false); }
     };
     load();
+    getMyJockeyProfile().then((p) => { if (!cancelled) setProfile(p); }).catch(() => {});
     return () => { cancelled = true; };
   }, []);
 
   const { assignedRaces, confirmed, totalStarts, totalWins, winRate } = useMemo(() => {
-    const a = races.length; const c = races.filter(r => r.jockeyConfirmed).length;
-    const s = races.reduce((sum, r) => sum + Number(r.horseTotalRaces || 0), 0);
-    const w = races.reduce((sum, r) => sum + Number(r.horseTotalWins || 0), 0);
-    const wr = s > 0 ? Math.round((w / s) * 100) : 0;
+    const a = races.length;
+    const c = races.filter(r => r.jockeyConfirmed).length;
+    const s = Number(profile?.totalRaces ?? 0);
+    const w = Number(profile?.totalWins ?? 0);
+    const wr = profile?.winRate != null ? Number(profile.winRate) : s > 0 ? Math.round((w / s) * 100) : 0;
     return { assignedRaces: a, confirmed: c, totalStarts: s, totalWins: w, winRate: wr };
-  }, [races]);
+  }, [races, profile]);
 
   // Horse stats
   const horseStats = useMemo(() => {

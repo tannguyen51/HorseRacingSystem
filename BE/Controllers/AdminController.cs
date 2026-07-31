@@ -145,14 +145,6 @@ public class AdminController : ControllerBase
     }
 
     // Operations
-    [Obsolete("Use referee submit-result + admin approve-result flow instead.")]
-    [HttpPost("races/{raceId:guid}/publish-result")]
-    public async Task<ActionResult> PublishRaceResult(Guid raceId, [FromBody] RaceResultRequest request)
-    {
-        var result = await _adminService.PublishRaceResultAsync(raceId, request);
-        return StatusCode(result.StatusCode, result.Result);
-    }
-
     [HttpPost("races/{raceId:guid}/approve-result")]
     public async Task<ActionResult> ApproveRaceResult(Guid raceId)
     {
@@ -169,11 +161,10 @@ public class AdminController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
-    [Obsolete("Use approve-result flow instead — settlement is now automatic on approval.")]
-    [HttpPost("races/{raceId:guid}/settle-predictions")]
-    public async Task<ActionResult> SettlePredictions(Guid raceId, [FromBody] RaceResultRequest request)
+    [HttpGet("predictions")]
+    public async Task<ActionResult> GetPredictions()
     {
-        var result = await _adminService.SettlePredictionsAsync(raceId, request);
+        var result = await _adminService.GetPredictionsAsync();
         return StatusCode(result.StatusCode, result.Result);
     }
 

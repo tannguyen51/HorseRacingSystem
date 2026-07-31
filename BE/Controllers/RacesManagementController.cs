@@ -95,6 +95,13 @@ public class RacesManagementController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpPut("{raceId:guid}/entries/{horseId:guid}/odds")]
+    public async Task<ActionResult> UpdateOdds(Guid raceId, Guid horseId, [FromBody] UpdateOddsRequest request)
+    {
+        var result = await _raceService.UpdateOddsAsync(raceId, horseId, request.Odds);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     // Race Control
     [HttpPost("{raceId:guid}/start")]
     public async Task<ActionResult> StartRace(Guid raceId)

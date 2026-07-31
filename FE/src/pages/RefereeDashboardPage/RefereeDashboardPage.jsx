@@ -3,25 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { getMyAssignments } from "../../services/refereeAssignmentApi";
 import "./RefereeDashboardPage.css";
 
-/* ==================================================================
-   Fallback data when the API is unreachable
-   ================================================================== */
-const fallbackAssignments = [
-  { id: "fb1", raceName: "Vòng loại 1 - Chiều 15/06",  role: "Trọng tài chính",    status: "Confirmed", assignedAt: "2026-06-10T08:00:00Z" },
-  { id: "fb2", raceName: "Bán kết - Sáng 22/06",        role: "Trọng tài phụ",      status: "Assigned",  assignedAt: "2026-06-15T10:00:00Z" },
-  { id: "fb3", raceName: "Chung kết - 30/06",            role: "Trọng tài xuất phát",status: "Completed", assignedAt: "2026-06-01T07:00:00Z" },
-  { id: "fb4", raceName: "Vòng 2 - Chiều 18/06",        role: "Giám sát",           status: "Assigned",  assignedAt: "2026-06-12T09:00:00Z" },
-  { id: "fb5", raceName: "Vòng loại 2 - Sáng 20/06",    role: "Trọng tài chính",    status: "Completed", assignedAt: "2026-06-08T07:00:00Z" },
-  { id: "fb6", raceName: "Bán kết nhánh - 24/06",       role: "Trọng tài phụ",      status: "Confirmed", assignedAt: "2026-06-18T09:00:00Z" },
-  { id: "fb7", raceName: "Tứ kết - 27/06",               role: "Giám sát",           status: "Rejected",  assignedAt: "2026-06-20T11:00:00Z" },
-];
-
 const STATUS_PILL = {
   Confirmed: "rd-pill--Confirmed",
   Completed: "rd-pill--Completed",
   Assigned:  "rd-pill--Assigned",
   Pending:   "rd-pill--Pending",
   Rejected:  "rd-pill--Rejected",
+  Cancelled: "rd-pill--Rejected",
 };
 
 /* ── Helpers ── */
@@ -116,7 +104,7 @@ export default function RefereeDashboardPage() {
       } catch (e) {
         if (!alive) return;
         setError(e.message);
-        setAssignments(fallbackAssignments);
+        setAssignments([]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -144,10 +132,9 @@ export default function RefereeDashboardPage() {
       confirmedCount: confirmed,
       completedCount: completed,
       pendingCount: pending,
-      // Simulated health / infraction metrics for the demo
-      healthCheckCount: Math.max(0, 4 - completed),
-      infractionCount: 3,
-      infractionSpark: [4, 2, 5, 1, 3, 6, 2],
+      healthCheckCount: 0,
+      infractionCount: 0,
+      infractionSpark: [],
     };
   }, [assignments]);
 
@@ -212,10 +199,10 @@ export default function RefereeDashboardPage() {
 
   /* ── Infraction bar chart data ── */
   const barData = [
-    { label: "T1", value: 4 },
-    { label: "T2", value: 2 },
-    { label: "T3", value: 5 },
-    { label: "T4", value: 1 },
+    { label: "T1", value: 0 },
+    { label: "T2", value: 0 },
+    { label: "T3", value: 0 },
+    { label: "T4", value: 0 },
   ];
   const maxBar = Math.max(...barData.map(b => b.value), 1);
 
@@ -358,7 +345,7 @@ export default function RefereeDashboardPage() {
                             {a.status === "Confirmed" ? "Đã xác nhận" :
                              a.status === "Completed" ? "Hoàn thành" :
                              a.status === "Assigned" ? "Đã phân công" :
-                             a.status === "Rejected" ? "Từ chối" : a.status}
+                             a.status === "Rejected" || a.status === "Cancelled" ? "Từ chối" : a.status}
                           </span>
                         </td>
                         <td>
@@ -430,7 +417,7 @@ export default function RefereeDashboardPage() {
           <div className="rd-error">{error}</div>
         )}
         {error && assignments.length > 0 && (
-          <div className="rd-info">Đã xảy ra lỗi khi tải dữ liệu từ máy chủ. Hiển thị dữ liệu mẫu.</div>
+          <div className="rd-info">Đã xảy ra lỗi khi tải một phần dữ liệu.</div>
         )}
       </div>
     </div>

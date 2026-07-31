@@ -24,7 +24,10 @@ public class AdminService : IAdminService
     private readonly IRefereeService _refereeService;
     private readonly ILiveResultService _liveResultService;
     private readonly IPredictionService _predictionService;
+    private readonly IPredictionRepository _predictionRepo;
     private readonly IRaceResultRepository _raceResultRepo;
+    private readonly IRaceEntryRepository _entryRepo;
+    private readonly IRaceReportRepository _reportRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public AdminService(
@@ -38,7 +41,10 @@ public class AdminService : IAdminService
         IRefereeService refereeService,
         ILiveResultService liveResultService,
         IPredictionService predictionService,
+        IPredictionRepository predictionRepo,
         IRaceResultRepository raceResultRepo,
+        IRaceEntryRepository entryRepo,
+        IRaceReportRepository reportRepo,
         IUnitOfWork unitOfWork)
     {
         _userRepo = userRepo;
@@ -51,7 +57,10 @@ public class AdminService : IAdminService
         _refereeService = refereeService;
         _liveResultService = liveResultService;
         _predictionService = predictionService;
+        _predictionRepo = predictionRepo;
         _raceResultRepo = raceResultRepo;
+        _entryRepo = entryRepo;
+        _reportRepo = reportRepo;
         _unitOfWork = unitOfWork;
     }
 
@@ -526,11 +535,11 @@ public class AdminService : IAdminService
                 return ServiceResult<bool>.Fail(404, "Chưa có kết quả cuộc đua. Trọng tài phải nộp kết quả trước.");
 
             // Check if there is at least one referee report
-            var hasReport = race.Reports?.Any() ?? false;
+            var hasReport = await _reportRepo.GetByRaceAsync(raceId) != null;
             if (!hasReport)
                 return ServiceResult<bool>.Fail(400, "Chưa có báo cáo từ trọng tài. Trọng tài phải nộp báo cáo trước khi duyệt kết quả.");
 
-            // Wrap in transaction: if settlement fails, race + result roll back
+            // Wrap in transaction: if approval fails, race + result roll back
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try
             {
@@ -539,13 +548,44 @@ public class AdminService : IAdminService
                 raceResult.ApprovedAt = DateTime.UtcNow;
                 await _raceResultRepo.UpdateAsync(raceResult);
 
-                race.Status = RaceStatus.Finished;
+                // Ghi kết quả vào entry + cập nhật thành tích ngựa/kỵ sĩ
+                var entries = await _entryRepo.GetByRaceAsync(raceId);
+                foreach (var entry in entries)
+                {
+                    if (entry.HorseId == raceResult.WinningHorseId)
+                    {
+                        entry.FinishPosition = 1;
+                    }
+
+                    var horse = await _horseRepo.GetByIdAsync(entry.HorseId);
+                    if (horse != null)
+                    {
+                        horse.TotalRaces += 1;
+                        if (entry.HorseId == raceResult.WinningHorseId) horse.TotalWins += 1;
+                        await _horseRepo.UpdateAsync(horse);
+                    }
+
+                    if (entry.JockeyId.HasValue)
+                    {
+                        var jockey = await _jockeyRepo.GetByIdAsync(entry.JockeyId.Value);
+                        if (jockey != null)
+                        {
+                            jockey.TotalRaces += 1;
+                            if (entry.HorseId == raceResult.WinningHorseId) jockey.TotalWins += 1;
+                            jockey.WinRate = jockey.TotalRaces > 0
+                                ? Math.Round((decimal)jockey.TotalWins / jockey.TotalRaces * 100, 1)
+                                : 0;
+                            await _jockeyRepo.UpdateAsync(jockey);
+                        }
+                    }
+                }
+                await _entryRepo.UpdateRangeAsync(entries);
+
+                race.Status = RaceStatus.ResultApproved;
                 race.UpdatedAt = DateTime.UtcNow;
                 await _raceRepo.UpdateAsync(race);
 
                 await _unitOfWork.SaveChangesAsync();
-
-                await _predictionService.SettlePredictionAsync(raceId, raceResult.WinningHorseId);
 
                 scope.Complete();
                 return ServiceResult<bool>.Ok(true);
@@ -558,6 +598,48 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             return ServiceResult<bool>.Fail(500, $"Lỗi phê duyệt kết quả: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<object>> GetPredictionsAsync()
+    {
+        try
+        {
+            var predictions = await _predictionRepo.GetAllAsync();
+            var items = predictions.Select(p => new
+            {
+                id = p.Id,
+                raceId = p.RaceId,
+                raceName = p.Race?.Name,
+                tournamentName = p.Race?.Tournament?.Name,
+                spectatorId = p.SpectatorUserId,
+                spectatorName = p.Spectator?.FullName ?? p.Spectator?.Email,
+                horseId = p.PredictedHorseId,
+                horseName = p.PredictedHorse?.Name ?? p.HorseNameSnapshot,
+                betAmount = p.BetAmount,
+                odds = p.Odds,
+                potentialPayout = p.PotentialPayout,
+                payoutAmount = p.PayoutAmount,
+                status = p.Status.ToString(),
+                createdAt = p.CreatedAt,
+                settledAt = p.SettledAt
+            }).ToList();
+
+            var summary = new
+            {
+                totalPredictions = items.Count,
+                totalBet = items.Sum(i => i.betAmount),
+                totalPaid = items.Sum(i => i.payoutAmount ?? 0),
+                won = items.Count(i => i.status == "Won"),
+                lost = items.Count(i => i.status == "Lost"),
+                pending = items.Count(i => i.status == "Pending")
+            };
+
+            return ServiceResult<object>.Ok(new { summary, items });
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<object>.Fail(500, $"Lỗi truy xuất dự đoán: {ex.Message}");
         }
     }
 

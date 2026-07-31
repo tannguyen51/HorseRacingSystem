@@ -49,6 +49,7 @@ export function SpectatorProfilePage() {
   const [depositStatus, setDepositStatus] = useState("idle");
   const [depositHistory, setDepositHistory] = useState([]);
   const [depositHistoryLoading, setDepositHistoryLoading] = useState(false);
+  const [showDepositHistory, setShowDepositHistory] = useState(false);
   const depositSince = useRef(null);
   const pollRef = useRef(null);
 
@@ -287,11 +288,7 @@ export function SpectatorProfilePage() {
           {walletBalance !== null && (
             <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(143,100,32,0.07)", border: "1px solid rgba(143,100,32,0.12)", textAlign: "center", marginBottom: 4 }}>
               <p style={{ margin: "0 0 2px", fontSize: 11, color: "#657086", textTransform: "uppercase" }}>Số dư ví</p>
-<<<<<<< HEAD
               <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} điểm</strong>
-=======
-              <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} Điểm</strong>
->>>>>>> 5d23a47 (Fix chức năng quên mật khẩu của login)
             </div>
           )}
 
@@ -414,6 +411,15 @@ export function SpectatorProfilePage() {
             <section className="sp-section">
               <div className="sp-section-header">
                 <h2>Nạp tiền</h2>
+                <button
+                  style={{ ...btnSecondary, fontSize: 13, padding: "6px 16px" }}
+                  onClick={() => {
+                    setShowDepositHistory((v) => !v);
+                    if (!showDepositHistory) loadDepositHistory();
+                  }}
+                >
+                  {showDepositHistory ? "Ẩn lịch sử" : "Lịch sử nạp tiền"}
+                </button>
               </div>
 
               <div className="sp-card">
@@ -454,11 +460,16 @@ export function SpectatorProfilePage() {
 
                 {depositStatus === "qr" && depositTx && (
                   <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "start" }}>
-                    <img
-                      src={`https://vietqr.app/img?acc=${depositTx.accountNumber}&bank=${encodeURIComponent(depositTx.bankCode ?? "TPBank")}&holder=${encodeURIComponent(depositTx.accountHolder)}&template=compact&showinfo=true&amount=${depositAmount}&des=${depositTx.reference}`}
-                      alt="QR chuyển khoản"
-                      style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
-                    />
+                    <div>
+                      <img
+                        src="/qr-nap-tien.png"
+                        alt="QR chuyển khoản"
+                        style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                      />
+                      <p style={{ margin: "8px 0 0", fontSize: 12, color: "#856404", background: "#fff3cd", padding: "8px 14px", borderRadius: 8 }}>
+                        Quét QR bằng ứng dụng ngân hàng, nhập đúng nội dung chuyển khoản để hệ thống tự ghi nhận.
+                      </p>
+                    </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(231,198,120,0.25)" }}>
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: "#657086", textTransform: "uppercase" }}>Số tiền</p>
@@ -484,11 +495,16 @@ export function SpectatorProfilePage() {
 
                 {depositStatus === "polling" && (
                   <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "start" }}>
-                    <img
-                      src={`https://vietqr.app/img?acc=${depositTx.accountNumber}&bank=${encodeURIComponent(depositTx.bankCode ?? "TPBank")}&holder=${encodeURIComponent(depositTx.accountHolder)}&template=compact&showinfo=true&amount=${depositAmount}&des=${depositTx.reference}`}
-                      alt="QR chuyển khoản"
-                      style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
-                    />
+                    <div>
+                      <img
+                        src="/qr-nap-tien.png"
+                        alt="QR chuyển khoản"
+                        style={{ width: 360, height: 360, borderRadius: 12, border: "1px solid rgba(143,100,32,0.15)" }}
+                      />
+                      <p style={{ margin: "8px 0 0", fontSize: 12, color: "#856404", background: "#fff3cd", padding: "8px 14px", borderRadius: 8 }}>
+                        Quét QR bằng ứng dụng ngân hàng, nhập đúng nội dung chuyển khoản để hệ thống tự ghi nhận.
+                      </p>
+                    </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       <div style={{ padding: "16px 20px", borderRadius: 12, background: "rgba(255,255,255,0.88)", border: "1.5px solid rgba(231,198,120,0.25)" }}>
                         <p style={{ margin: "0 0 4px", fontSize: 12, color: "#657086", textTransform: "uppercase" }}>Số tiền</p>
@@ -549,11 +565,12 @@ export function SpectatorProfilePage() {
                   </div>
                 )}
 
-                <div style={{ marginTop: 24, borderTop: "1px solid rgba(143,100,32,0.12)", paddingTop: 20 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <h3 style={{ margin: 0, color: "#172033", fontSize: 16 }}>Lịch sử nạp tiền</h3>
-                    <span style={{ fontSize: 12, color: "#657086" }}>Mới nhất trước</span>
-                  </div>
+                {showDepositHistory && (
+                  <div style={{ marginTop: 24, borderTop: "1px solid rgba(143,100,32,0.12)", paddingTop: 20 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                      <h3 style={{ margin: 0, color: "#172033", fontSize: 16 }}>Lịch sử nạp tiền</h3>
+                      <span style={{ fontSize: 12, color: "#657086" }}>Mới nhất trước</span>
+                    </div>
                   {depositHistoryLoading ? (
                     <p className="muted">Đang tải...</p>
                   ) : depositHistory.length === 0 ? (
@@ -570,7 +587,9 @@ export function SpectatorProfilePage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {depositHistory.map((item) => (
+                          {[...depositHistory]
+                            .sort((a, b) => new Date(b.createdAt ?? b.CreatedAt ?? 0) - new Date(a.createdAt ?? a.CreatedAt ?? 0))
+                            .map((item) => (
                             <tr key={item.id ?? item.Id}>
                               <td style={{ padding: "10px", borderBottom: "1px solid rgba(143,100,32,0.08)", color: "#34415b" }}>
                                 {item.createdAt ? new Date(item.createdAt).toLocaleString("vi-VN") : "—"}
@@ -601,6 +620,7 @@ export function SpectatorProfilePage() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
             </section>
           )}
@@ -610,6 +630,17 @@ export function SpectatorProfilePage() {
             <section className="sp-section">
               <div className="sp-section-header">
                 <h2>Rút tiền</h2>
+                <button
+                  style={{ ...btnSecondary, fontSize: 13, padding: "6px 16px" }}
+                  onClick={() => {
+                    setShowHistory(!showHistory);
+                    if (!showHistory) {
+                      getWithdrawalHistory().then((d) => setWdHistory(d?.data ?? d ?? []));
+                    }
+                  }}
+                >
+                  {showHistory ? "Ẩn lịch sử" : "Lịch sử rút tiền"}
+                </button>
               </div>
 
               {wdLoading ? (
@@ -622,11 +653,6 @@ export function SpectatorProfilePage() {
                       <h3 style={{ margin: 0, color: "#172033", fontSize: 16 }}>Tài khoản ngân hàng</h3>
                       {!showBankForm && wdAccounts.length === 0 && (
                         <button style={btnSecondary} onClick={() => setShowBankForm(true)}>Thêm tài khoản</button>
-                      )}
-                      {wdAccounts.length > 0 && (
-                        <button style={{ ...btnSecondary, fontSize: 13, padding: "6px 16px" }} onClick={() => setShowHistory(!showHistory)}>
-                          {showHistory ? "Ẩn lịch sử" : "Lịch sử rút tiền"}
-                        </button>
                       )}
                     </div>
 
@@ -677,13 +703,6 @@ export function SpectatorProfilePage() {
                             <button style={btnSecondary} onClick={() => { setShowBankForm(false); setBankForm({ bankName: "", accountNumber: "", accountHolder: "" }); }}>Huỷ</button>
                           )}
                         </div>
-                        {wdAccounts.length === 0 && wdHistory.length > 0 && (
-                          <div style={{ marginTop: 16 }}>
-                            <button style={{ ...btnSecondary, fontSize: 13, padding: "6px 16px" }} onClick={() => setShowHistory(!showHistory)}>
-                              {showHistory ? "Ẩn lịch sử" : "Lịch sử rút tiền"}
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div>
@@ -705,36 +724,6 @@ export function SpectatorProfilePage() {
                         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                           <button style={{ ...btnSecondary, fontSize: 13, padding: "6px 16px" }} onClick={() => setShowBankForm(true)}>Thêm tài khoản khác</button>
                         </div>
-                        {showHistory && (
-                          <div style={{ marginTop: 12 }}>
-                            {wdHistory.length === 0 ? (
-                              <p className="muted" style={{ textAlign: "center", padding: "16px 0" }}>Chưa có yêu cầu rút tiền.</p>
-                            ) : (
-                              <table className="sp-history-table">
-                                <thead>
-                                  <tr>
-                                    <th>Ngày</th>
-                                    <th>Ngân hàng</th>
-                                    <th>Số tài khoản</th>
-                                    <th>Số tiền</th>
-                                    <th>Trạng thái</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {wdHistory.map((w) => (
-                                    <tr key={w.id ?? w.Id}>
-                                      <td>{w.createdAt ? new Date(w.createdAt).toLocaleDateString() : "-"}</td>
-                                      <td>{w.bankName ?? w.BankName ?? "-"}</td>
-                                      <td>{w.accountNumber ?? w.AccountNumber ?? "-"}</td>
-                                      <td>{(w.amount ?? w.Amount ?? 0).toLocaleString()}đ</td>
-                                      <td><StatusBadge status={w.status ?? w.Status} /></td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            )}
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -754,6 +743,46 @@ export function SpectatorProfilePage() {
                       <div style={{ marginTop: 8 }}>
                         <button style={btnPrimary} onClick={submitWithdrawal}>Gửi yêu cầu</button>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Lịch sử rút tiền */}
+                  {showHistory && (
+                    <div className="sp-card">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                        <h3 style={{ margin: 0, color: "#172033", fontSize: 16 }}>Lịch sử rút tiền</h3>
+                        <span style={{ fontSize: 12, color: "#657086" }}>Mới nhất trước</span>
+                      </div>
+                      {wdHistory.length === 0 ? (
+                        <p className="muted" style={{ textAlign: "center", padding: "20px 0" }}>Chưa có yêu cầu rút tiền nào.</p>
+                      ) : (
+                        <div style={{ overflowX: "auto" }}>
+                          <table className="sp-history-table">
+                            <thead>
+                              <tr>
+                                <th>Ngày</th>
+                                <th>Ngân hàng</th>
+                                <th>Số tài khoản</th>
+                                <th>Số tiền</th>
+                                <th>Trạng thái</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {[...wdHistory]
+                                .sort((a, b) => new Date(b.createdAt ?? b.CreatedAt ?? 0) - new Date(a.createdAt ?? a.CreatedAt ?? 0))
+                                .map((w) => (
+                                <tr key={w.id ?? w.Id}>
+                                  <td>{w.createdAt ? new Date(w.createdAt).toLocaleDateString("vi-VN") : "-"}</td>
+                                  <td>{w.bankName ?? w.BankName ?? "-"}</td>
+                                  <td>{w.accountNumber ?? w.AccountNumber ?? "-"}</td>
+                                  <td>{(w.amount ?? w.Amount ?? 0).toLocaleString()}đ</td>
+                                  <td><StatusBadge status={w.status ?? w.Status} /></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>

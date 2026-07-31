@@ -69,6 +69,7 @@ public class SepayController : ControllerBase
     }
 
     [HttpGet("webhook/test")]
+    [Authorize(Roles = "Admin")]
     public ActionResult WebhookTest()
     {
         var apiKey = _config["Sepay:ApiKey"];

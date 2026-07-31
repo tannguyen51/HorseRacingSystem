@@ -7,8 +7,6 @@ const adminNavItems = [
   { to: "/admin", label: "Tổng quan", end: true },
   { to: "/admin/users", label: "Người dùng" },
   { to: "/admin/tournaments", label: "Giải đấu" },
-  { to: "/admin/races", label: "Cuộc đua" },
-  { to: "/admin/prizes", label: "Báo cáo" },
   { to: "/admin/audit", label: "Hệ thống" },
 ];
 

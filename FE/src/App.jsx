@@ -26,6 +26,7 @@ const SpectatorRaceSchedulePage = lazy(() => import("./pages/SpectatorRaceSchedu
 const SpectatorLiveRankingPage = lazy(() => import("./pages/SpectatorLiveRankingPage/SpectatorLiveRankingPage"));
 const SpectatorPredictionFormPage = lazy(() => import("./pages/SpectatorPredictionFormPage/SpectatorPredictionFormPage"));
 const SpectatorPredictionResultPage = lazy(() => import("./pages/SpectatorPredictionResultPage/SpectatorPredictionResultPage"));
+const SpectatorRewardNotificationsPage = lazy(() => import("./pages/SpectatorRewardNotificationsPage/SpectatorRewardNotificationsPage"));
 const JockeyInvitationPage = lazy(() => import("./pages/JockeyInvitationPage/JockeyInvitationPage"));
 const JockeyInvitationDetailPage = lazy(() => import("./pages/JockeyInvitationPage/JockeyInvitationDetailPage"));
 const JockeyDashboardPage = lazy(() => import("./pages/JockeyDashboardPage/JockeyDashboardPage"));
@@ -54,7 +55,6 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage/RegisterPage"));
 const RegisterHorseOwnerPage = lazy(() => import("./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage"));
 const RegisterJockeyPage = lazy(() => import("./pages/RegisterJockeyPage/RegisterJockeyPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
-const RaceManagementPage = lazy(() => import("./pages/RaceManagementPage/RaceManagementPage"));
 import "./App.css";
 
 const getStoredAuthUser = () => {
@@ -124,7 +124,7 @@ function AppLayout() {
               <Route path="/spectator/live-ranking" element={<SpectatorLiveRankingPage />} />
               <Route path="/spectator/predictions" element={<SpectatorPredictionFormPage />} />
               <Route path="/spectator/predictions/results" element={<SpectatorPredictionResultPage />} />
-              <Route path="/spectator/rewards" element={<Navigate to="/spectator/predictions/results" replace />} />
+              <Route path="/spectator/rewards" element={<SpectatorRewardNotificationsPage />} />
               <Route path="/spectator/profile" element={<SpectatorProfilePage />} />
             </Route>
 
@@ -174,7 +174,6 @@ function AppLayout() {
               <Route path="/admin/tournaments" element={<AdminPage />} />
               <Route path="/admin/rounds" element={<AdminPage />} />
               <Route path="/admin/races" element={<AdminPage />} />
-              <Route path="/admin/races/:raceId" element={<RaceManagementPage />} />
               <Route path="/admin/prizes" element={<AdminPage />} />
               <Route path="/admin/protests" element={<AdminPage />} />
               <Route path="/admin/transfers" element={<AdminPage />} />
@@ -183,7 +182,11 @@ function AppLayout() {
               <Route path="/admin/audit" element={<AdminPage />} />
               <Route path="/admin/notifications" element={<AdminPage />} />
               <Route path="/admin/withdrawals" element={<AdminPage />} />
+              <Route path="/admin/predictions" element={<AdminPage />} />
               <Route path="/admin/referee-assign" element={<AdminPage />} />
+              <Route path="/admin/race-results" element={<AdminPage />} />
+              <Route path="/admin/horses" element={<AdminPage />} />
+              <Route path="/admin/referees" element={<AdminPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

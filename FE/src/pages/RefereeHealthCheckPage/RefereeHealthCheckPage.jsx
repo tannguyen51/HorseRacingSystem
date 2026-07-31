@@ -200,8 +200,8 @@ function RefereeHealthCheckPage() {
       await createHealthCheck({
         horseId: form.horseId,
         raceId: selectedRaceId,
-        status: form.status,
-        notes: form.notes || undefined,
+        healthCheckStatus: form.status,
+        observations: form.notes || undefined,
       });
       setSuccess("Đã tạo kiểm tra sức khỏe thành công.");
       setShowForm(false);

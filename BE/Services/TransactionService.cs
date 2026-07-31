@@ -54,8 +54,8 @@ public class TransactionService : ITransactionService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy người dùng");
         }
 
-        var bankCode = _config["Sepay:BankId"] ?? "TPBANK";
-        var accountNumber = _config["Sepay:AccountNumber"] ?? "92805012004";
+        var bankCode = _config["Sepay:BankId"] ?? "MB";
+        var accountNumber = _config["Sepay:AccountNumber"] ?? "0787542456";
         var accountHolder = _config["Sepay:AccountHolder"] ?? "NGUYEN XUAN TAN";
 
         var reference = GenerateReference();
@@ -121,6 +121,23 @@ public class TransactionService : ITransactionService
             return ServiceResult<object>.Ok(new { message = "Không tìm thấy mã tham chiếu" });
         }
 
+        // ── Get the pending transaction to know userId + expected amount ──
+        var tx = await _transactionRepo.GetByReferenceAsync(reference);
+        if (tx == null || tx.UserId == Guid.Empty)
+        {
+            return ServiceResult<object>.Ok(new { message = "Không tìm thấy giao dịch (không có người dùng)" });
+        }
+
+        // ── Validate transfer amount BEFORE completing the transaction ──
+        var transferAmount = request.TransferAmount ?? 0;
+        if (transferAmount < tx.Amount)
+        {
+            _logger.LogWarning("Transfer amount {TransferAmount} is less than pending amount {PendingAmount} for ref {Ref}",
+                transferAmount, tx.Amount, reference);
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest,
+                $"Số tiền chuyển ({transferAmount:N0}đ) ít hơn số tiền yêu cầu ({tx.Amount:N0}đ). Vui lòng chuyển đủ số tiền.");
+        }
+
         // ── Atomic complete: only ONE request can succeed (fixes race condition) ──
         var sepayId = request.Id ?? 0;
         var completed = await _transactionRepo.TryCompleteByRefAsync(reference, sepayId);
@@ -129,23 +146,6 @@ public class TransactionService : ITransactionService
         {
             _logger.LogWarning("Reference {Ref} not found or already completed", reference);
             return ServiceResult<object>.Ok(new { message = "Giao dịch đã hoàn thành hoặc không tìm thấy" });
-        }
-
-        // ── Get the completed transaction to know userId ──
-        var tx = await _transactionRepo.GetByReferenceAsync(reference);
-        if (tx == null || tx.UserId == Guid.Empty)
-        {
-            return ServiceResult<object>.Ok(new { message = "Đã ghi nhận giao dịch (không có người dùng)" });
-        }
-
-        // ── Validate transfer amount against pending transaction ──
-        var transferAmount = request.TransferAmount ?? 0;
-        if (transferAmount < tx.Amount)
-        {
-            _logger.LogWarning("Transfer amount {TransferAmount} is less than pending amount {PendingAmount} for ref {Ref}",
-                transferAmount, tx.Amount, reference);
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest,
-                $"Số tiền chuyển ({transferAmount:N0}đ) ít hơn số tiền yêu cầu ({tx.Amount:N0}đ). Vui lòng chuyển đủ số tiền.");
         }
 
         // ── Add funds to wallet (atomic, no race condition) ──

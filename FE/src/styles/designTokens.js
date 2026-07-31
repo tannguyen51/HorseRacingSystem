@@ -131,6 +131,42 @@ export const statusColors = {
     text: "#7F1D1D",
     label: "Đã hủy",
   },
+  // Race statuses
+  scheduled: {
+    bg: "rgba(37,99,235,0.1)",
+    text: "#2563eb",
+    label: "Đã lên lịch",
+  },
+  inprogress: {
+    bg: "rgba(245,158,11,0.1)",
+    text: "#f59e0b",
+    label: "Đang diễn ra",
+  },
+  awaitingresult: {
+    bg: "rgba(139,92,246,0.12)",
+    text: "#7c3aed",
+    label: "Chờ kết quả",
+  },
+  resultpendingapproval: {
+    bg: "rgba(245,158,11,0.12)",
+    text: "#b45309",
+    label: "Chờ duyệt",
+  },
+  resultapproved: {
+    bg: "rgba(16,185,129,0.12)",
+    text: "#047857",
+    label: "Đã duyệt kết quả",
+  },
+  registrationopen: {
+    bg: "rgba(16,185,129,0.1)",
+    text: "#059669",
+    label: "Mở đăng ký",
+  },
+  registrationclosed: {
+    bg: "rgba(37,99,235,0.1)",
+    text: "#1d4ed8",
+    label: "Đã đóng đăng ký",
+  },
 };
 
 // Gradient presets for hero banners
