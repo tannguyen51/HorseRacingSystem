@@ -188,9 +188,7 @@ function OwnerTournamentRegisterPage() {
     if (!selectedRaceId) return false;
     return registrations.some(
       (registration) =>
-        String(registration.raceId) === String(selectedRaceId) &&
-        registration.status !== "Bị từ chối" &&
-        registration.status !== "Rejected",
+        String(registration.raceId) === String(selectedRaceId),
     );
   }, [registrations, selectedRaceId]);
 
