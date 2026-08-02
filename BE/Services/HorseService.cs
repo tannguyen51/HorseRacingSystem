@@ -318,6 +318,12 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Ngựa đã được đăng ký");
         }
 
+        var ownerAlreadyInRace = await _raceEntries.OwnerHasHorseInRaceAsync(raceId, owner.Id);
+        if (ownerAlreadyInRace)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Bạn chỉ có thể đăng ký 1 con ngựa vào 1 cuộc đua. Ngựa khác của bạn đã được đăng ký hoặc đang chờ duyệt cho cuộc đua này.");
+        }
+
         var acceptedInvitation = horse.JockeyInvitations
             .Where(invitation => invitation.Status == JockeyInvitationStatus.Accepted)
             .OrderByDescending(invitation => invitation.CreatedAt)
