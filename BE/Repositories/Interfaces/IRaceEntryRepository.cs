@@ -11,6 +11,7 @@ public interface IRaceEntryRepository
     Task<RaceEntry?> GetByIdWithHorseAsync(Guid entryId, Guid raceId);
     Task<RaceEntry?> GetByRaceHorseAsync(Guid raceId, Guid horseId);
     Task<RaceEntry?> GetByRaceAndHorseAsync(Guid raceId, Guid horseId);
+    Task<bool> OwnerHasHorseInRaceAsync(Guid raceId, Guid ownerId);
     Task<List<RaceEntry>> GetByJockeyAsync(Guid jockeyId);
     Task<List<RaceEntry>> GetByHorseAsync(Guid horseId);
     Task<List<RaceEntry>> GetByRaceAsync(Guid raceId);

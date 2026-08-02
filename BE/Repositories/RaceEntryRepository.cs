@@ -23,6 +23,13 @@ public class RaceEntryRepository : IRaceEntryRepository
         return _db.RaceEntries.AnyAsync(e => e.RaceId == raceId && e.HorseId == horseId);
     }
 
+    public Task<bool> OwnerHasHorseInRaceAsync(Guid raceId, Guid ownerId)
+    {
+        return _db.RaceEntries
+            .Include(e => e.Horse)
+            .AnyAsync(e => e.RaceId == raceId && e.Horse!.OwnerId == ownerId && e.Status != RegistrationStatus.Rejected);
+    }
+
     public Task<RaceEntry?> GetByIdWithHorseAsync(Guid entryId, Guid raceId)
     {
         return _db.RaceEntries
