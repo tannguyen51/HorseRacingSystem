@@ -287,7 +287,11 @@ export function SpectatorProfilePage() {
           {walletBalance !== null && (
             <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(143,100,32,0.07)", border: "1px solid rgba(143,100,32,0.12)", textAlign: "center", marginBottom: 4 }}>
               <p style={{ margin: "0 0 2px", fontSize: 11, color: "#657086", textTransform: "uppercase" }}>Số dư ví</p>
+<<<<<<< HEAD
+              <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} điểm</strong>
+=======
               <strong style={{ fontSize: 18, color: "#8f6420" }}>{Number(walletBalance).toLocaleString()} Điểm</strong>
+>>>>>>> 5d23a47 (Fix chức năng quên mật khẩu của login)
             </div>
           )}
 

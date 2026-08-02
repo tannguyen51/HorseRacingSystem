@@ -305,17 +305,17 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
         }
 
-        // Check if this specific horse is already registered for this specific race
+        // Check horse is not already in another active race
+        var isBusy = await _raceEntries.IsHorseInActiveRaceAsync(horseId);
+        if (isBusy)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Ngựa này đã được đăng ký trong cuộc đua khác. Không thể thêm vào nhiều cuộc đua cùng lúc.");
+        }
+
         var exists = await _raceEntries.ExistsAsync(raceId, horseId);
         if (exists)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Ngựa đã được đăng ký");
-        }
-
-        var ownerAlreadyInRace = await _raceEntries.OwnerHasHorseInRaceAsync(raceId, owner.Id);
-        if (ownerAlreadyInRace)
-        {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Bạn chỉ có thể đăng ký 1 con ngựa vào 1 cuộc đua. Ngựa khác của bạn đã được đăng ký hoặc đang chờ duyệt cho cuộc đua này.");
         }
 
         var acceptedInvitation = horse.JockeyInvitations
