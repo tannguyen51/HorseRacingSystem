@@ -305,13 +305,7 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
         }
 
-        // Check horse is not already in another active race
-        var isBusy = await _raceEntries.IsHorseInActiveRaceAsync(horseId);
-        if (isBusy)
-        {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Ngựa này đã được đăng ký trong cuộc đua khác. Không thể thêm vào nhiều cuộc đua cùng lúc.");
-        }
-
+        // Check if this specific horse is already registered for this specific race
         var exists = await _raceEntries.ExistsAsync(raceId, horseId);
         if (exists)
         {
