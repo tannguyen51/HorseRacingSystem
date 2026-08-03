@@ -13,5 +13,6 @@ public interface IHorseService
     Task<ServiceResult<object>> UpdateHorseAsync(Guid ownerId, Guid horseId, HorseUpdateRequest request);
     Task<ServiceResult<string>> DeleteHorseAsync(Guid ownerId, Guid horseId);
     Task<ServiceResult<object>> InviteJockeyAsync(Guid ownerId, Guid horseId, JockeyInvitationCreateRequest request);
+    Task<ServiceResult<string>> RemoveJockeyAsync(Guid ownerId, Guid horseId);
     Task<ServiceResult<object>> ConfirmOwnerAsync(Guid ownerId, Guid raceId, Guid entryId);
 }

@@ -39,6 +39,13 @@ export const inviteJockeyToHorse = async (horseId, payload) =>
     }),
   );
 
+export const removeJockeyFromHorse = async (horseId) =>
+  unwrapResponseData(
+    await request(`/api/horses/${horseId}/jockeys`, {
+      method: "DELETE",
+    }),
+  );
+
 export const registerHorseForRace = async (horseId, raceId, payload) =>
   unwrapResponseData(
     await request(`/api/horses/${horseId}/races/${raceId}/registrations`, {

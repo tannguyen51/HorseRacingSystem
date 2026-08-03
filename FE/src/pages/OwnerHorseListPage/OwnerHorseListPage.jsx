@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteHorse, getMyHorses, inviteJockeyToHorse } from "../../services/ownerHorseApi";
+import { deleteHorse, getMyHorses, inviteJockeyToHorse, removeJockeyFromHorse } from "../../services/ownerHorseApi";
 import { getAvailableJockeys } from "../../services/jockeyApi";
 import { resolveApiUrl } from "../../services/apiClient";
 import "./OwnerHorseListPage.css";
@@ -27,6 +27,16 @@ function OwnerHorseListPage() {
       const data = await getMyHorses();
       setHorses(Array.isArray(data) ? data : []);
     } catch (e) { setError(e.message || "Không thể tải danh sách ngựa."); }
+    finally { setLoading(false); }
+  };
+
+  const handleRemoveJockey = async (horse) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy chỉ định kỵ sĩ này?")) return;
+    setLoading(true);
+    try {
+      await removeJockeyFromHorse(horse.id ?? horse.Id);
+      await loadHorses();
+    } catch (e) { setError(e.message || "Không thể thực hiện."); }
     finally { setLoading(false); }
   };
 
@@ -185,6 +195,9 @@ function OwnerHorseListPage() {
             const speed = Math.min(95, 45 + totalWins * 8);
             const stamina = Math.min(95, 35 + (totalRaces - totalWins) * 4);
             const imageUrl = resolveApiUrl(h.imageUrl ?? h.ImageUrl ?? "");
+            const invitations = h.jockeyInvitations ?? h.JockeyInvitations ?? [];
+            const hasAcceptedJockey = invitations.some(inv => (inv.status ?? inv.Status) === 2 || String(inv.status ?? inv.Status).toLowerCase() === "accepted");
+
             return (
               <div key={id} className="oh-card">
                 <div className="oh-card-img" style={{ backgroundImage: imageUrl ? `url(${imageUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
@@ -215,9 +228,15 @@ function OwnerHorseListPage() {
                   </div>
                   <div className="oh-actions">
                     <Link to={`/owner/horses/${id}`} className="oh-btn oh-btn--sm oh-btn--primary">Chi tiết</Link>
-                    <button className="oh-btn-icon" onClick={() => openAssign(h)} title="Chỉ định kỵ sĩ">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
-                    </button>
+                    {hasAcceptedJockey ? (
+                      <button className="oh-btn-icon" style={{color: "#ef4444"}} title="Hủy kỵ sĩ" onClick={() => handleRemoveJockey(h)}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                      </button>
+                    ) : (
+                      <button className="oh-btn-icon" onClick={() => openAssign(h)} title="Chỉ định kỵ sĩ">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                      </button>
+                    )}
                     <button className="oh-btn-icon" onClick={() => handleDelete(h)} title="Xóa">
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                     </button>

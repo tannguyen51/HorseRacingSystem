@@ -164,6 +164,14 @@ public class HorsesController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpDelete("{horseId:guid}/jockeys")]
+    public async Task<ActionResult> RemoveJockey(Guid horseId)
+    {
+        var ownerId = GetUserId();
+        var result = await _horseService.RemoveJockeyAsync(ownerId, horseId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpPost("{horseId:guid}/races/{raceId:guid}/registrations")]
     public async Task<ActionResult> RegisterHorse(Guid horseId, Guid raceId, RaceRegistrationRequest request)
     {
