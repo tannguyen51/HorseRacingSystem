@@ -71,6 +71,16 @@ public class JockeyInvitationCreateRequest
     public Guid JockeyId { get; set; }
     [Required]
     public Guid RaceId { get; set; }
+
+    [MaxLength(500)]
+    public string? Message { get; set; }
+}
+
+public class JockeyRemovalRequest
+{
+    [Required]
+    [MaxLength(500)]
+    public string Reason { get; set; } = string.Empty;
 }
 
 public class RaceRegistrationRequest

@@ -229,6 +229,7 @@ public class HorseService : IHorseService
             existingDeclined.CreatedAt = DateTime.UtcNow;
             existingDeclined.RespondedAt = null;
             existingDeclined.ResponseNote = null;
+            existingDeclined.Message = request.Message?.Trim();
         }
 
         var jockeyExists = await _jockeys.ExistsAsync(request.JockeyId);
@@ -286,6 +287,7 @@ public class HorseService : IHorseService
             JockeyId = request.JockeyId,
             RaceId = invitationRaceId,
             Status = JockeyInvitationStatus.Pending,
+            Message = request.Message?.Trim(),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -323,8 +325,15 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(invitation);
     }
 
-    public async Task<ServiceResult<string>> RemoveJockeyAsync(Guid userId, Guid horseId, Guid raceId)
+    public async Task<ServiceResult<string>> RemoveJockeyAsync(Guid userId, Guid horseId, Guid raceId, JockeyRemovalRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            return ServiceResult<string>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Vui lòng nhập lý do hủy kỵ sĩ");
+        }
+
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
         {
@@ -343,7 +352,7 @@ public class HorseService : IHorseService
         if (invitation != null)
         {
             invitation.Status = JockeyInvitationStatus.Declined;
-            invitation.ResponseNote = "Chủ ngựa đã hủy kỵ sĩ";
+            invitation.ResponseNote = request.Reason.Trim();
             invitation.RespondedAt = DateTime.UtcNow;
         }
 
@@ -356,6 +365,22 @@ public class HorseService : IHorseService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        if (invitation?.Jockey?.UserId is Guid jockeyUserId)
+        {
+            await _notifications.CreateNotificationAsync(new CreateNotificationDto
+            {
+                UserId = jockeyUserId,
+                Title = "Chủ ngựa đã hủy phân công",
+                Message = $"Bạn đã được hủy khỏi ngựa {horse.Name}. Lý do: {request.Reason.Trim()}",
+                Type = NotificationType.InApp,
+                Category = NotificationCategory.JockeyInvitation,
+                ActionUrl = $"/jockey/invitations/{invitation.Id}",
+                RelatedEntityId = invitation.Id,
+                RelatedEntityType = nameof(JockeyInvitation)
+            });
+        }
+
         return ServiceResult<string>.Ok("Đã hủy kỵ sĩ thành công");
     }
 

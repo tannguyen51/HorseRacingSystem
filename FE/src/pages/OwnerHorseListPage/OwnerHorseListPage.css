@@ -355,6 +355,24 @@
   background: rgba(255,255,255,0.8);
 }
 
+.oh-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1d23;
+  background: rgba(255,255,255,0.8);
+  resize: vertical;
+}
+
+.oh-textarea:focus {
+  outline: none;
+  border-color: #8f6420;
+}
+
 /* ── Modal ── */
 .oh-modal {
   position: fixed;
