@@ -497,6 +497,52 @@ public class RaceManagementService : IRaceManagementService
         }
     }
 
+    public async Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.Scheduled)
+                return ServiceResult<bool>.Fail(400, $"Không thể mở đăng ký cho cuộc đua với trạng thái '{race.Status}'.");
+
+            race.Status = RaceStatus.RegistrationOpen;
+            race.UpdatedAt = DateTime.UtcNow;
+            await _raceRepo.UpdateAsync(race);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception)
+        {
+            return ServiceResult<bool>.Fail(500, "Không thể mở đăng ký. Vui lòng thử lại.");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId)
+    {
+        try
+        {
+            var race = await _raceRepo.GetByIdAsync(raceId);
+            if (race == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
+
+            if (race.Status != RaceStatus.RegistrationOpen)
+                return ServiceResult<bool>.Fail(400, $"Không thể đóng đăng ký cho cuộc đua với trạng thái '{race.Status}'.");
+
+            race.Status = RaceStatus.RegistrationClosed;
+            race.UpdatedAt = DateTime.UtcNow;
+            await _raceRepo.UpdateAsync(race);
+            await _unitOfWork.SaveChangesAsync();
+            return ServiceResult<bool>.Ok(true);
+        }
+        catch (Exception)
+        {
+            return ServiceResult<bool>.Fail(500, "Không thể đóng đăng ký. Vui lòng thử lại.");
+        }
+    }
+
     public async Task<ServiceResult<bool>> StartRaceAsync(Guid raceId)
     {
         try

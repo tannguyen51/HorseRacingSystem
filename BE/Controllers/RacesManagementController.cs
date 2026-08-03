@@ -103,6 +103,20 @@ public class RacesManagementController : ControllerBase
     }
 
     // Race Control
+    [HttpPost("{raceId:guid}/open-registration")]
+    public async Task<ActionResult> OpenRegistration(Guid raceId)
+    {
+        var result = await _raceService.OpenRegistrationAsync(raceId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
+    [HttpPost("{raceId:guid}/close-registration")]
+    public async Task<ActionResult> CloseRegistration(Guid raceId)
+    {
+        var result = await _raceService.CloseRegistrationAsync(raceId);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpPost("{raceId:guid}/start")]
     public async Task<ActionResult> StartRace(Guid raceId)
     {
