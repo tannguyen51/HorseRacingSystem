@@ -20,12 +20,14 @@ function OwnerHorseListPage() {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
   const [selectedJockey, setSelectedJockey] = useState("");
+  const [invitationMessage, setInvitationMessage] = useState("");
   const [jockeyError, setJockeyError] = useState("");
   const [jockeyLoading, setJockeyLoading] = useState(false);
 
   const [cancelHorse, setCancelHorse] = useState(null);
   const [selectedCancelTournament, setSelectedCancelTournament] = useState("");
   const [selectedCancelRace, setSelectedCancelRace] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState("");
 
   const loadHorses = async () => {
@@ -41,14 +43,16 @@ function OwnerHorseListPage() {
     setCancelHorse(horse);
     setSelectedCancelTournament("");
     setSelectedCancelRace("");
+    setCancelReason("");
     setCancelError("");
   };
 
   const submitCancel = async () => {
     if (!selectedCancelRace) { setCancelError("Vui lòng chọn giải đua."); return; }
+    if (!cancelReason.trim()) { setCancelError("Vui lòng nhập lý do hủy kỵ sĩ."); return; }
     setLoading(true);
     try {
-      await removeJockeyFromHorse(cancelHorse.id ?? cancelHorse.Id, selectedCancelRace);
+      await removeJockeyFromHorse(cancelHorse.id ?? cancelHorse.Id, selectedCancelRace, cancelReason.trim());
       setCancelHorse(null);
       await loadHorses();
     } catch (e) { setCancelError(e.message || "Không thể thực hiện."); }
@@ -80,6 +84,7 @@ function OwnerHorseListPage() {
     setSelectedTournament("");
     setSelectedRace("");
     setSelectedJockey("");
+    setInvitationMessage("");
     setJockeyError("");
     setJockeyLoading(true);
     try {
@@ -115,7 +120,11 @@ function OwnerHorseListPage() {
     if (!selectedRace) { setJockeyError("Vui lòng chọn giải đua."); return; }
     if (!selectedJockey) { setJockeyError("Vui lòng chọn kỵ sĩ."); return; }
     try {
-      await inviteJockeyToHorse(assignHorse.id ?? assignHorse.Id, { jockeyId: selectedJockey, raceId: selectedRace });
+      await inviteJockeyToHorse(assignHorse.id ?? assignHorse.Id, {
+        jockeyId: selectedJockey,
+        raceId: selectedRace,
+        message: invitationMessage.trim() || null,
+      });
       setAssignHorse(null);
       await loadHorses();
     } catch (e) { setJockeyError(e.message || "Lỗi."); }
@@ -278,6 +287,14 @@ function OwnerHorseListPage() {
               <option value="">{jockeyLoading ? "Đang tải danh sách kỵ sĩ..." : "-- Chọn kỵ sĩ --"}</option>
               {jockeys.map(j => <option key={j.id ?? j.Id} value={j.id ?? j.Id}>{j.fullName ?? j.FullName ?? j.email ?? j.Email}</option>)}
             </select>
+            <textarea
+              className="oh-textarea"
+              value={invitationMessage}
+              onChange={e => setInvitationMessage(e.target.value)}
+              maxLength={500}
+              rows={3}
+              placeholder="Lời nhắn đến kỵ sĩ (không bắt buộc)"
+            />
             {!jockeyLoading && jockeys.length === 0 && !jockeyError && (
               <p className="oh-error" style={{margin:"8px 0 0"}}>Chưa có kỵ sĩ khả dụng.</p>
             )}
@@ -328,6 +345,14 @@ function OwnerHorseListPage() {
                   return <option key={raceId} value={raceId}>{raceName} (Kỵ sĩ: {jockeyName})</option>;
               })}
             </select>
+            <textarea
+              className="oh-textarea"
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              maxLength={500}
+              rows={3}
+              placeholder="Nhập lý do hủy kỵ sĩ *"
+            />
             {cancelError && <p className="oh-error" style={{margin:"8px 0 0"}}>{cancelError}</p>}
             <div className="oh-modal-actions">
               <button className="oh-btn" onClick={() => setCancelHorse(null)}>Huỷ</button>

@@ -88,6 +88,8 @@ export const normalizeInvitation = (invitation) => {
     id: read(invitation, "id", "Id"),
     status,
     createdAt: read(invitation, "createdAt", "CreatedAt"),
+    message: read(invitation, "message", "Message"),
+    responseNote: read(invitation, "responseNote", "ResponseNote"),
     raceId: read(invitation, "raceId", "RaceId") ?? read(race, "id", "Id"),
     raceName: read(
       invitation,

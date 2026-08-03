@@ -115,6 +115,12 @@ function JockeyInvitationDetailPage() {
                 lời mời này.
               </p>
               {message ? <p className="jockey-message">{message}</p> : null}
+              {invitation?.message ? (
+                <p className="jockey-message"><strong>Lời nhắn từ chủ ngựa:</strong> {invitation.message}</p>
+              ) : null}
+              {invitation?.responseNote && normalizeInvitationStatus(invitation.status) === "Declined" ? (
+                <p className="jockey-message"><strong>Lý do hủy:</strong> {invitation.responseNote}</p>
+              ) : null}
             </div>
           </section>
 
