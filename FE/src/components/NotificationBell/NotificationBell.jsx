@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, getUnreadCount, markNotificationRead } from "../../services/notificationApi";
+import { deleteAllNotifications, getNotifications, getUnreadCount, markNotificationRead } from "../../services/notificationApi";
 
 export default function NotificationBell() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
+  const [deletingAll, setDeletingAll] = useState(false);
   const ref = useRef(null);
 
   const load = useCallback(() => {
@@ -44,6 +45,22 @@ export default function NotificationBell() {
     if (actionUrl) navigate(actionUrl);
   };
 
+  const handleDeleteAll = async (event) => {
+    event.stopPropagation();
+    if (!window.confirm("Bạn có chắc muốn xóa tất cả thông báo?")) return;
+
+    setDeletingAll(true);
+    try {
+      await deleteAllNotifications();
+      setNotifs([]);
+      setUnread(0);
+    } catch {
+      window.alert("Không thể xóa tất cả thông báo. Vui lòng thử lại.");
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
   return (
     <div style={{ position: "relative" }} ref={ref} onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
       <button className="ah-notif" onClick={() => {}}>
@@ -60,7 +77,22 @@ export default function NotificationBell() {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
             <strong style={{ fontSize: 14, color: "#1a1d23" }}>Thông báo</strong>
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>{unread} chưa đọc</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {notifs.length > 0 && (
+                <button
+                  type="button"
+                  disabled={deletingAll}
+                  onClick={handleDeleteAll}
+                  style={{
+                    border: 0, background: "transparent", padding: 0, cursor: deletingAll ? "wait" : "pointer",
+                    color: "#dc2626", fontSize: 11, fontWeight: 600, opacity: deletingAll ? 0.6 : 1,
+                  }}
+                >
+                  {deletingAll ? "Đang xóa..." : "Xóa tất cả"}
+                </button>
+              )}
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>{unread} chưa đọc</span>
+            </div>
           </div>
           {notifs.length === 0 ? (
             <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, padding: "20px 0", margin: 0 }}>Không có thông báo</p>

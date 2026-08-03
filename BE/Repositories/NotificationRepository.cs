@@ -112,6 +112,20 @@ public class NotificationRepository : INotificationRepository
         }
     }
 
+    public async Task DeleteAllByUserIdAsync(Guid userId)
+    {
+        var notifications = await _context.Notifications
+            .Where(n => n.UserId == userId && !n.IsDeleted)
+            .ToListAsync();
+
+        foreach (var notification in notifications)
+        {
+            notification.IsDeleted = true;
+        }
+
+        _context.Notifications.UpdateRange(notifications);
+    }
+
     public async Task MarkAsReadAsync(Guid id)
     {
         var notification = await GetByIdAsync(id);

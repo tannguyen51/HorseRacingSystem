@@ -332,6 +332,30 @@ public class NotificationService : INotificationService
         }
     }
 
+    public async Task<ServiceResult<bool>> DeleteAllNotificationsAsync(Guid userId)
+    {
+        try
+        {
+            await _notificationRepository.DeleteAllByUserIdAsync(userId);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ServiceResult<bool>
+            {
+                StatusCode = 200,
+                Result = new ApiResult<bool>
+                {
+                    Success = true,
+                    Data = true,
+                    Message = "Đã xóa tất cả thông báo"
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.Fail(500, $"Lỗi xóa tất cả thông báo: {ex.Message}");
+        }
+    }
+
     public async Task<ServiceResult<int>> GetUnreadCountAsync(Guid userId)
     {
         try

@@ -8,3 +8,4 @@ export const getUnreadCount = async () => unwrap(await request("/api/notificatio
 export const markNotificationRead = async (id) => await request(`/api/notifications/${id}/mark-read`, { method: "PUT" });
 export const markMultipleRead = async (ids) => await request("/api/notifications/mark-multiple-read", { method: "POST", body: JSON.stringify({ ids }) });
 export const deleteNotification = async (id) => await request(`/api/notifications/${id}`, { method: "DELETE" });
+export const deleteAllNotifications = async () => await request("/api/notifications/all", { method: "DELETE" });
