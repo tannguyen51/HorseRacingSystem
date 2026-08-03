@@ -84,6 +84,12 @@ export const assignHorseToRace = (raceId, payload) =>
 export const startRace = (raceId) =>
   request(`/api/races/management/${raceId}/start`, { method: "POST" });
 
+export const openRaceRegistration = (raceId) =>
+  request(`/api/races/management/${raceId}/open-registration`, { method: "POST" });
+
+export const closeRaceRegistration = (raceId) =>
+  request(`/api/races/management/${raceId}/close-registration`, { method: "POST" });
+
 export const endRace = (raceId) =>
   request(`/api/races/management/${raceId}/end`, { method: "POST" });
 

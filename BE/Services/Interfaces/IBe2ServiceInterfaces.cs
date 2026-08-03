@@ -48,6 +48,8 @@ public interface IRaceManagementService
     Task<ServiceResult<bool>> UpdateOddsAsync(Guid raceId, Guid horseId, decimal odds);
     
     // Race Status
+    Task<ServiceResult<bool>> OpenRegistrationAsync(Guid raceId);
+    Task<ServiceResult<bool>> CloseRegistrationAsync(Guid raceId);
     Task<ServiceResult<bool>> StartRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> EndRaceAsync(Guid raceId);
     Task<ServiceResult<bool>> CancelRaceAsync(Guid raceId);
