@@ -17,12 +17,14 @@ function OwnerHorseListPage() {
 
   const [assignHorse, setAssignHorse] = useState(null);
   const [jockeys, setJockeys] = useState([]);
+  const [selectedTournament, setSelectedTournament] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
   const [selectedJockey, setSelectedJockey] = useState("");
   const [jockeyError, setJockeyError] = useState("");
   const [jockeyLoading, setJockeyLoading] = useState(false);
 
   const [cancelHorse, setCancelHorse] = useState(null);
+  const [selectedCancelTournament, setSelectedCancelTournament] = useState("");
   const [selectedCancelRace, setSelectedCancelRace] = useState("");
   const [cancelError, setCancelError] = useState("");
 
@@ -37,6 +39,7 @@ function OwnerHorseListPage() {
 
   const openCancel = (horse) => {
     setCancelHorse(horse);
+    setSelectedCancelTournament("");
     setSelectedCancelRace("");
     setCancelError("");
   };
@@ -74,6 +77,7 @@ function OwnerHorseListPage() {
 
   const openAssign = async (horse) => {
     setAssignHorse(horse);
+    setSelectedTournament("");
     setSelectedRace("");
     setSelectedJockey("");
     setJockeyError("");
@@ -89,43 +93,12 @@ function OwnerHorseListPage() {
       }
       const horseId = horse.id ?? horse.Id;
 
-      // Find jockeys already assigned to OTHER horses (in active races)
-      const busyJockeyIds = new Set();
-      horses.forEach(h => {
-        if ((h.id ?? h.Id) === horseId) return; // skip the horse being assigned
-        const invs = h.jockeyInvitations ?? h.JockeyInvitations ?? [];
-        const entries = h.raceEntries ?? h.RaceEntries ?? [];
-        // Check active invitation (Pending or Accepted)
-        invs.forEach(inv => {
-          const st = inv.status ?? inv.Status;
-          if (st === 1 || st === 2 || st === "Pending" || st === "Accepted") {
-            const jid = inv.jockey?.id ?? inv.jockey?.Id ?? inv.Jockey?.Id;
-            if (jid) busyJockeyIds.add(String(jid).toLowerCase());
-          }
-        });
-        // Check race entries with jockey in active (non-finished) races
-        entries.forEach(entry => {
-          const rawStatus = entry.race?.status ?? entry.race?.Status ?? "";
-          // Backend serializes RaceStatus enum dưới dạng số (1=Scheduled, 3=Finished, 4=Cancelled)
-          const raceStatus = typeof rawStatus === "number"
-            ? ({ 3: "finished", 4: "cancelled" }[rawStatus] ?? "active")
-            : String(rawStatus).toLowerCase();
-          const isActive = raceStatus !== "finished" && raceStatus !== "cancelled" && raceStatus !== "";
-          if (isActive) {
-            const jid = entry.jockey?.id ?? entry.jockey?.Id ?? entry.Jockey?.Id;
-            if (jid) busyJockeyIds.add(String(jid).toLowerCase());
-          }
-        });
-      });
-
       setJockeys(
         Array.isArray(data)
           ? data.filter(j => {
-              const jid = String(j.id ?? j.Id ?? "").toLowerCase();
               const jUserId = String(j.userId ?? j.UserId ?? "").toLowerCase();
-              // Exclude self and jockeys already assigned to other horses
+              // Exclude self, but allow selecting jockeys assigned to other horses (backend validates schedule overlap)
               if (jUserId === currentUserId) return false;
-              if (busyJockeyIds.has(jid)) return false;
               return true;
             })
           : [],
@@ -270,16 +243,36 @@ function OwnerHorseListPage() {
         <div className="oh-modal" onClick={() => setAssignHorse(null)}>
           <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
             <h3>Chỉ định kỵ sĩ</h3>
-            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đua và kỵ sĩ cho {assignHorse.name ?? assignHorse.Name}</p>
-            <select value={selectedRace} onChange={e => setSelectedRace(e.target.value)} className="oh-select" style={{marginBottom:"12px"}}>
-              <option value="">-- Chọn giải đua --</option>
-              {(assignHorse.raceEntries ?? assignHorse.RaceEntries ?? []).map(entry => {
-                const race = entry.race ?? entry.Race;
-                if (!race) return null;
-                const activeInvs = (assignHorse.jockeyInvitations ?? assignHorse.JockeyInvitations ?? []).filter(inv => inv.raceId === race.id && ((inv.status ?? inv.Status) === 1 || (inv.status ?? inv.Status) === 2 || String(inv.status ?? inv.Status).toLowerCase() === "pending" || String(inv.status ?? inv.Status).toLowerCase() === "accepted"));
-                if (activeInvs.length > 0) return null; // already has jockey
-                return <option key={race.id ?? race.Id} value={race.id ?? race.Id}>{race.name ?? race.Name}</option>;
-              })}
+            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đấu và cuộc đua cho {assignHorse.name ?? assignHorse.Name}</p>
+            <select value={selectedTournament} onChange={e => { setSelectedTournament(e.target.value); setSelectedRace(""); }} className="oh-select" style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn giải đấu --</option>
+              {(() => {
+                const tourns = [];
+                (assignHorse.raceEntries ?? assignHorse.RaceEntries ?? []).forEach(entry => {
+                  const race = entry.race ?? entry.Race;
+                  if (!race) return;
+                  const activeInvs = (assignHorse.jockeyInvitations ?? assignHorse.JockeyInvitations ?? []).filter(inv => inv.raceId === race.id && ((inv.status ?? inv.Status) === 1 || (inv.status ?? inv.Status) === 2 || String(inv.status ?? inv.Status).toLowerCase() === "pending" || String(inv.status ?? inv.Status).toLowerCase() === "accepted"));
+                  if (activeInvs.length > 0) return; // already has jockey
+                  const t = race.tournament ?? race.Tournament;
+                  if (t && !tourns.find(x => x.id === (t.id ?? t.Id))) {
+                    tourns.push({ id: t.id ?? t.Id, name: t.name ?? t.Name });
+                  }
+                });
+                return tourns.map(t => <option key={t.id} value={t.id}>{t.name}</option>);
+              })()}
+            </select>
+            <select value={selectedRace} onChange={e => setSelectedRace(e.target.value)} className="oh-select" disabled={!selectedTournament} style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn cuộc đua --</option>
+              {selectedTournament && (assignHorse.raceEntries ?? assignHorse.RaceEntries ?? [])
+                .map(entry => entry.race ?? entry.Race)
+                .filter(race => race && (race.tournament?.id ?? race.tournament?.Id ?? race.Tournament?.Id) === selectedTournament)
+                .filter(race => {
+                  const activeInvs = (assignHorse.jockeyInvitations ?? assignHorse.JockeyInvitations ?? []).filter(inv => inv.raceId === race.id && ((inv.status ?? inv.Status) === 1 || (inv.status ?? inv.Status) === 2 || String(inv.status ?? inv.Status).toLowerCase() === "pending" || String(inv.status ?? inv.Status).toLowerCase() === "accepted"));
+                  return activeInvs.length === 0;
+                })
+                .map(race => (
+                  <option key={race.id ?? race.Id} value={race.id ?? race.Id}>{race.name ?? race.Name}</option>
+                ))}
             </select>
             <select value={selectedJockey} onChange={e => setSelectedJockey(e.target.value)} className="oh-select" disabled={jockeyLoading || jockeys.length === 0}>
               <option value="">{jockeyLoading ? "Đang tải danh sách kỵ sĩ..." : "-- Chọn kỵ sĩ --"}</option>
@@ -302,15 +295,35 @@ function OwnerHorseListPage() {
         <div className="oh-modal" onClick={() => setCancelHorse(null)}>
           <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
             <h3>Hủy kỵ sĩ</h3>
-            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đua để hủy kỵ sĩ của {cancelHorse.name ?? cancelHorse.Name}</p>
-            <select value={selectedCancelRace} onChange={e => setSelectedCancelRace(e.target.value)} className="oh-select" style={{marginBottom:"12px"}}>
-              <option value="">-- Chọn giải đua --</option>
-              {(cancelHorse.jockeyInvitations ?? cancelHorse.JockeyInvitations ?? [])
+            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đấu và cuộc đua để hủy kỵ sĩ của {cancelHorse.name ?? cancelHorse.Name}</p>
+            <select value={selectedCancelTournament} onChange={e => { setSelectedCancelTournament(e.target.value); setSelectedCancelRace(""); }} className="oh-select" style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn giải đấu --</option>
+              {(() => {
+                const tourns = [];
+                (cancelHorse.jockeyInvitations ?? cancelHorse.JockeyInvitations ?? [])
+                  .filter(inv => (inv.status ?? inv.Status) === 2 || (inv.status ?? inv.Status) === 1 || String(inv.status ?? inv.Status).toLowerCase() === "accepted" || String(inv.status ?? inv.Status).toLowerCase() === "pending")
+                  .forEach(inv => {
+                    const raceId = inv.raceId ?? inv.RaceId;
+                    const entry = (cancelHorse.raceEntries ?? cancelHorse.RaceEntries ?? []).find(e => (e.raceId ?? e.RaceId) === raceId);
+                    const t = entry?.race?.tournament ?? entry?.Race?.Tournament;
+                    if (t && !tourns.find(x => x.id === (t.id ?? t.Id))) {
+                      tourns.push({ id: t.id ?? t.Id, name: t.name ?? t.Name });
+                    }
+                  });
+                return tourns.map(t => <option key={t.id} value={t.id}>{t.name}</option>);
+              })()}
+            </select>
+            <select value={selectedCancelRace} onChange={e => setSelectedCancelRace(e.target.value)} className="oh-select" disabled={!selectedCancelTournament} style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn cuộc đua --</option>
+              {selectedCancelTournament && (cancelHorse.jockeyInvitations ?? cancelHorse.JockeyInvitations ?? [])
                 .filter(inv => (inv.status ?? inv.Status) === 2 || (inv.status ?? inv.Status) === 1 || String(inv.status ?? inv.Status).toLowerCase() === "accepted" || String(inv.status ?? inv.Status).toLowerCase() === "pending")
                 .map(inv => {
                   const raceId = inv.raceId ?? inv.RaceId;
                   const entry = (cancelHorse.raceEntries ?? cancelHorse.RaceEntries ?? []).find(e => (e.raceId ?? e.RaceId) === raceId);
-                  const raceName = entry?.race?.name ?? entry?.Race?.Name ?? "Giải đua";
+                  if (!entry) return null;
+                  const tId = entry.race?.tournament?.id ?? entry.Race?.Tournament?.Id;
+                  if (tId !== selectedCancelTournament) return null;
+                  const raceName = entry.race?.name ?? entry.Race?.Name ?? "Giải đua";
                   const jockeyName = inv.jockey?.user?.fullName ?? inv.Jockey?.User?.FullName ?? "kỵ sĩ";
                   return <option key={raceId} value={raceId}>{raceName} (Kỵ sĩ: {jockeyName})</option>;
               })}

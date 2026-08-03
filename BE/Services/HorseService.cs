@@ -237,6 +237,29 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kỵ sĩ");
         }
 
+        // --- Schedule Overlap Validation ---
+        var targetRace = await _db.Races.FindAsync(invitationRaceId);
+        if (targetRace == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua để kiểm tra lịch");
+        }
+
+        var targetStart = targetRace.ScheduledAt;
+        var targetEnd = targetRace.ScheduledEndAt ?? targetRace.ScheduledAt.AddHours(1);
+
+        // Check if jockey is already accepted/pending in another race that overlaps
+        var overlappingInv = await _db.JockeyInvitations
+            .Include(i => i.Race)
+            .Where(i => i.JockeyId == request.JockeyId && i.RaceId != invitationRaceId && (i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted))
+            .FirstOrDefaultAsync(i => i.Race != null && i.Race.ScheduledAt < targetEnd && (i.Race.ScheduledEndAt ?? i.Race.ScheduledAt.AddHours(1)) > targetStart);
+
+        if (overlappingInv != null)
+        {
+            var raceName = overlappingInv.Race?.Name ?? "Một giải đua khác";
+            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, $"Kỵ sĩ này đang có lịch đua hoặc lời mời ở giải '{raceName}' diễn ra cùng thời điểm. Vui lòng chọn kỵ sĩ khác.");
+        }
+        // ------------------------------------
+
         var invitation = existingDeclined ?? new JockeyInvitation
         {
             Id = Guid.NewGuid(),

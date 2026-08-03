@@ -34,11 +34,6 @@ public class HorseRepository : IHorseRepository
             .Where(h => h.OwnerId == ownerId)
             .ToListAsync();
 
-        foreach (var horse in horses)
-        {
-            NormalizeHorseInvitations(horse);
-        }
-
         return horses;
     }
 
@@ -59,11 +54,6 @@ public class HorseRepository : IHorseRepository
                     .ThenInclude(r => r.Tournament)
             .FirstOrDefaultAsync(h => h.Id == horseId);
 
-        if (horse != null)
-        {
-            NormalizeHorseInvitations(horse);
-        }
-
         return horse;
     }
 
@@ -81,11 +71,6 @@ public class HorseRepository : IHorseRepository
                 .ThenInclude(e => e.Race)
                     .ThenInclude(r => r.Tournament)
             .FirstOrDefaultAsync(h => h.Id == horseId && h.OwnerId == ownerId);
-
-        if (horse != null)
-        {
-            NormalizeHorseInvitations(horse);
-        }
 
         return horse;
     }
@@ -116,29 +101,5 @@ public class HorseRepository : IHorseRepository
         _db.Horses.Remove(horse);
         return Task.CompletedTask;
     }
-
-    private void NormalizeHorseInvitations(Horse horse)
-    {
-        var filtered = horse.JockeyInvitations
-            .Where(i => i.Status != JockeyInvitationStatus.Declined)
-            .GroupBy(i => i.JockeyId)
-            .Select(g => g.OrderByDescending(i => i.CreatedAt).First())
-            .OrderByDescending(i => i.CreatedAt)
-            .ToList();
-
-        // Detach các lời mời bị loại trước khi xóa khỏi collection:
-        // nếu giữ nguyên tracked, EF Core coi là "cắt quan hệ bắt buộc"
-        // (JockeyInvitation.HorseId là FK non-nullable) → lỗi khi SaveChanges.
-        var removed = horse.JockeyInvitations.Where(i => !filtered.Contains(i)).ToList();
-        foreach (var invitation in removed)
-        {
-            _db.Entry(invitation).State = EntityState.Detached;
-        }
-
-        horse.JockeyInvitations.Clear();
-        foreach (var invitation in filtered)
-        {
-            horse.JockeyInvitations.Add(invitation);
-        }
-    }
+    // Removed NormalizeHorseInvitations to allow multiple invitations (one per race)
 }
