@@ -42,6 +42,8 @@ public class RaceEntryRepository : IRaceEntryRepository
         return _db.RaceEntries
             .Include(e => e.Horse)
             .Include(e => e.Jockey)
+            .Include(e => e.Race)
+                .ThenInclude(r => r!.Tournament)
             .FirstOrDefaultAsync(e => e.RaceId == raceId && e.HorseId == horseId);
     }
 
@@ -100,6 +102,9 @@ public class RaceEntryRepository : IRaceEntryRepository
     {
         return _db.RaceEntries
             .Include(e => e.Race)
+                .ThenInclude(r => r!.Tournament)
+            .Include(e => e.Race)
+                .ThenInclude(r => r!.Track)
             .Include(e => e.Horse)
             .Include(e => e.Jockey)
             .Where(e => e.HorseId == horseId)

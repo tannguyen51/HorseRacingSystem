@@ -98,6 +98,47 @@ public class JockeyService : IJockeyService
         }
 
         var invitations = await _invitations.GetByJockeyAsync(jockey.Id);
+
+        // Repair invitations created by older clients without RaceId and keep
+        // accepted invitations reflected on the race participant row.
+        var changedEntries = new List<RaceEntry>();
+        var repairedInvitation = false;
+        foreach (var invitation in invitations.Where(item => !item.RaceId.HasValue))
+        {
+            var entry = (await _raceEntries.GetByHorseAsync(invitation.HorseId))
+                .Where(item =>
+                    item.Status != RegistrationStatus.Rejected &&
+                    item.ScratchedAt == null &&
+                    item.Race != null &&
+                    item.Race.Status != RaceStatus.Finished &&
+                    item.Race.Status != RaceStatus.Cancelled)
+                .OrderByDescending(item => item.Race!.ScheduledAt)
+                .FirstOrDefault();
+            if (entry == null)
+            {
+                continue;
+            }
+
+            invitation.RaceId = entry.RaceId;
+            invitation.Race = entry.Race;
+            repairedInvitation = true;
+            if (invitation.Status == JockeyInvitationStatus.Accepted && entry.JockeyId != jockey.Id)
+            {
+                entry.JockeyId = jockey.Id;
+                entry.JockeyConfirmed = true;
+                changedEntries.Add(entry);
+            }
+        }
+
+        if (changedEntries.Count > 0)
+        {
+            await _raceEntries.UpdateRangeAsync(changedEntries);
+        }
+        if (repairedInvitation)
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         return ServiceResult<object>.Ok(invitations);
     }
 
@@ -122,13 +163,26 @@ public class JockeyService : IJockeyService
                 "Lời mời này đã được phản hồi");
         }
 
-        invitation.Status = request.Accept ? JockeyInvitationStatus.Accepted : JockeyInvitationStatus.Declined;
-        invitation.RespondedAt = DateTime.UtcNow;
+        var horseEntries = await _raceEntries.GetByHorseAsync(invitation.HorseId);
+
+        // Resolve invitations sent before the owner registered the horse for a race.
+        if (!invitation.RaceId.HasValue)
+        {
+            invitation.RaceId = horseEntries
+                .Where(entry =>
+                    entry.Status != RegistrationStatus.Rejected &&
+                    entry.ScratchedAt == null &&
+                    entry.Race != null &&
+                    entry.Race.Status != RaceStatus.Finished &&
+                    entry.Race.Status != RaceStatus.Cancelled)
+                .OrderByDescending(entry => entry.Race!.ScheduledAt)
+                .Select(entry => (Guid?)entry.RaceId)
+                .FirstOrDefault();
+        }
 
         if (!request.Accept)
         {
             // Từ chối lời mời → gỡ kỵ sĩ khỏi các cuộc đua đã phân công cho ngựa này
-            var horseEntries = await _raceEntries.GetByHorseAsync(invitation.HorseId);
             var affected = horseEntries.Where(e => e.JockeyId == jockey.Id).ToList();
             if (affected.Count > 0)
             {
@@ -166,7 +220,11 @@ public class JockeyService : IJockeyService
 
             entry.JockeyId = jockey.Id;
             entry.JockeyConfirmed = true;
+            await _raceEntries.UpdateAsync(entry);
         }
+
+        invitation.Status = request.Accept ? JockeyInvitationStatus.Accepted : JockeyInvitationStatus.Declined;
+        invitation.RespondedAt = DateTime.UtcNow;
 
         await _unitOfWork.SaveChangesAsync();
 

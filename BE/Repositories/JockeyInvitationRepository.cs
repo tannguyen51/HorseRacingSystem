@@ -26,6 +26,8 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
                 .ThenInclude(o => o!.User)
             .Include(i => i.Race)
                 .ThenInclude(r => r!.Tournament)
+            .Include(i => i.Race)
+                .ThenInclude(r => r!.Track)
             .Where(i =>
                 i.JockeyId == jockeyId &&
                 (i.Status == JockeyInvitationStatus.Pending ||
@@ -44,6 +46,9 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
             .Include(i => i.Jockey)
                 .ThenInclude(j => j!.User)
             .Include(i => i.Race)
+                .ThenInclude(r => r!.Tournament)
+            .Include(i => i.Race)
+                .ThenInclude(r => r!.Track)
             .FirstOrDefaultAsync(i => i.Id == invitationId && i.JockeyId == jockeyId);
     }
 
