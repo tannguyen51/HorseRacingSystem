@@ -247,10 +247,29 @@ public class HorseService : IHorseService
         var targetStart = targetRace.ScheduledAt;
         var targetEnd = targetRace.ScheduledEndAt ?? targetRace.ScheduledAt.AddHours(1);
 
+        // Accepted invitations are normally converted into RaceEntry records.
+        // Checking invitations alone misses jockeys with an official race entry.
+        var hasOfficialRaceConflict = await _raceEntries.HasJockeyScheduleConflictAsync(
+            request.JockeyId,
+            targetStart,
+            targetEnd);
+
+        if (hasOfficialRaceConflict)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Kỵ sĩ này đã có cuộc đua trùng thời gian. Vui lòng chọn kỵ sĩ khác.");
+        }
+
         // Check if jockey is already accepted/pending in another race that overlaps
         var overlappingInv = await _db.JockeyInvitations
             .Include(i => i.Race)
-            .Where(i => i.JockeyId == request.JockeyId && i.RaceId != invitationRaceId && (i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted))
+            .Where(i => i.JockeyId == request.JockeyId &&
+                        i.RaceId != invitationRaceId &&
+                        (i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted) &&
+                        i.Race != null &&
+                        i.Race.Status != RaceStatus.Cancelled &&
+                        i.Race.Status != RaceStatus.Finished)
             .FirstOrDefaultAsync(i => i.Race != null && i.Race.ScheduledAt < targetEnd && (i.Race.ScheduledEndAt ?? i.Race.ScheduledAt.AddHours(1)) > targetStart);
 
         if (overlappingInv != null)
