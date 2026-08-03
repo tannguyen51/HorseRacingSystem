@@ -5,5 +5,4 @@ export const jockeyNavItems = [
   { to: "/jockey/leaderboard", label: "Bảng xếp hạng" },
   { to: "/owner/horses", label: "Ngựa của tôi" },
   { to: "/owner/tournaments", label: "Giải đấu" },
-  { to: "/owner/register-tournament", label: "Đăng ký giải đấu" },
 ];

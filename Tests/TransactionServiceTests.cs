@@ -85,6 +85,7 @@ public class TransactionServiceTests
         public Task<ServiceResult<bool>> MarkAsReadAsync(Guid notificationId) => Task.FromResult(ServiceResult<bool>.Ok(true));
         public Task<ServiceResult<bool>> MarkMultipleAsReadAsync(MarkNotificationsAsReadDto dto) => Task.FromResult(ServiceResult<bool>.Ok(true));
         public Task<ServiceResult<bool>> DeleteNotificationAsync(Guid notificationId) => Task.FromResult(ServiceResult<bool>.Ok(true));
+        public Task<ServiceResult<bool>> DeleteAllNotificationsAsync(Guid userId) => Task.FromResult(ServiceResult<bool>.Ok(true));
         public Task<ServiceResult<int>> GetUnreadCountAsync(Guid userId) => Task.FromResult(ServiceResult<int>.Ok(0));
         public Task<ServiceResult<NotificationStatsDto>> GetNotificationStatsAsync(Guid userId) => Task.FromResult(ServiceResult<NotificationStatsDto>.Ok(new NotificationStatsDto()));
         public Task<ServiceResult<bool>> SendBulkNotificationsAsync(BulkNotificationDto dto) => Task.FromResult(ServiceResult<bool>.Ok(true));

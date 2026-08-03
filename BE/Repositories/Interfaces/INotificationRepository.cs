@@ -18,6 +18,7 @@ public interface INotificationRepository
     Task AddAsync(Notification notification);
     Task UpdateAsync(Notification notification);
     Task DeleteAsync(Guid id);
+    Task DeleteAllByUserIdAsync(Guid userId);
     Task MarkAsReadAsync(Guid id);
     Task MarkMultipleAsReadAsync(List<Guid> ids);
     Task MarkAsSentAsync(Guid id);

@@ -169,6 +169,21 @@ public class NotificationsController : ControllerBase
     /// <summary>
     /// Delete notification
     /// </summary>
+    [HttpDelete("all")]
+    public async Task<IActionResult> DeleteAllNotifications()
+    {
+        try
+        {
+            var result = await _notificationService.DeleteAllNotificationsAsync(GetUserId());
+            return StatusCode(result.StatusCode, result.Result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi xóa tất cả thông báo");
+            return StatusCode(500, new ApiResult<object> { Success = false, Message = "Lỗi xóa tất cả thông báo" });
+        }
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteNotification(Guid id)
     {
