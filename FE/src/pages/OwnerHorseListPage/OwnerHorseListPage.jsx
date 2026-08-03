@@ -17,9 +17,14 @@ function OwnerHorseListPage() {
 
   const [assignHorse, setAssignHorse] = useState(null);
   const [jockeys, setJockeys] = useState([]);
+  const [selectedRace, setSelectedRace] = useState("");
   const [selectedJockey, setSelectedJockey] = useState("");
   const [jockeyError, setJockeyError] = useState("");
   const [jockeyLoading, setJockeyLoading] = useState(false);
+
+  const [cancelHorse, setCancelHorse] = useState(null);
+  const [selectedCancelRace, setSelectedCancelRace] = useState("");
+  const [cancelError, setCancelError] = useState("");
 
   const loadHorses = async () => {
     setLoading(true);
@@ -30,13 +35,20 @@ function OwnerHorseListPage() {
     finally { setLoading(false); }
   };
 
-  const handleRemoveJockey = async (horse) => {
-    if (!window.confirm("Bạn có chắc chắn muốn hủy chỉ định kỵ sĩ này?")) return;
+  const openCancel = (horse) => {
+    setCancelHorse(horse);
+    setSelectedCancelRace("");
+    setCancelError("");
+  };
+
+  const submitCancel = async () => {
+    if (!selectedCancelRace) { setCancelError("Vui lòng chọn giải đua."); return; }
     setLoading(true);
     try {
-      await removeJockeyFromHorse(horse.id ?? horse.Id);
+      await removeJockeyFromHorse(cancelHorse.id ?? cancelHorse.Id, selectedCancelRace);
+      setCancelHorse(null);
       await loadHorses();
-    } catch (e) { setError(e.message || "Không thể thực hiện."); }
+    } catch (e) { setCancelError(e.message || "Không thể thực hiện."); }
     finally { setLoading(false); }
   };
 
@@ -62,6 +74,7 @@ function OwnerHorseListPage() {
 
   const openAssign = async (horse) => {
     setAssignHorse(horse);
+    setSelectedRace("");
     setSelectedJockey("");
     setJockeyError("");
     setJockeyLoading(true);
@@ -126,10 +139,12 @@ function OwnerHorseListPage() {
   };
 
   const submitAssign = async () => {
+    if (!selectedRace) { setJockeyError("Vui lòng chọn giải đua."); return; }
     if (!selectedJockey) { setJockeyError("Vui lòng chọn kỵ sĩ."); return; }
     try {
-      await inviteJockeyToHorse(assignHorse.id ?? assignHorse.Id, { jockeyId: selectedJockey });
+      await inviteJockeyToHorse(assignHorse.id ?? assignHorse.Id, { jockeyId: selectedJockey, raceId: selectedRace });
       setAssignHorse(null);
+      await loadHorses();
     } catch (e) { setJockeyError(e.message || "Lỗi."); }
   };
 
@@ -228,15 +243,14 @@ function OwnerHorseListPage() {
                   </div>
                   <div className="oh-actions">
                     <Link to={`/owner/horses/${id}`} className="oh-btn oh-btn--sm oh-btn--primary">Chi tiết</Link>
-                    {hasAcceptedJockey ? (
-                      <button className="oh-btn-icon" style={{color: "#ef4444"}} title="Hủy kỵ sĩ" onClick={() => handleRemoveJockey(h)}>
+                    {hasAcceptedJockey && (
+                      <button className="oh-btn-icon" style={{color: "#ef4444"}} title="Hủy kỵ sĩ" onClick={() => openCancel(h)}>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                       </button>
-                    ) : (
-                      <button className="oh-btn-icon" onClick={() => openAssign(h)} title="Chỉ định kỵ sĩ">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                      </button>
                     )}
+                    <button className="oh-btn-icon" onClick={() => openAssign(h)} title="Chỉ định kỵ sĩ">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    </button>
                     <button className="oh-btn-icon" onClick={() => handleDelete(h)} title="Xóa">
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                     </button>
@@ -256,7 +270,17 @@ function OwnerHorseListPage() {
         <div className="oh-modal" onClick={() => setAssignHorse(null)}>
           <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
             <h3>Chỉ định kỵ sĩ</h3>
-            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn kỵ sĩ cho {assignHorse.name ?? assignHorse.Name}</p>
+            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đua và kỵ sĩ cho {assignHorse.name ?? assignHorse.Name}</p>
+            <select value={selectedRace} onChange={e => setSelectedRace(e.target.value)} className="oh-select" style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn giải đua --</option>
+              {(assignHorse.raceEntries ?? assignHorse.RaceEntries ?? []).map(entry => {
+                const race = entry.race ?? entry.Race;
+                if (!race) return null;
+                const activeInvs = (assignHorse.jockeyInvitations ?? assignHorse.JockeyInvitations ?? []).filter(inv => inv.raceId === race.id && ((inv.status ?? inv.Status) === 1 || (inv.status ?? inv.Status) === 2 || String(inv.status ?? inv.Status).toLowerCase() === "pending" || String(inv.status ?? inv.Status).toLowerCase() === "accepted"));
+                if (activeInvs.length > 0) return null; // already has jockey
+                return <option key={race.id ?? race.Id} value={race.id ?? race.Id}>{race.name ?? race.Name}</option>;
+              })}
+            </select>
             <select value={selectedJockey} onChange={e => setSelectedJockey(e.target.value)} className="oh-select" disabled={jockeyLoading || jockeys.length === 0}>
               <option value="">{jockeyLoading ? "Đang tải danh sách kỵ sĩ..." : "-- Chọn kỵ sĩ --"}</option>
               {jockeys.map(j => <option key={j.id ?? j.Id} value={j.id ?? j.Id}>{j.fullName ?? j.FullName ?? j.email ?? j.Email}</option>)}
@@ -268,6 +292,33 @@ function OwnerHorseListPage() {
             <div className="oh-modal-actions">
               <button className="oh-btn" onClick={() => setAssignHorse(null)}>Huỷ</button>
               <button className="oh-btn oh-btn--primary" onClick={submitAssign}>Xác nhận</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Modal */}
+      {cancelHorse && (
+        <div className="oh-modal" onClick={() => setCancelHorse(null)}>
+          <div className="oh-modal-card" onClick={e => e.stopPropagation()}>
+            <h3>Hủy kỵ sĩ</h3>
+            <p className="oh-muted" style={{textAlign:"left",padding:0,margin:"0 0 12px"}}>Chọn giải đua để hủy kỵ sĩ của {cancelHorse.name ?? cancelHorse.Name}</p>
+            <select value={selectedCancelRace} onChange={e => setSelectedCancelRace(e.target.value)} className="oh-select" style={{marginBottom:"12px"}}>
+              <option value="">-- Chọn giải đua --</option>
+              {(cancelHorse.jockeyInvitations ?? cancelHorse.JockeyInvitations ?? [])
+                .filter(inv => (inv.status ?? inv.Status) === 2 || (inv.status ?? inv.Status) === 1 || String(inv.status ?? inv.Status).toLowerCase() === "accepted" || String(inv.status ?? inv.Status).toLowerCase() === "pending")
+                .map(inv => {
+                  const raceId = inv.raceId ?? inv.RaceId;
+                  const entry = (cancelHorse.raceEntries ?? cancelHorse.RaceEntries ?? []).find(e => (e.raceId ?? e.RaceId) === raceId);
+                  const raceName = entry?.race?.name ?? entry?.Race?.Name ?? "Giải đua";
+                  const jockeyName = inv.jockey?.user?.fullName ?? inv.Jockey?.User?.FullName ?? "kỵ sĩ";
+                  return <option key={raceId} value={raceId}>{raceName} (Kỵ sĩ: {jockeyName})</option>;
+              })}
+            </select>
+            {cancelError && <p className="oh-error" style={{margin:"8px 0 0"}}>{cancelError}</p>}
+            <div className="oh-modal-actions">
+              <button className="oh-btn" onClick={() => setCancelHorse(null)}>Huỷ</button>
+              <button className="oh-btn oh-btn--primary" style={{backgroundColor:"#ef4444",borderColor:"#ef4444"}} onClick={submitCancel}>Hủy kỵ sĩ</button>
             </div>
           </div>
         </div>

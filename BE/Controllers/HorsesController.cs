@@ -164,11 +164,11 @@ public class HorsesController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
-    [HttpDelete("{horseId:guid}/jockeys")]
-    public async Task<ActionResult> RemoveJockey(Guid horseId)
+    [HttpDelete("{horseId:guid}/races/{raceId:guid}/jockeys")]
+    public async Task<ActionResult> RemoveJockey(Guid horseId, Guid raceId)
     {
         var ownerId = GetUserId();
-        var result = await _horseService.RemoveJockeyAsync(ownerId, horseId);
+        var result = await _horseService.RemoveJockeyAsync(ownerId, horseId, raceId);
         return StatusCode(result.StatusCode, result.Result);
     }
 

@@ -202,38 +202,33 @@ public class HorseService : IHorseService
                 "Bạn không thể gửi lời mời cho chính mình");
         }
 
-        // Invitations are race assignments, so retain the race context whenever the
-        // horse has already been registered. Older clients only send jockeyId.
-        var invitationRaceId = request.RaceId ?? horse.RaceEntries
-            .Where(entry =>
-                entry.Status != RegistrationStatus.Rejected &&
-                entry.ScratchedAt == null &&
-                entry.Race != null &&
-                entry.Race.Status != RaceStatus.Finished &&
-                entry.Race.Status != RaceStatus.Cancelled)
-            .OrderByDescending(entry => entry.Race!.ScheduledAt)
-            .Select(entry => (Guid?)entry.RaceId)
-            .FirstOrDefault();
+        if (request.RaceId == Guid.Empty)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Vui lòng chọn giải đua");
+        }
+        var invitationRaceId = request.RaceId;
 
         var existingInvitation = await _invitations.GetByHorseAndJockeyAsync(horseId, request.JockeyId);
-        if (existingInvitation != null)
+        // Assuming GetByHorseAndJockeyAsync gets the active one. With new schema, there could be multiple.
+        // Wait, instead of GetByHorseAndJockeyAsync, we should just query by RaceId.
+        var existingInvitationInRace = horse.JockeyInvitations.FirstOrDefault(i => i.RaceId == invitationRaceId);
+        if (existingInvitationInRace != null && existingInvitationInRace.Status != JockeyInvitationStatus.Declined)
         {
-            if (existingInvitation.Status == JockeyInvitationStatus.Declined)
-            {
-                existingInvitation.RaceId = invitationRaceId;
-                existingInvitation.Status = JockeyInvitationStatus.Pending;
-                existingInvitation.CreatedAt = DateTime.UtcNow;
-                existingInvitation.RespondedAt = null;
-                existingInvitation.ResponseNote = null;
-            }
-            else
-            {
-                var jockeyName = existingInvitation.Jockey?.User?.FullName ?? "kỵ sĩ khác";
-                var status = existingInvitation.Status.ToString().ToLowerInvariant();
-                return ServiceResult<object>.Fail(
-                    StatusCodes.Status409Conflict,
-                    $"Ngựa này đã có kỵ sĩ {jockeyName} với trạng thái {status}");
-            }
+            var jockeyName = existingInvitationInRace.Jockey?.User?.FullName ?? "kỵ sĩ";
+            var status = existingInvitationInRace.Status.ToString().ToLowerInvariant();
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                $"Ngựa này đã có kỵ sĩ {jockeyName} với trạng thái {status} cho giải đua này");
+        }
+        
+        // Also we should create a new invitation rather than reusing an old declined one for a different race
+        var existingDeclined = horse.JockeyInvitations.FirstOrDefault(i => i.JockeyId == request.JockeyId && i.RaceId == invitationRaceId && i.Status == JockeyInvitationStatus.Declined);
+        if (existingDeclined != null)
+        {
+            existingDeclined.Status = JockeyInvitationStatus.Pending;
+            existingDeclined.CreatedAt = DateTime.UtcNow;
+            existingDeclined.RespondedAt = null;
+            existingDeclined.ResponseNote = null;
         }
 
         var jockeyExists = await _jockeys.ExistsAsync(request.JockeyId);
@@ -242,7 +237,7 @@ public class HorseService : IHorseService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy kỵ sĩ");
         }
 
-        var invitation = existingInvitation ?? new JockeyInvitation
+        var invitation = existingDeclined ?? new JockeyInvitation
         {
             Id = Guid.NewGuid(),
             HorseId = horseId,
@@ -252,7 +247,7 @@ public class HorseService : IHorseService
             CreatedAt = DateTime.UtcNow
         };
 
-        if (existingInvitation == null)
+        if (existingDeclined == null)
         {
             await _invitations.AddAsync(invitation);
         }
@@ -286,7 +281,7 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(invitation);
     }
 
-    public async Task<ServiceResult<string>> RemoveJockeyAsync(Guid userId, Guid horseId)
+    public async Task<ServiceResult<string>> RemoveJockeyAsync(Guid userId, Guid horseId, Guid raceId)
     {
         var owner = await GetOwnerProfileAsync(userId);
         if (owner == null)
@@ -300,25 +295,19 @@ public class HorseService : IHorseService
             return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
         }
 
-        var invitations = horse.JockeyInvitations
-            .Where(i => i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted)
-            .ToList();
+        var invitation = horse.JockeyInvitations
+            .FirstOrDefault(i => i.RaceId == raceId && (i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted));
 
-        if (invitations.Count == 0)
+        if (invitation != null)
         {
-            return ServiceResult<string>.Fail(StatusCodes.Status400BadRequest, "Ngựa này chưa có kỵ sĩ nào để hủy");
+            invitation.Status = JockeyInvitationStatus.Declined;
+            invitation.ResponseNote = "Chủ ngựa đã hủy kỵ sĩ";
+            invitation.RespondedAt = DateTime.UtcNow;
         }
 
-        foreach (var inv in invitations)
-        {
-            inv.Status = JockeyInvitationStatus.Declined;
-            inv.ResponseNote = "Chủ ngựa đã hủy kỵ sĩ";
-            inv.RespondedAt = DateTime.UtcNow;
-        }
-
-        // Remove jockey from all race entries (past and future races as requested)
-        var raceEntries = await _db.RaceEntries.Where(e => e.HorseId == horseId).ToListAsync();
-        foreach (var entry in raceEntries)
+        // Remove jockey from the specific race entry
+        var entry = await _db.RaceEntries.FirstOrDefaultAsync(e => e.HorseId == horseId && e.RaceId == raceId);
+        if (entry != null)
         {
             entry.JockeyId = null;
             entry.JockeyConfirmed = false;
