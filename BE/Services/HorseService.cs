@@ -300,9 +300,27 @@ public class HorseService : IHorseService
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
-        if (race.Status != RaceStatus.Scheduled)
+        if (race.Status != RaceStatus.RegistrationOpen)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đang mở đăng ký.");
+        }
+
+        if (race.Tournament?.RegistrationDeadline is DateTime registrationDeadline &&
+            DateTime.UtcNow > registrationDeadline.ToUniversalTime())
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Đã quá hạn đăng ký của giải đấu");
+        }
+
+        var activeEntryCount = race.Entries.Count(entry =>
+            entry.Status != RegistrationStatus.Rejected &&
+            entry.ScratchedAt == null);
+        if (activeEntryCount >= race.MaxParticipants)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                $"Cuộc đua đã đủ số lượng tham gia tối đa ({race.MaxParticipants})");
         }
 
         // Check horse is not already registered for this specific race

@@ -19,13 +19,7 @@ function RaceForm({ tournamentId, onClose, onSuccess }) {
     distance: 1200,
     maxParticipants: 8,
     scheduledAt: "",
-    scheduledEndAt: "",
-    registrationDeadline: "",
   });
-
-  const [rounds, setRounds] = useState([
-    { name: "", scheduledAt: "" },
-  ]);
 
   const [selectedRefereeIds, setSelectedRefereeIds] = useState([]);
   const [selectedHorseIds, setSelectedHorseIds] = useState([]);
@@ -69,18 +63,6 @@ function RaceForm({ tournamentId, onClose, onSuccess }) {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateRound = (idx, field, value) => {
-    setRounds((prev) => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
-  };
-
-  const addRound = () => {
-    setRounds((prev) => [...prev, { name: "", scheduledAt: "" }]);
-  };
-
-  const removeRound = (idx) => {
-    setRounds((prev) => prev.filter((_, i) => i !== idx));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -90,14 +72,13 @@ function RaceForm({ tournamentId, onClose, onSuccess }) {
       // 1. Create race
       const racePayload = {
         tournamentId: form.tournamentId,
-        trackId: form.trackId,
         name: form.name,
         distance: Number(form.distance),
         maxParticipants: Number(form.maxParticipants),
         scheduledAt: new Date(form.scheduledAt).toISOString(),
-        scheduledEndAt: form.scheduledEndAt ? new Date(form.scheduledEndAt).toISOString() : null,
-        registrationDeadline: form.registrationDeadline ? new Date(form.registrationDeadline).toISOString() : null,
-        rounds: rounds.filter(r => r.name || r.scheduledAt),
+        location: tracks.find((track) => (track.id || track.Id) === form.trackId)?.name
+          ?? tracks.find((track) => (track.id || track.Id) === form.trackId)?.Name
+          ?? null,
       };
 
       const raceRes = await request("/api/races/management", {
@@ -124,7 +105,7 @@ function RaceForm({ tournamentId, onClose, onSuccess }) {
 
       // 3. Assign horses
       if (selectedHorseIds.length > 0) {
-        await request(`/api/races/${raceId}/horses/bulk`, {
+        await request(`/api/races/management/${raceId}/bulk-assign-horses`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ horseIds: selectedHorseIds }),
@@ -240,81 +221,13 @@ function RaceForm({ tournamentId, onClose, onSuccess }) {
             />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <Input
-              label="Thời gian bắt đầu"
-              type="datetime-local"
-              value={form.scheduledAt}
-              onChange={(e) => updateForm("scheduledAt", e.target.value)}
-              required
-            />
-
-            <Input
-              label="Thời gian kết thúc (dự kiến)"
-              type="datetime-local"
-              value={form.scheduledEndAt}
-              onChange={(e) => updateForm("scheduledEndAt", e.target.value)}
-            />
-          </div>
-
           <Input
-            label="Hạn đăng ký"
+            label="Thời gian bắt đầu"
             type="datetime-local"
-            value={form.registrationDeadline}
-            onChange={(e) => updateForm("registrationDeadline", e.target.value)}
+            value={form.scheduledAt}
+            onChange={(e) => updateForm("scheduledAt", e.target.value)}
+            required
           />
-
-          {/* Rounds */}
-          <div style={{ marginTop: 24, marginBottom: 24 }}>
-            <h3 style={{ fontSize: 18, marginBottom: 12, color: colors.ink }}>
-              Vòng đua ({rounds.length})
-            </h3>
-            {rounds.map((round, idx) => (
-              <div
-                key={idx}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr auto",
-                  gap: 12,
-                  marginBottom: 12,
-                  alignItems: "end",
-                }}
-              >
-                <Input
-                  label={`Vòng #${idx + 1} - Tên (tuỳ chọn)`}
-                  value={round.name}
-                  onChange={(e) => updateRound(idx, "name", e.target.value)}
-                  placeholder="Bán kết"
-                />
-                <Input
-                  label="Thời gian"
-                  type="datetime-local"
-                  value={round.scheduledAt}
-                  onChange={(e) => updateRound(idx, "scheduledAt", e.target.value)}
-                />
-                {rounds.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeRound(idx)}
-                    style={{
-                      padding: "10px 16px",
-                      borderRadius: 8,
-                      border: "1px solid #ef4444",
-                      background: "transparent",
-                      color: "#ef4444",
-                      cursor: "pointer",
-                      fontSize: 16,
-                    }}
-                  >
-                    X
-                  </button>
-                )}
-              </div>
-            ))}
-            <Button variant="ghost" onClick={addRound} type="button">
-              + Thêm vòng
-            </Button>
-          </div>
 
           {/* Referees */}
           <div style={{ marginTop: 24, marginBottom: 24 }}>

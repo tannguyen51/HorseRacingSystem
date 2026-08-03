@@ -62,7 +62,7 @@ function RaceManagementPage() {
     }
 
     try {
-      await request(`/api/races/${raceId}/horses/bulk`, {
+      await request(`/api/races/management/${raceId}/bulk-assign-horses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ horseIds: selectedHorses }),
