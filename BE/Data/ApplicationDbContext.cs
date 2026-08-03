@@ -65,7 +65,7 @@ public class ApplicationDbContext : DbContext
             .HasConversion<string>();
 
         modelBuilder.Entity<JockeyInvitation>()
-            .HasIndex(i => new { i.HorseId, i.JockeyId })
+            .HasIndex(i => new { i.HorseId, i.JockeyId, i.RaceId })
             .IsUnique();
 
         modelBuilder.Entity<Prediction>()

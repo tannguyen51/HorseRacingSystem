@@ -69,8 +69,8 @@ public class JockeyInvitationCreateRequest
 {
     [Required]
     public Guid JockeyId { get; set; }
-
-    public Guid? RaceId { get; set; }
+    [Required]
+    public Guid RaceId { get; set; }
 }
 
 public class RaceRegistrationRequest
