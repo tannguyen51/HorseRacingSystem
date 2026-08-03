@@ -109,7 +109,7 @@ public class RaceEntryRepository : IRaceEntryRepository
     public Task<List<RaceEntry>> GetByRaceAsync(Guid raceId)
     {
         return _db.RaceEntries
-            .Include(e => e.Horse)
+            .Include(e => e.Horse)!.ThenInclude(h => h!.Owner)!.ThenInclude(o => o!.User)
             .Include(e => e.Jockey)!.ThenInclude(j => j!.User)
             .Where(e => e.RaceId == raceId)
             .ToListAsync();

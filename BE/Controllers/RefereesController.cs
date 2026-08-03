@@ -190,6 +190,7 @@ public class RefereesController : ControllerBase
             EntryId = e.Id,
             HorseId = e.HorseId,
             HorseName = e.Horse?.Name ?? e.HorseId.ToString(),
+            OwnerName = e.Horse?.Owner?.OrganizationName ?? e.Horse?.Owner?.User?.FullName,
             HorseWinRate = e.Horse != null && e.Horse.TotalRaces > 0
                 ? Math.Round((decimal)e.Horse.TotalWins / e.Horse.TotalRaces * 100, 1)
                 : 0,

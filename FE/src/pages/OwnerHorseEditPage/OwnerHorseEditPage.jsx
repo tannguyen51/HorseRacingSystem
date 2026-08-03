@@ -3,9 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getHorse, updateHorse } from "../../services/ownerHorseApi";
 import { request, resolveApiUrl } from "../../services/apiClient";
 import { validateHorseStats } from "../../utils/horseValidation";
-import "../OwnerSharedLayout.css";
-import "../OwnerHorseFormPage.css";
-
 const getFullUrl = (url) => resolveApiUrl(url);
 
 function OwnerHorseEditPage() {

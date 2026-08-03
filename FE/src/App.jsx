@@ -55,6 +55,11 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage/RegisterPage"));
 const RegisterHorseOwnerPage = lazy(() => import("./pages/RegisterHorseOwnerPage/RegisterHorseOwnerPage"));
 const RegisterJockeyPage = lazy(() => import("./pages/RegisterJockeyPage/RegisterJockeyPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
+import "./pages/OwnerSharedLayout.css";
+import "./pages/OwnerHorseFormPage.css";
+import "./pages/RefereeSharedLayout.css";
+import "./pages/SpectatorSharedLayout.css";
+import "./pages/ProfilePages.css";
 import "./App.css";
 
 const getStoredAuthUser = () => {

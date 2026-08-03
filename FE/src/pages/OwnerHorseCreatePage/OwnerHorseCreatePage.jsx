@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { createHorse } from "../../services/ownerHorseApi";
 import { request } from "../../services/apiClient";
 import { validateHorseStats } from "../../utils/horseValidation";
-import "../OwnerSharedLayout.css";
-import "../OwnerHorseFormPage.css";
-
 function OwnerHorseCreatePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);

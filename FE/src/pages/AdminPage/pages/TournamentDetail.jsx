@@ -115,11 +115,13 @@ export default function TournamentDetail({ t, onBack, setMessage, getTournamentR
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
               <thead><tr>
                 <th style={{textAlign:"left",padding:"4px 8px",borderBottom:"1px solid rgba(143,100,32,0.12)",color:"#657086"}}>Ngựa</th>
+                <th style={{textAlign:"left",padding:"4px 8px",borderBottom:"1px solid rgba(143,100,32,0.12)",color:"#657086"}}>Chủ ngựa</th>
                 <th style={{textAlign:"left",padding:"4px 8px",borderBottom:"1px solid rgba(143,100,32,0.12)",color:"#657086"}}>Kỵ sĩ</th>
                 <th style={{textAlign:"left",padding:"4px 8px",borderBottom:"1px solid rgba(143,100,32,0.12)",color:"#657086"}}>Tỷ lệ</th>
               </tr></thead>
               <tbody>{det.entries.map((e,i)=>(
                 <tr key={i}><td style={{padding:"4px 8px",fontWeight:600,color:"#172033"}}>{e.horseName||e.HorseName}</td>
+                <td style={{padding:"4px 8px",color:"#657086"}}>{e.ownerName||e.OwnerName||"Chưa xác định"}</td>
                 <td style={{padding:"4px 8px",color:"#657086"}}>{e.jockeyName||e.JockeyName||"Chưa có"}</td>
                 <td style={{padding:"4px 8px"}}><OddsEditor raceId={id} horseId={e.horseId||e.HorseId} odds={e.odds||e.Odds||1} setMessage={setMessage} /></td></tr>
               ))}</tbody>
