@@ -33,6 +33,7 @@ public class RaceRepository : IRaceRepository
         return _db.Races
             .Include(r => r.Entries)
             .Include(r => r.RefereeAssignments)
+            .Include(r => r.Tournament)
             .FirstOrDefaultAsync(r => r.Id == raceId);
     }
 

@@ -8,6 +8,7 @@ namespace HorseRacing.Repositories.Interfaces;
 public interface IRaceEntryRepository
 {
     Task<bool> ExistsAsync(Guid raceId, Guid horseId);
+    Task<bool> OwnerHasHorseInRaceAsync(Guid raceId, Guid ownerId);
     Task<RaceEntry?> GetByIdWithHorseAsync(Guid entryId, Guid raceId);
     Task<RaceEntry?> GetByRaceHorseAsync(Guid raceId, Guid horseId);
     Task<RaceEntry?> GetByRaceAndHorseAsync(Guid raceId, Guid horseId);

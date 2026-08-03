@@ -25,7 +25,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
     maxParticipants: raceData?.maxParticipants || raceData?.MaxParticipants || 8,
     scheduledAt: toLocal(raceData?.scheduledAt || raceData?.ScheduledAt),
     scheduledEndAt: toLocal(raceData?.scheduledEndAt || raceData?.ScheduledEndAt || raceData?.actualEndTime || raceData?.ActualEndTime),
-    registrationDeadline: toLocal(raceData?.registrationDeadline || raceData?.RegistrationDeadline),
   });
 
   const [rounds, setRounds] = useState(() => {
@@ -107,7 +106,6 @@ function RaceForm({ tournamentId, tournamentName, tournamentStartDate, tournamen
         maxParticipants: Number(form.maxParticipants),
         scheduledAt: new Date(form.scheduledAt).toISOString(),
         scheduledEndAt: form.scheduledEndAt ? new Date(form.scheduledEndAt).toISOString() : null,
-        registrationDeadline: form.registrationDeadline ? new Date(form.registrationDeadline).toISOString() : null,
         roundNames: rounds.filter(r => r.name).map(r => r.name).join(","),
       };
 

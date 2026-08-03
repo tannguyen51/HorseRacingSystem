@@ -172,6 +172,14 @@ function OwnerTournamentRegisterPage() {
     );
   }, [registrations, selectedHorseId, selectedRaceId]);
 
+  const ownerAlreadyInRace = useMemo(() => {
+    if (!selectedRaceId) return false;
+    return registrations.some(
+      (registration) =>
+        String(registration.raceId) === String(selectedRaceId),
+    );
+  }, [registrations, selectedRaceId]);
+
   const eligibilityChecks = [
     {
       label: "Duyệt ngựa",
@@ -374,20 +382,27 @@ function OwnerTournamentRegisterPage() {
                     !selectedTournament ||
                     !selectedRaceId ||
                     isSubmitting ||
-                    hasExistingRegistration
+                    hasExistingRegistration ||
+                    ownerAlreadyInRace
                   }
                 >
                   {isSubmitting
                     ? "Đang gửi..."
                     : hasExistingRegistration
                       ? "Đã đăng ký"
-                      : "Xem lại đăng ký"}
+                      : ownerAlreadyInRace
+                        ? "Đã có ngựa tham gia"
+                        : "Xem lại đăng ký"}
                 </button>
-                {hasExistingRegistration && (
+                {hasExistingRegistration ? (
                   <p className="form-error">
                     Ngựa này đã được đăng ký cho cuộc đua đã chọn.
                   </p>
-                )}
+                ) : ownerAlreadyInRace ? (
+                  <p className="form-error">
+                    Bạn chỉ có thể đăng ký 1 con ngựa vào 1 cuộc đua. Ngựa khác của bạn đã được đăng ký.
+                  </p>
+                ) : null}
               </div>
             </form>
 

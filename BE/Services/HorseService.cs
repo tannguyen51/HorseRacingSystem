@@ -306,22 +306,41 @@ public class HorseService : IHorseService
         {
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
-        if (race.Status != RaceStatus.Scheduled)
+        if (race.Status != RaceStatus.RegistrationOpen)
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, $"Không thể đăng ký vào cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đang mở đăng ký.");
         }
 
-        // Check horse is not already in another active race
-        var isBusy = await _raceEntries.IsHorseInActiveRaceAsync(horseId);
-        if (isBusy)
+        if (race.Tournament?.RegistrationDeadline is DateTime registrationDeadline &&
+            DateTime.UtcNow > registrationDeadline.ToUniversalTime())
         {
-            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Ngựa này đã được đăng ký trong cuộc đua khác. Không thể thêm vào nhiều cuộc đua cùng lúc.");
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Đã quá hạn đăng ký của giải đấu");
         }
 
+        var activeEntryCount = race.Entries.Count(entry =>
+            entry.Status != RegistrationStatus.Rejected &&
+            entry.ScratchedAt == null);
+        if (activeEntryCount >= race.MaxParticipants)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                $"Cuộc đua đã đủ số lượng tham gia tối đa ({race.MaxParticipants})");
+        }
+
+        // Check horse is not already registered for this specific race
         var exists = await _raceEntries.ExistsAsync(raceId, horseId);
         if (exists)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Ngựa đã được đăng ký");
+        }
+
+        // Check: owner chỉ được đăng ký 1 con ngựa vào 1 cuộc đua
+        var ownerAlreadyInRace = await _raceEntries.OwnerHasHorseInRaceAsync(raceId, owner.Id);
+        if (ownerAlreadyInRace)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Bạn chỉ có thể đăng ký 1 con ngựa vào 1 cuộc đua. Ngựa khác của bạn đã được đăng ký hoặc đang chờ duyệt cho cuộc đua này.");
         }
 
         var acceptedInvitation = horse.JockeyInvitations
