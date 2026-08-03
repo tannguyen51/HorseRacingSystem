@@ -80,6 +80,7 @@ export const normalizeInvitation = (invitation) => {
   const ownerUser = read(owner, "user", "User") ?? {};
   const race = read(invitation, "race", "Race") ?? {};
   const tournament = read(race, "tournament", "Tournament") ?? {};
+  const track = read(race, "track", "Track") ?? {};
   const rawStatus = read(invitation, "status", "Status", "statusName", "StatusName");
   const status = normalizeInvitationStatus(rawStatus);
 
@@ -87,7 +88,7 @@ export const normalizeInvitation = (invitation) => {
     id: read(invitation, "id", "Id"),
     status,
     createdAt: read(invitation, "createdAt", "CreatedAt"),
-    raceId: read(invitation, "raceId", "RaceId", "id", "Id"),
+    raceId: read(invitation, "raceId", "RaceId") ?? read(race, "id", "Id"),
     raceName: read(
       invitation,
       "raceName",
@@ -100,6 +101,7 @@ export const normalizeInvitation = (invitation) => {
       read(race, "scheduledAt", "ScheduledAt"),
     location:
       read(invitation, "track", "Track", "location", "Location") ??
+      read(track, "name", "Name") ??
       read(race, "location", "Location") ??
       "Chưa xác định",
     distance: read(race, "distance", "Distance"),

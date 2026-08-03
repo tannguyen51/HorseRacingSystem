@@ -202,12 +202,25 @@ public class HorseService : IHorseService
                 "Bạn không thể gửi lời mời cho chính mình");
         }
 
+        // Invitations are race assignments, so retain the race context whenever the
+        // horse has already been registered. Older clients only send jockeyId.
+        var invitationRaceId = request.RaceId ?? horse.RaceEntries
+            .Where(entry =>
+                entry.Status != RegistrationStatus.Rejected &&
+                entry.ScratchedAt == null &&
+                entry.Race != null &&
+                entry.Race.Status != RaceStatus.Finished &&
+                entry.Race.Status != RaceStatus.Cancelled)
+            .OrderByDescending(entry => entry.Race!.ScheduledAt)
+            .Select(entry => (Guid?)entry.RaceId)
+            .FirstOrDefault();
+
         var existingInvitation = await _invitations.GetByHorseAndJockeyAsync(horseId, request.JockeyId);
         if (existingInvitation != null)
         {
             if (existingInvitation.Status == JockeyInvitationStatus.Declined)
             {
-                existingInvitation.RaceId = request.RaceId;
+                existingInvitation.RaceId = invitationRaceId;
                 existingInvitation.Status = JockeyInvitationStatus.Pending;
                 existingInvitation.CreatedAt = DateTime.UtcNow;
                 existingInvitation.RespondedAt = null;
@@ -234,7 +247,7 @@ public class HorseService : IHorseService
             Id = Guid.NewGuid(),
             HorseId = horseId,
             JockeyId = request.JockeyId,
-            RaceId = request.RaceId,
+            RaceId = invitationRaceId,
             Status = JockeyInvitationStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
@@ -370,6 +383,19 @@ public class HorseService : IHorseService
             OwnerConfirmed = false,
             JockeyConfirmed = false
         };
+
+        // An invitation may have been sent before the owner selected a race. Bind
+        // it now so the jockey sees complete race/tournament information and a
+        // later acceptance updates this exact entry.
+        if (acceptedInvitation != null || horse.JockeyInvitations.Any(invitation =>
+                invitation.Status == JockeyInvitationStatus.Pending))
+        {
+            var activeInvitation = acceptedInvitation ?? horse.JockeyInvitations
+                .Where(invitation => invitation.Status == JockeyInvitationStatus.Pending)
+                .OrderByDescending(invitation => invitation.CreatedAt)
+                .First();
+            activeInvitation.RaceId = raceId;
+        }
 
         await _raceEntries.AddAsync(entry);
         await _unitOfWork.SaveChangesAsync();
