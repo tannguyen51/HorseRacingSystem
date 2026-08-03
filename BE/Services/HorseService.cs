@@ -286,6 +286,48 @@ public class HorseService : IHorseService
         return ServiceResult<object>.Ok(invitation);
     }
 
+    public async Task<ServiceResult<string>> RemoveJockeyAsync(Guid userId, Guid horseId)
+    {
+        var owner = await GetOwnerProfileAsync(userId);
+        if (owner == null)
+        {
+            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ chủ sở hữu");
+        }
+
+        var horse = await _horses.GetOwnedHorseAsync(horseId, owner.Id);
+        if (horse == null)
+        {
+            return ServiceResult<string>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy ngựa");
+        }
+
+        var invitations = horse.JockeyInvitations
+            .Where(i => i.Status == JockeyInvitationStatus.Pending || i.Status == JockeyInvitationStatus.Accepted)
+            .ToList();
+
+        if (invitations.Count == 0)
+        {
+            return ServiceResult<string>.Fail(StatusCodes.Status400BadRequest, "Ngựa này chưa có kỵ sĩ nào để hủy");
+        }
+
+        foreach (var inv in invitations)
+        {
+            inv.Status = JockeyInvitationStatus.Declined;
+            inv.ResponseNote = "Chủ ngựa đã hủy kỵ sĩ";
+            inv.RespondedAt = DateTime.UtcNow;
+        }
+
+        // Remove jockey from all race entries (past and future races as requested)
+        var raceEntries = await _db.RaceEntries.Where(e => e.HorseId == horseId).ToListAsync();
+        foreach (var entry in raceEntries)
+        {
+            entry.JockeyId = null;
+            entry.JockeyConfirmed = false;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        return ServiceResult<string>.Ok("Đã hủy kỵ sĩ thành công");
+    }
+
     public async Task<ServiceResult<object>> RegisterHorseAsync(Guid userId, Guid horseId, Guid raceId, RaceRegistrationRequest request)
     {
         var owner = await GetOwnerProfileAsync(userId);
