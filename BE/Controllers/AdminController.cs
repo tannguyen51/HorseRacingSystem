@@ -17,13 +17,13 @@ public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
     private readonly IRaceEntryRepository _entryRepo;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IRaceEntryService _raceEntryService;
 
-    public AdminController(IAdminService adminService, IRaceEntryRepository entryRepo, IUnitOfWork unitOfWork)
+    public AdminController(IAdminService adminService, IRaceEntryRepository entryRepo, IRaceEntryService raceEntryService)
     {
         _adminService = adminService;
         _entryRepo = entryRepo;
-        _unitOfWork = unitOfWork;
+        _raceEntryService = raceEntryService;
     }
 
     // Dashboard
@@ -193,25 +193,15 @@ public class AdminController : ControllerBase
     [HttpPost("race-entries/{entryId:guid}/approve")]
     public async Task<ActionResult> ApproveRaceEntry(Guid entryId)
     {
-        var entry = await _entryRepo.GetByIdAsync(entryId);
-        if (entry == null) return NotFound(new { message = "Không tìm thấy đăng ký tham gia" });
-        entry.Status = RegistrationStatus.Approved;
-        await _entryRepo.UpdateAsync(entry);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok(new { message = "Đã phê duyệt." });
+        var result = await _raceEntryService.ApproveAsync(entryId);
+        return StatusCode(result.StatusCode, result.Result);
     }
 
     [HttpPost("race-entries/{entryId:guid}/reject")]
     public async Task<ActionResult> RejectRaceEntry(Guid entryId, [FromBody] EntryRejectRequest request)
     {
-        var entry = await _entryRepo.GetByIdAsync(entryId);
-        if (entry == null) return NotFound(new { message = "Không tìm thấy đăng ký tham gia" });
-        entry.Status = RegistrationStatus.Rejected;
-        entry.ScratchedAt = DateTime.UtcNow;
-        entry.ScratchReason = request?.Reason ?? "Bị từ chối bởi admin";
-        await _entryRepo.UpdateAsync(entry);
-        await _unitOfWork.SaveChangesAsync();
-        return Ok(new { message = "Đã từ chối." });
+        var result = await _raceEntryService.RejectAsync(entryId, request?.Reason);
+        return StatusCode(result.StatusCode, result.Result);
     }
 }
 

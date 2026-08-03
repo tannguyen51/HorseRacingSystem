@@ -135,16 +135,17 @@ public class RaceEntryRepository : IRaceEntryRepository
         return query.AnyAsync();
     }
 
-    public Task<bool> IsJockeyInTournamentAsync(
-        Guid jockeyId,
-        Guid tournamentId,
-        Guid? excludeEntryId = null)
+    public Task<bool> HasJockeyScheduleConflictAsync(Guid jockeyId, DateTime scheduledAt,
+        DateTime scheduledEndAt, Guid? excludeEntryId = null)
     {
         var query = _db.RaceEntries.Where(e =>
             e.JockeyId == jockeyId &&
             e.Status != RegistrationStatus.Rejected &&
             e.Race != null &&
-            e.Race.TournamentId == tournamentId);
+            e.Race.Status != RaceStatus.Cancelled &&
+            e.Race.Status != RaceStatus.Finished &&
+            e.Race.ScheduledAt < scheduledEndAt &&
+            (e.Race.ScheduledEndAt ?? e.Race.ScheduledAt.AddMinutes(30)) > scheduledAt);
 
         if (excludeEntryId.HasValue)
             query = query.Where(e => e.Id != excludeEntryId.Value);

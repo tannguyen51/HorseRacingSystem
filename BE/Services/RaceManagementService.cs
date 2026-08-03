@@ -26,6 +26,7 @@ public class RaceManagementService : IRaceManagementService
     private readonly IWalletService _walletService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RaceManagementService> _logger;
+    private readonly IRaceEntryService _raceEntryService;
 
     public RaceManagementService(
         IRaceRepository raceRepo,
@@ -40,7 +41,8 @@ public class RaceManagementService : IRaceManagementService
         IPredictionService predictionService,
         IWalletService walletService,
         IUnitOfWork unitOfWork,
-        ILogger<RaceManagementService> logger)
+        ILogger<RaceManagementService> logger,
+        IRaceEntryService raceEntryService)
     {
         _raceRepo = raceRepo;
         _entryRepo = entryRepo;
@@ -55,6 +57,7 @@ public class RaceManagementService : IRaceManagementService
         _walletService = walletService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _raceEntryService = raceEntryService;
     }
 
     public async Task<ServiceResult<RaceDetailResponse>> CreateRaceAsync(CreateRaceRequest request)
@@ -311,14 +314,13 @@ public class RaceManagementService : IRaceManagementService
                     return ServiceResult<bool>.Fail(400, "Kỵ sĩ chưa được admin phê duyệt");
                 }
 
-                var alreadyInTournament = await _entryRepo.IsJockeyInTournamentAsync(
-                    jockey.Id,
-                    race.TournamentId);
-                if (alreadyInTournament)
+                var hasScheduleConflict = await _entryRepo.HasJockeyScheduleConflictAsync(
+                    jockey.Id, race.ScheduledAt, race.ScheduledEndAt ?? race.ScheduledAt.AddMinutes(30));
+                if (hasScheduleConflict)
                 {
                     return ServiceResult<bool>.Fail(
                         409,
-                        "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+                        "Kỵ sĩ này đã có cuộc đua trùng thời gian");
                 }
             }
 
@@ -505,11 +507,9 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(404, "Không tìm thấy cuộc đua");
             }
 
-            if (race.Status != RaceStatus.Scheduled
-                && race.Status != RaceStatus.RegistrationOpen
-                && race.Status != RaceStatus.RegistrationClosed)
+            if (race.Status != RaceStatus.RegistrationClosed)
             {
-                return ServiceResult<bool>.Fail(400, $"Không thể bắt đầu cuộc đua với trạng thái '{race.Status}'. Cuộc đua phải ở trạng thái Đã lên lịch.");
+                return ServiceResult<bool>.Fail(400, $"Không thể bắt đầu cuộc đua với trạng thái '{race.Status}'. Phải đóng đăng ký trước khi bắt đầu.");
             }
 
             var entries = await _entryRepo.GetByRaceAsync(raceId);
@@ -525,17 +525,9 @@ public class RaceManagementService : IRaceManagementService
                 return ServiceResult<bool>.Fail(400, "Không thể bắt đầu cuộc đua khi chưa có trọng tài nào chấp nhận lời mời.");
             }
 
-            // Đăng ký phải được admin duyệt trước khi đua
-            var rejectedEntries = entries.Where(e => e.Status == RegistrationStatus.Rejected).ToList();
-            if (rejectedEntries.Count > 0)
-            {
-                var names = string.Join(", ", rejectedEntries.Select(e => e.Horse?.Name ?? "Ngựa"));
-                return ServiceResult<bool>.Fail(400, $"Có ngựa bị từ chối đăng ký: {names}. Hãy gỡ ngựa khỏi cuộc đua.");
-            }
-            if (entries.Any(e => e.Status != RegistrationStatus.Approved))
-            {
-                return ServiceResult<bool>.Fail(400, "Chưa đủ đăng ký được duyệt. Admin phải duyệt đăng ký ngựa tham gia trước khi bắt đầu.");
-            }
+            var entryValidation = await _raceEntryService.ValidateRaceEntriesForStartAsync(raceId);
+            if (!entryValidation.Result.Success)
+                return ServiceResult<bool>.Fail(entryValidation.StatusCode, entryValidation.Result.Message ?? "Entry chưa hợp lệ");
 
             race.Status = RaceStatus.InProgress;
             race.ActualStartTime = DateTime.UtcNow;

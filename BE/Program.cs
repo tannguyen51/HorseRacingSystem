@@ -145,6 +145,7 @@ builder.Services.AddScoped<IInjuryRecordRepository, InjuryRecordRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorseService, HorseService>();
+builder.Services.AddScoped<IRaceEntryService, RaceEntryService>();
 builder.Services.AddScoped<IJockeyService, JockeyService>();
 builder.Services.AddScoped<IRaceService, RaceService>();
 builder.Services.AddScoped<IPredictionService, PredictionService>();

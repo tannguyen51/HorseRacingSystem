@@ -154,15 +154,14 @@ public class JockeyService : IJockeyService
                 return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
             }
 
-            var alreadyInTournament = await _raceEntries.IsJockeyInTournamentAsync(
-                jockey.Id,
-                entry.Race.TournamentId,
-                entry.Id);
-            if (alreadyInTournament)
+            var hasScheduleConflict = await _raceEntries.HasJockeyScheduleConflictAsync(
+                jockey.Id, entry.Race.ScheduledAt,
+                entry.Race.ScheduledEndAt ?? entry.Race.ScheduledAt.AddMinutes(30), entry.Id);
+            if (hasScheduleConflict)
             {
                 return ServiceResult<object>.Fail(
                     StatusCodes.Status409Conflict,
-                    "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+                    "Kỵ sĩ này đã có cuộc đua trùng thời gian");
             }
 
             entry.JockeyId = jockey.Id;

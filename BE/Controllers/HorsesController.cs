@@ -22,12 +22,14 @@ namespace HorseRacing.Controllers;
 public class HorsesController : ControllerBase
 {
     private readonly IHorseService _horseService;
+    private readonly IRaceEntryService _raceEntryService;
     private readonly ICloudStorageService _cloudStorage;
     private readonly IWebHostEnvironment _environment;
 
-    public HorsesController(IHorseService horseService, ICloudStorageService cloudStorage, IWebHostEnvironment environment)
+    public HorsesController(IHorseService horseService, IRaceEntryService raceEntryService, ICloudStorageService cloudStorage, IWebHostEnvironment environment)
     {
         _horseService = horseService;
+        _raceEntryService = raceEntryService;
         _cloudStorage = cloudStorage;
         _environment = environment;
     }
@@ -166,7 +168,7 @@ public class HorsesController : ControllerBase
     public async Task<ActionResult> RegisterHorse(Guid horseId, Guid raceId, RaceRegistrationRequest request)
     {
         var ownerId = GetUserId();
-        var result = await _horseService.RegisterHorseAsync(ownerId, horseId, raceId, request);
+        var result = await _raceEntryService.RegisterAsync(ownerId, horseId, raceId, request);
         return StatusCode(result.StatusCode, result.Result);
     }
 

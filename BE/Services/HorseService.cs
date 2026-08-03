@@ -352,11 +352,12 @@ public class HorseService : IHorseService
             : null;
         var assignedJockeyId = acceptedInvitation?.JockeyId ?? registeringJockey?.Id;
         if (assignedJockeyId.HasValue &&
-            await _raceEntries.IsJockeyInTournamentAsync(assignedJockeyId.Value, race.TournamentId))
+            await _raceEntries.HasJockeyScheduleConflictAsync(assignedJockeyId.Value,
+                race.ScheduledAt, race.ScheduledEndAt ?? race.ScheduledAt.AddMinutes(30)))
         {
             return ServiceResult<object>.Fail(
                 StatusCodes.Status409Conflict,
-                "Kỵ sĩ này đã tham gia một cuộc đua trong cùng giải đấu");
+                "Kỵ sĩ này đã có cuộc đua trùng thời gian");
         }
 
         var entry = new RaceEntry
