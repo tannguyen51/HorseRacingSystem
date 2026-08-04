@@ -478,8 +478,8 @@ public class HorseService : IHorseService
             HorseId = horseId,
             JockeyId = assignedJockeyId,
             Status = RegistrationStatus.Pending,
-            OwnerConfirmed = false,
-            JockeyConfirmed = false
+            OwnerConfirmed = true,
+            JockeyConfirmed = assignedJockeyId.HasValue
         };
 
         // An invitation may have been sent before the owner selected a race. Bind
