@@ -62,7 +62,8 @@ public class RaceEntryService : IRaceEntryService
             return ServiceResult<object>.Fail(409, "Kỵ sĩ đã có cuộc đua trùng thời gian");
 
         var entry = new RaceEntry { Id = Guid.NewGuid(), RaceId = raceId, HorseId = horseId,
-            JockeyId = jockeyId, Status = RegistrationStatus.Pending, OwnerConfirmed = false, JockeyConfirmed = false };
+            JockeyId = jockeyId, Status = RegistrationStatus.Pending, OwnerConfirmed = true,
+            JockeyConfirmed = jockeyId.HasValue };
         await _entries.AddAsync(entry);
         await _unitOfWork.SaveChangesAsync();
         return ServiceResult<object>.Ok(entry);
@@ -102,6 +103,22 @@ public class RaceEntryService : IRaceEntryService
     {
         var entries = await _entries.GetByRaceAsync(raceId);
         if (entries.Count == 0) return ServiceResult<bool>.Fail(400, "Cuộc đua chưa có ngựa tham gia");
+
+        // A user who owns the horse and rides it has already consented to both
+        // roles by registering. This also repairs entries created before that
+        // intent was persisted on the confirmation flags.
+        var selfRegisteredEntries = entries.Where(e =>
+            e.JockeyId.HasValue &&
+            e.Horse?.Owner?.UserId == e.Jockey?.UserId &&
+            (!e.OwnerConfirmed || !e.JockeyConfirmed)).ToList();
+        foreach (var entry in selfRegisteredEntries)
+        {
+            entry.OwnerConfirmed = true;
+            entry.JockeyConfirmed = true;
+        }
+        if (selfRegisteredEntries.Count > 0)
+            await _unitOfWork.SaveChangesAsync();
+
         var healthPassed = await _db.HorseHealthChecks
             .Where(h => h.RaceId == raceId && h.ApprovedToRace && h.Status == HealthCheckStatus.Passed)
             .Select(h => h.HorseId).Distinct().ToListAsync();
