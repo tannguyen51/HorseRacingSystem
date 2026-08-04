@@ -330,8 +330,10 @@ public class RaceManagementService : IRaceManagementService
                 RaceId = raceId,
                 HorseId = request.HorseId,
                 JockeyId = request.JockeyId,
-                // Admin trực tiếp gán ngựa → tự duyệt đăng ký
-                Status = RegistrationStatus.Approved
+                // Admin trực tiếp gán ngựa → tự duyệt đăng ký và tự động xác nhận
+                Status = RegistrationStatus.Approved,
+                OwnerConfirmed = true,
+                JockeyConfirmed = true
             };
 
             await _entryRepo.AddAsync(entry);
@@ -409,8 +411,10 @@ public class RaceManagementService : IRaceManagementService
                     Id = Guid.NewGuid(),
                     RaceId = raceId,
                     HorseId = horseId,
-                    // Admin trực tiếp gán ngựa → tự duyệt đăng ký
-                    Status = RegistrationStatus.Approved
+                    // Admin trực tiếp gán ngựa → tự duyệt đăng ký và tự động xác nhận
+                    Status = RegistrationStatus.Approved,
+                    OwnerConfirmed = true,
+                    JockeyConfirmed = true
                 };
                 await _entryRepo.AddAsync(entry);
                 added++;
