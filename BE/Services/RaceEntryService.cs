@@ -118,7 +118,6 @@ public class RaceEntryService : IRaceEntryService
             if (e.JockeyId == null) reasons.Add("Chưa chọn kỵ sĩ");
             if (e.ScratchedAt != null) reasons.Add("Ngựa đã bị rút lui (Scratched)");
             if (e.Horse?.ApprovalStatus != ApprovalStatus.Approved) reasons.Add("Hồ sơ ngựa chưa được Admin duyệt");
-            if (e.Jockey?.ApprovalStatus != ApprovalStatus.Approved) reasons.Add("Hồ sơ kỵ sĩ chưa được Admin duyệt");
             if (!healthPassed.Contains(e.HorseId)) reasons.Add("Chưa có kiểm tra sức khỏe Đạt/Đã phê duyệt");
 
             if (e.JockeyId.HasValue && reasons.Count == 0)

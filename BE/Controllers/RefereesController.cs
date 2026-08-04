@@ -175,7 +175,8 @@ public class RefereesController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult> GetRaceEntries(Guid raceId)
     {
-        var entries = await _entryRepo.GetByRaceAsync(raceId);
+        var allEntries = await _entryRepo.GetByRaceAsync(raceId);
+        var entries = allEntries.Where(e => e.Status == RegistrationStatus.Approved).ToList();
 
         // Auto-recalculate if all odds are at default (1.0)
         if (entries.Count > 0 && entries.All(e => e.Odds == 1.0m))
