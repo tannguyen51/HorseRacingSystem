@@ -50,9 +50,16 @@ public class HorsesController : ControllerBase
             RaceId = e.RaceId,
             RaceName = e.Race?.Name ?? e.RaceId.ToString(),
             TournamentName = e.Race?.Tournament?.Name ?? string.Empty,
+            ScheduledAt = e.Race?.ScheduledAt,
+            ScheduledEndAt = e.Race?.ScheduledEndAt,
+            Location = e.Race?.Track?.Name ?? e.Race?.Location ?? string.Empty,
+            Distance = e.Race?.Distance,
+            MaxParticipants = e.Race?.MaxParticipants,
+            RaceStatus = e.Race?.Status.ToString() ?? string.Empty,
             Status = e.Status.ToString(),
             OwnerConfirmed = e.OwnerConfirmed,
             JockeyConfirmed = e.JockeyConfirmed,
+            JockeyName = e.Jockey?.User?.FullName ?? string.Empty,
             GateNumber = e.GateNumber,
             FinishPosition = e.FinishPosition
         }));

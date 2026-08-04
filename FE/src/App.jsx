@@ -153,7 +153,8 @@ function AppLayout() {
               <Route path="/owner/horses/:id/edit" element={<OwnerHorseEditPage />} />
               <Route path="/owner/tournaments" element={<OwnerTournamentListPage />} />
               <Route path="/owner/register-tournament" element={<OwnerTournamentRegisterPage />} />
-              <Route path="/owner/race-confirmations" element={<OwnerRaceConfirmationPage />} />
+              <Route path="/owner/schedule" element={<OwnerRaceConfirmationPage />} />
+              <Route path="/owner/race-confirmations" element={<Navigate to="/owner/schedule" replace />} />
               <Route path="/owner/profile" element={<OwnerProfilePage />} />
             </Route>
 
