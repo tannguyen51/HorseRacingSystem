@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using HorseRacing.Data;
 using HorseRacing.Dtos;
 using HorseRacing.Models;
 using HorseRacing.Repositories.Interfaces;
 using HorseRacing.Services.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace HorseRacing.Services;
 
@@ -27,6 +29,7 @@ public class RaceManagementService : IRaceManagementService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RaceManagementService> _logger;
     private readonly IRaceEntryService _raceEntryService;
+    private readonly ApplicationDbContext _db;
 
     public RaceManagementService(
         IRaceRepository raceRepo,
@@ -42,7 +45,8 @@ public class RaceManagementService : IRaceManagementService
         IWalletService walletService,
         IUnitOfWork unitOfWork,
         ILogger<RaceManagementService> logger,
-        IRaceEntryService raceEntryService)
+        IRaceEntryService raceEntryService,
+        ApplicationDbContext db)
     {
         _raceRepo = raceRepo;
         _entryRepo = entryRepo;
@@ -58,6 +62,7 @@ public class RaceManagementService : IRaceManagementService
         _unitOfWork = unitOfWork;
         _logger = logger;
         _raceEntryService = raceEntryService;
+        _db = db;
     }
 
     public async Task<ServiceResult<RaceDetailResponse>> CreateRaceAsync(CreateRaceRequest request)
@@ -209,18 +214,9 @@ public class RaceManagementService : IRaceManagementService
             if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.Cancelled)
                 return ServiceResult<bool>.Fail(400, $"Không thể xóa cuộc đua với trạng thái '{race.Status}'. Chỉ có thể xóa cuộc đua đã lên lịch hoặc đã hủy.");
 
-            // Delete related entities first
-            var assignments = await _assignmentRepo.GetByRaceAsync(raceId);
-            foreach (var assignment in assignments) { await _assignmentRepo.DeleteAsync(assignment.Id); }
-
-            var entries = await _entryRepo.GetByRaceAsync(raceId);
-            foreach (var entry in entries) { await _entryRepo.DeleteAsync(entry.Id); }
-
-            var predictions = await _predictionRepo.GetByRaceAsync(raceId);
-            foreach (var prediction in predictions) { await _predictionRepo.DeleteAsync(prediction.Id); }
-
-            await _raceRepo.DeleteAsync(raceId);
-            await _unitOfWork.SaveChangesAsync();
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            await RaceDeletionHelper.DeleteRaceGraphAsync(_db, raceId);
+            await transaction.CommitAsync();
             return ServiceResult<bool>.Ok(true);
         }
         catch (Exception ex)

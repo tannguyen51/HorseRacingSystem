@@ -222,24 +222,20 @@ public class TournamentService : ITournamentService
             // Get all race IDs in this tournament
             var raceIds = (await _raceRepo.GetByTournamentAsync(id)).Select(r => r.Id).ToList();
 
-            // Delete in FK-safe order via raw SQL (bypasses RESTRICT constraints)
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            // Delete every race and all of its RESTRICT dependants first.
             foreach (var raceId in raceIds)
             {
-                await _db.ViolationRecords.Where(v => v.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.RaceResults.Where(r => r.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.RaceReports.Where(r => r.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.HorseHealthChecks.Where(h => h.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.RefereeAssignments.Where(a => a.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.Predictions.Where(p => p.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.RaceEntries.Where(e => e.RaceId == raceId).ExecuteDeleteAsync();
-                await _db.Races.Where(r => r.Id == raceId).ExecuteDeleteAsync();
+                await RaceDeletionHelper.DeleteRaceGraphAsync(_db, raceId);
             }
 
-            // Delete rounds
+            await _db.TournamentHorseRegistrations.Where(r => r.TournamentId == id).ExecuteDeleteAsync();
+            await _db.Prizes.Where(p => p.TournamentId == id).ExecuteDeleteAsync();
             await _db.Rounds.Where(r => r.TournamentId == id).ExecuteDeleteAsync();
-
-            // Delete tournament
             await _db.Tournaments.Where(t => t.Id == id).ExecuteDeleteAsync();
+
+            await transaction.CommitAsync();
 
             return ServiceResult<bool>.Ok(true);
         }
@@ -551,12 +547,14 @@ public class RoundService : IRoundService
     private readonly IRoundRepository _roundRepo;
     private readonly ITournamentRepository _tournamentRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ApplicationDbContext _db;
 
-    public RoundService(IRoundRepository roundRepo, ITournamentRepository tournamentRepo, IUnitOfWork unitOfWork)
+    public RoundService(IRoundRepository roundRepo, ITournamentRepository tournamentRepo, IUnitOfWork unitOfWork, ApplicationDbContext db)
     {
         _roundRepo = roundRepo;
         _tournamentRepo = tournamentRepo;
         _unitOfWork = unitOfWork;
+        _db = db;
     }
 
     public async Task<ServiceResult<RoundResponse>> CreateRoundAsync(CreateRoundRequest request)
@@ -664,8 +662,23 @@ public class RoundService : IRoundService
     {
         try
         {
-            await _roundRepo.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            var round = await _roundRepo.GetByIdAsync(id);
+            if (round == null)
+                return ServiceResult<bool>.Fail(404, "Không tìm thấy vòng đấu");
+
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            var raceIds = await _db.Races
+                .Where(r => r.RoundId == id)
+                .Select(r => r.Id)
+                .ToListAsync();
+
+            foreach (var raceId in raceIds)
+            {
+                await RaceDeletionHelper.DeleteRaceGraphAsync(_db, raceId);
+            }
+
+            await _db.Rounds.Where(r => r.Id == id).ExecuteDeleteAsync();
+            await transaction.CommitAsync();
             return ServiceResult<bool>.Ok(true);
         }
         catch (Exception ex)
