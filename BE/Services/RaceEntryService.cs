@@ -105,19 +105,39 @@ public class RaceEntryService : IRaceEntryService
         var healthPassed = await _db.HorseHealthChecks
             .Where(h => h.RaceId == raceId && h.ApprovedToRace && h.Status == HealthCheckStatus.Passed)
             .Select(h => h.HorseId).Distinct().ToListAsync();
-        var invalid = entries.Where(e => e.Status != RegistrationStatus.Approved || !e.OwnerConfirmed ||
-            !e.JockeyConfirmed || e.JockeyId == null || e.ScratchedAt != null ||
-            e.Horse?.ApprovalStatus != ApprovalStatus.Approved || e.Jockey?.ApprovalStatus != ApprovalStatus.Approved ||
-            !healthPassed.Contains(e.HorseId)).Select(e => e.Horse?.Name ?? e.HorseId.ToString()).ToList();
-        foreach (var entry in entries.Where(e => e.JockeyId.HasValue && !invalid.Contains(e.Horse?.Name ?? e.HorseId.ToString())))
+
+        var invalidReasons = new List<string>();
+        foreach (var e in entries)
         {
-            var race = entry.Race ?? await _races.GetByIdAsync(raceId);
-            if (race != null && await _entries.HasJockeyScheduleConflictAsync(entry.JockeyId!.Value,
-                    race.ScheduledAt, race.ScheduledEndAt ?? race.ScheduledAt.AddMinutes(30), entry.Id))
-                invalid.Add(entry.Horse?.Name ?? entry.HorseId.ToString());
+            var horseName = e.Horse?.Name ?? e.HorseId.ToString();
+            var reasons = new List<string>();
+
+            if (e.Status != RegistrationStatus.Approved) reasons.Add("Entry chưa Approved");
+            if (!e.OwnerConfirmed) reasons.Add("Chủ ngựa chưa xác nhận (OwnerConfirmed=false)");
+            if (!e.JockeyConfirmed) reasons.Add("Kỵ sĩ chưa xác nhận (JockeyConfirmed=false)");
+            if (e.JockeyId == null) reasons.Add("Chưa chọn kỵ sĩ");
+            if (e.ScratchedAt != null) reasons.Add("Ngựa đã bị rút lui (Scratched)");
+            if (e.Horse?.ApprovalStatus != ApprovalStatus.Approved) reasons.Add("Hồ sơ ngựa chưa được Admin duyệt");
+            if (!healthPassed.Contains(e.HorseId)) reasons.Add("Chưa có kiểm tra sức khỏe Đạt/Đã phê duyệt");
+
+            if (e.JockeyId.HasValue && reasons.Count == 0)
+            {
+                var race = e.Race ?? await _races.GetByIdAsync(raceId);
+                if (race != null && await _entries.HasJockeyScheduleConflictAsync(e.JockeyId!.Value,
+                        race.ScheduledAt, race.ScheduledEndAt ?? race.ScheduledAt.AddMinutes(30), e.Id))
+                {
+                    reasons.Add("Kỵ sĩ bị trùng lịch đua");
+                }
+            }
+
+            if (reasons.Count > 0)
+            {
+                invalidReasons.Add($"{horseName} [{string.Join(", ", reasons)}]");
+            }
         }
-        return invalid.Count == 0
+
+        return invalidReasons.Count == 0
             ? ServiceResult<bool>.Ok(true)
-            : ServiceResult<bool>.Fail(400, $"Entry chưa đủ điều kiện xuất phát: {string.Join(", ", invalid)}");
+            : ServiceResult<bool>.Fail(400, $"Entry chưa đủ điều kiện xuất phát:\n{string.Join("\n", invalidReasons)}");
     }
 }
