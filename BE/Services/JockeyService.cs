@@ -253,6 +253,90 @@ public class JockeyService : IJockeyService
         return ServiceResult<object>.Ok(invitation);
     }
 
+    public async Task<ServiceResult<object>> WithdrawInvitationAsync(
+        Guid userId,
+        Guid invitationId,
+        JockeyInvitationWithdrawRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 3)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status400BadRequest,
+                "Vui lòng nhập lý do xin rút (ít nhất 3 ký tự)");
+        }
+
+        var jockey = await _jockeys.GetByUserIdAsync(userId);
+        if (jockey == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy hồ sơ kỵ sĩ");
+        }
+
+        var invitation = await _invitations.GetByIdAsync(invitationId, jockey.Id);
+        if (invitation == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy lời mời");
+        }
+
+        if (invitation.Status != JockeyInvitationStatus.Accepted)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Chỉ có thể xin rút khỏi lời mời đã chấp nhận");
+        }
+
+        if (!invitation.RaceId.HasValue || invitation.Race == null)
+        {
+            return ServiceResult<object>.Fail(StatusCodes.Status409Conflict, "Lời mời chưa được gắn với cuộc đua");
+        }
+
+        if (invitation.Race.Status != RaceStatus.Scheduled &&
+            invitation.Race.Status != RaceStatus.RegistrationOpen &&
+            invitation.Race.Status != RaceStatus.RegistrationClosed)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Không thể xin rút khi cuộc đua đã bắt đầu hoặc đã kết thúc");
+        }
+
+        if (invitation.Race.ScheduledAt <= DateTime.UtcNow)
+        {
+            return ServiceResult<object>.Fail(
+                StatusCodes.Status409Conflict,
+                "Không thể xin rút sau thời gian bắt đầu cuộc đua");
+        }
+
+        var entry = await _raceEntries.GetByRaceHorseAsync(invitation.RaceId.Value, invitation.HorseId);
+        if (entry != null && entry.JockeyId == jockey.Id)
+        {
+            entry.JockeyId = null;
+            entry.JockeyConfirmed = false;
+            await _raceEntries.UpdateAsync(entry);
+        }
+
+        var reason = request.Reason.Trim();
+        invitation.Status = JockeyInvitationStatus.Withdrawn;
+        invitation.ResponseNote = reason;
+        invitation.RespondedAt = DateTime.UtcNow;
+        await _unitOfWork.SaveChangesAsync();
+
+        if (invitation.Horse?.Owner != null)
+        {
+            await _notifications.CreateNotificationAsync(new CreateNotificationDto
+            {
+                UserId = invitation.Horse.Owner.UserId,
+                Title = "Kỵ sĩ đã xin rút khỏi cuộc đua",
+                Message = $"{jockey.User?.FullName ?? "Kỵ sĩ"} đã xin rút khỏi ngựa {invitation.Horse.Name}. Lý do: {reason}",
+                Type = NotificationType.InApp,
+                Category = NotificationCategory.JockeyInvitation,
+                ActionUrl = $"/owner/horses/{invitation.HorseId}",
+                RelatedEntityId = invitation.Id,
+                RelatedEntityType = nameof(JockeyInvitation)
+            });
+        }
+
+        return ServiceResult<object>.Ok(invitation);
+    }
+
     public async Task<ServiceResult<object>> GetAssignedRacesAsync(Guid userId)
     {
         var jockey = await _jockeys.GetByUserIdAsync(userId);

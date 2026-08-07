@@ -5,6 +5,7 @@ import {
   getJockeyInvitations,
   normalizeInvitationStatus,
   respondJockeyInvitation,
+  withdrawJockeyInvitation,
 } from "../../services/jockeyApi";
 import "../SpectatorSharedLayout.css";
 import "./JockeyInvitationPage.css";
@@ -26,6 +27,7 @@ function JockeyInvitationDetailPage() {
   const [loading, setLoading] = useState(!location.state?.invitation);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [withdrawReason, setWithdrawReason] = useState("");
 
   useEffect(() => {
     if (invitation) return;
@@ -66,6 +68,7 @@ function JockeyInvitationDetailPage() {
     if (status === "Pending") return "Chờ phản hồi";
     if (status === "Accepted") return "Đã chấp nhận";
     if (status === "Declined") return "Đã từ chối";
+    if (status === "Withdrawn") return "Đã xin rút";
     return status || "Chưa xác định";
   }, [invitation?.status]);
 
@@ -81,6 +84,23 @@ function JockeyInvitationDetailPage() {
       });
     } catch (error) {
       setMessage(error.message || "Không thể xử lý lời mời.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (withdrawReason.trim().length < 3) {
+      setMessage("Lý do xin rút phải có ít nhất 3 ký tự.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await withdrawJockeyInvitation(id, withdrawReason.trim());
+      setInvitation((current) => ({ ...current, status: "Withdrawn", responseNote: withdrawReason.trim() }));
+      setMessage("Đã xin rút khỏi cuộc đua và thông báo cho chủ ngựa.");
+    } catch (error) {
+      setMessage(error.message || "Không thể xin rút khỏi cuộc đua.");
     } finally {
       setSubmitting(false);
     }
@@ -118,8 +138,8 @@ function JockeyInvitationDetailPage() {
               {invitation?.message ? (
                 <p className="jockey-message"><strong>Lời nhắn từ chủ ngựa:</strong> {invitation.message}</p>
               ) : null}
-              {invitation?.responseNote && normalizeInvitationStatus(invitation.status) === "Declined" ? (
-                <p className="jockey-message"><strong>Lý do hủy:</strong> {invitation.responseNote}</p>
+              {invitation?.responseNote && ["Declined", "Withdrawn"].includes(normalizeInvitationStatus(invitation.status)) ? (
+                <p className="jockey-message"><strong>Lý do:</strong> {invitation.responseNote}</p>
               ) : null}
             </div>
           </section>
@@ -204,6 +224,24 @@ function JockeyInvitationDetailPage() {
                       onClick={() => handleResponse(true)}
                     >
                       {submitting ? "Đang xử lý..." : "Chấp nhận lời mời"}
+                    </button>
+                  </div>
+                ) : normalizeInvitationStatus(invitation.status) === "Accepted" ? (
+                  <div className="jockey-withdraw-form">
+                    <textarea
+                      value={withdrawReason}
+                      onChange={(event) => setWithdrawReason(event.target.value)}
+                      maxLength={500}
+                      placeholder="Nhập lý do xin rút khỏi cuộc đua..."
+                      disabled={submitting}
+                    />
+                    <button
+                      type="button"
+                      className="jockey-response-button jockey-response-button--decline"
+                      disabled={submitting || withdrawReason.trim().length < 3}
+                      onClick={handleWithdraw}
+                    >
+                      {submitting ? "Đang xử lý..." : "Xác nhận xin rút"}
                     </button>
                   </div>
                 ) : (

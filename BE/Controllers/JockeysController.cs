@@ -46,6 +46,15 @@ public class JockeysController : ControllerBase
         return StatusCode(result.StatusCode, result.Result);
     }
 
+    [HttpPost("invitations/{id:guid}/withdraw")]
+    [Authorize(Roles = "Jockey")]
+    public async Task<ActionResult> WithdrawInvitation(Guid id, JockeyInvitationWithdrawRequest request)
+    {
+        var userId = GetUserId();
+        var result = await _jockeyService.WithdrawInvitationAsync(userId, id, request);
+        return StatusCode(result.StatusCode, result.Result);
+    }
+
     [HttpGet("races")]
     [Authorize(Roles = "Jockey")]
     public async Task<ActionResult> GetAssignedRaces()

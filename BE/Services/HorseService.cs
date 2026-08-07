@@ -212,7 +212,9 @@ public class HorseService : IHorseService
         // Assuming GetByHorseAndJockeyAsync gets the active one. With new schema, there could be multiple.
         // Wait, instead of GetByHorseAndJockeyAsync, we should just query by RaceId.
         var existingInvitationInRace = horse.JockeyInvitations.FirstOrDefault(i => i.RaceId == invitationRaceId);
-        if (existingInvitationInRace != null && existingInvitationInRace.Status != JockeyInvitationStatus.Declined)
+        if (existingInvitationInRace != null &&
+            existingInvitationInRace.Status != JockeyInvitationStatus.Declined &&
+            existingInvitationInRace.Status != JockeyInvitationStatus.Withdrawn)
         {
             var jockeyName = existingInvitationInRace.Jockey?.User?.FullName ?? "kỵ sĩ";
             var status = existingInvitationInRace.Status.ToString().ToLowerInvariant();
@@ -222,7 +224,10 @@ public class HorseService : IHorseService
         }
         
         // Also we should create a new invitation rather than reusing an old declined one for a different race
-        var existingDeclined = horse.JockeyInvitations.FirstOrDefault(i => i.JockeyId == request.JockeyId && i.RaceId == invitationRaceId && i.Status == JockeyInvitationStatus.Declined);
+        var existingDeclined = horse.JockeyInvitations.FirstOrDefault(i =>
+            i.JockeyId == request.JockeyId &&
+            i.RaceId == invitationRaceId &&
+            (i.Status == JockeyInvitationStatus.Declined || i.Status == JockeyInvitationStatus.Withdrawn));
         if (existingDeclined != null)
         {
             existingDeclined.Status = JockeyInvitationStatus.Pending;
