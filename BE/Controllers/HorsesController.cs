@@ -71,6 +71,13 @@ public class HorsesController : ControllerBase
     {
         var ownerId = GetUserId();
         var result = await _horseService.GetMyHorsesAsync(ownerId);
+        
+        if (result.StatusCode == 200 && result.Result?.Data is IEnumerable<Horse> horses)
+        {
+            var mapped = horses.Select(MapHorseDto);
+            return Ok(ApiResult<object>.Ok(mapped));
+        }
+        
         return StatusCode(result.StatusCode, result.Result);
     }
 
@@ -136,7 +143,78 @@ public class HorsesController : ControllerBase
     {
         var ownerId = GetUserId();
         var result = await _horseService.GetHorseAsync(ownerId, id);
+        
+        if (result.StatusCode == 200 && result.Result?.Data is Horse horse)
+        {
+            return Ok(ApiResult<object>.Ok(MapHorseDto(horse)));
+        }
+        
         return StatusCode(result.StatusCode, result.Result);
+    }
+
+    private static object MapHorseDto(Horse h)
+    {
+        return new
+        {
+            h.Id,
+            h.Name,
+            h.Breed,
+            h.Gender,
+            h.DateOfBirth,
+            h.Age,
+            h.Weight,
+            h.Height,
+            h.Color,
+            h.TotalRaces,
+            h.TotalWins,
+            h.ImageUrl,
+            h.OwnerId,
+            h.ApprovalStatus,
+            h.ApprovalNote,
+            Owner = h.Owner != null ? new
+            {
+                h.Owner.Id,
+                User = h.Owner.User != null ? new { h.Owner.User.FullName } : null
+            } : null,
+            RaceEntries = h.RaceEntries?.Select(e => new
+            {
+                e.Id,
+                e.RaceId,
+                e.JockeyId,
+                e.Status,
+                e.OwnerConfirmed,
+                e.JockeyConfirmed,
+                Race = e.Race != null ? new
+                {
+                    e.Race.Id,
+                    e.Race.Name,
+                    e.Race.ScheduledAt,
+                    e.Race.Status,
+                    Tournament = e.Race.Tournament != null ? new
+                    {
+                        e.Race.Tournament.Id,
+                        e.Race.Tournament.Name
+                    } : null
+                } : null
+            }),
+            JockeyInvitations = h.JockeyInvitations?.Select(i => new
+            {
+                i.Id,
+                i.RaceId,
+                i.JockeyId,
+                i.Status,
+                i.Message,
+                Jockey = i.Jockey != null ? new
+                {
+                    i.Jockey.Id,
+                    User = i.Jockey.User != null ? new
+                    {
+                        i.Jockey.User.FullName,
+                        i.Jockey.User.Email
+                    } : null
+                } : null
+            })
+        };
     }
 
     [HttpPost]
