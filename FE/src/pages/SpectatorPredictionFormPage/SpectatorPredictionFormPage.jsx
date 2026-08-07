@@ -11,7 +11,22 @@ import { getRaceEntries } from "../../services/refereeApi";
 import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
-const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt", resultapproved: "Đã duyệt kết quả" };
+const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt", resultapproved: "Đã duyệt kết quả", registrationopen: "Mở đăng ký", registrationclosed: "Đóng đăng ký" };
+
+const getStatusMessage = (status) => {
+  switch (status) {
+    case "registrationopen": return "Cuộc đua đang mở đăng ký, chưa thể đặt cược.";
+    case "registrationclosed": return "Cuộc đua đã đóng đăng ký, chưa thể đặt cược.";
+    case "inprogress": return "Cuộc đua đang diễn ra, đã khóa cược.";
+    case "finished": return "Cuộc đua đã kết thúc, không thể đặt cược.";
+    case "cancelled": return "Cuộc đua đã bị hủy.";
+    case "awaitingresult":
+    case "resultpendingapproval":
+    case "resultapproved":
+      return "Cuộc đua đang chờ công bố kết quả chính thức, đã khóa cược.";
+    default: return "Cuộc đua đã khóa — không thể đặt cược.";
+  }
+};
 
 const formatCountdown = (value) => {
   if (!value) return "--:--";
@@ -291,14 +306,15 @@ function SpectatorPredictionFormPage() {
           >
             {raceOptions.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name} {!r.canBet ? " [KHÓA]" : ""} — {r.time}
+                {r.name} {!r.canBet ? " (Không thể cược)" : ""} — {r.time}
               </option>
             ))}
           </select>
           {selectedRaceDetails && !selectedRaceDetails.canBet && (
-            <p style={{ color: "#c41e1e", fontSize: 12, marginTop: 4 }}>
-              Cuộc đua này đã {(statusLabels[selectedRaceDetails.status] ?? selectedRaceDetails.status).toLowerCase()}, không thể đặt cược.
-            </p>
+            <div className="pf-status-warning">
+              <span className="pf-status-warning__icon">🔒</span>
+              <p>{getStatusMessage(selectedRaceDetails.status)}</p>
+            </div>
           )}
         </div>
       </div>
