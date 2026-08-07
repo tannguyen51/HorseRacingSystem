@@ -25,3 +25,10 @@ public class JockeyInvitationRespondRequest
     [Required]
     public bool Accept { get; set; }
 }
+
+public class JockeyInvitationWithdrawRequest
+{
+    [Required]
+    [StringLength(500, MinimumLength = 3)]
+    public string Reason { get; set; } = string.Empty;
+}

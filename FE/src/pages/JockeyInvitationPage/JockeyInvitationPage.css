@@ -68,6 +68,7 @@
 .ji-chip-dot--pending { background: #f59e0b; }
 .ji-chip-dot--accepted { background: #10b981; }
 .ji-chip-dot--declined { background: #ef4444; }
+.ji-chip-dot--withdrawn { background: #7c3aed; }
 
 /* ── Toolbar ── */
 .ji-toolbar {
@@ -181,6 +182,7 @@
 .ji-card--pending { border-left-color: #f59e0b; }
 .ji-card--accepted { border-left-color: #10b981; }
 .ji-card--declined { border-left-color: #ef4444; }
+.ji-card--withdrawn { border-left-color: #7c3aed; }
 
 .ji-card__main {
   display: flex;
@@ -251,6 +253,7 @@
 .ji-badge--pending { background: rgba(245,158,11,0.1); color: #b8860b; }
 .ji-badge--accepted { background: rgba(16,185,129,0.1); color: #0f7a5a; }
 .ji-badge--declined { background: rgba(239,68,68,0.1); color: #b91c1c; }
+.ji-badge--withdrawn { background: rgba(124,58,237,0.1); color: #6d28d9; }
 
 /* ── Buttons ── */
 .ji-btn {
@@ -290,6 +293,9 @@
 }
 
 .ji-btn--ghost:hover { color: #b91c1c; background: rgba(239,68,68,0.06); }
+
+.ji-btn--danger { background: #b42318; color: #fff; }
+.ji-btn--danger:hover { background: #912018; transform: translateY(-1px); }
 
 .ji-btn--icon {
   width: 38px;
@@ -548,6 +554,23 @@
   flex-shrink: 0;
 }
 
+.jockey-withdraw-form {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-width: min(100%, 460px);
+}
+
+.jockey-withdraw-form textarea {
+  min-width: 260px;
+  min-height: 72px;
+  padding: 10px 12px;
+  resize: vertical;
+  border: 1px solid rgba(23, 32, 51, 0.16);
+  border-radius: 11px;
+  font: inherit;
+}
+
 .jockey-response-button {
   min-height: 44px;
   padding: 0 20px;
@@ -653,8 +676,11 @@
   }
 
   .jockey-response-panel,
-  .jockey-response-panel__actions {
+  .jockey-response-panel__actions,
+  .jockey-withdraw-form {
     align-items: stretch;
     flex-direction: column;
   }
+
+  .jockey-withdraw-form textarea { min-width: 0; }
 }

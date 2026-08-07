@@ -61,7 +61,7 @@ export const normalizeInvitationStatus = (rawStatus) => {
   }
 
   if (typeof rawStatus === "number") {
-    return ["Pending", "Accepted", "Declined"][rawStatus - 1] ?? "Pending";
+    return ["Pending", "Accepted", "Declined", "Withdrawn"][rawStatus - 1] ?? "Pending";
   }
 
   if (typeof rawStatus === "string") {
@@ -71,6 +71,9 @@ export const normalizeInvitationStatus = (rawStatus) => {
     if (["declined", "decline", "reject", "rejected", "3", "đã từ chối", "da tu choi"].includes(normalized)) return "Declined";
   }
 
+  if (String(rawStatus).trim().toLowerCase() === "withdrawn" || String(rawStatus).trim() === "4") {
+    return "Withdrawn";
+  }
   return String(rawStatus);
 };
 
@@ -178,6 +181,12 @@ export const respondJockeyInvitation = async (invitationId, accept) =>
   request(`/api/jockeys/invitations/${invitationId}/respond`, {
     method: "POST",
     body: JSON.stringify({ accept }),
+  });
+
+export const withdrawJockeyInvitation = async (invitationId, reason) =>
+  request(`/api/jockeys/invitations/${invitationId}/withdraw`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
   });
 
 export const getJockeyAssignedRaces = async () =>
