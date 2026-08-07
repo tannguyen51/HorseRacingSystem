@@ -5,6 +5,7 @@ import {
   getJockeyInvitations,
   normalizeInvitationStatus,
   respondJockeyInvitation,
+  withdrawJockeyInvitation,
 } from "../../services/jockeyApi";
 import "./JockeyInvitationPage.css";
 
@@ -36,21 +37,42 @@ function JockeyInvitationPage() {
     if (normalized.includes("pending") || normalized === "1") return "pending";
     if (normalized.includes("accept") || normalized.includes("confirm") || normalized === "2") return "accepted";
     if (normalized.includes("decline") || normalized.includes("reject") || normalized === "3") return "declined";
+    if (normalized.includes("withdraw") || normalized === "4") return "withdrawn";
     return "unknown";
   };
 
   const pending = useMemo(() => invitations.filter(i => getBucket(i.status) === "pending"), [invitations]);
   const accepted = useMemo(() => invitations.filter(i => getBucket(i.status) === "accepted"), [invitations]);
   const declined = useMemo(() => invitations.filter(i => getBucket(i.status) === "declined"), [invitations]);
+  const withdrawn = useMemo(() => invitations.filter(i => getBucket(i.status) === "withdrawn"), [invitations]);
 
   const filtered = useMemo(() => {
     let items = invitations;
     if (activeTab === "pending") items = pending;
     else if (activeTab === "accepted") items = accepted;
     else if (activeTab === "declined") items = declined;
+    else if (activeTab === "withdrawn") items = withdrawn;
     if (search.trim()) items = items.filter(i => (i.raceName || "").toLowerCase().includes(search.toLowerCase()) || (i.horseName || "").toLowerCase().includes(search.toLowerCase()) || (i.ownerName || "").toLowerCase().includes(search.toLowerCase()));
     return items;
-  }, [activeTab, invitations, pending, accepted, declined, search]);
+  }, [activeTab, invitations, pending, accepted, declined, withdrawn, search]);
+
+  const handleWithdraw = async (id) => {
+    const reason = window.prompt("Vui lòng nhập lý do xin rút khỏi cuộc đua:");
+    if (reason === null) return;
+    if (reason.trim().length < 3) {
+      setMessage("Lý do xin rút phải có ít nhất 3 ký tự.");
+      return;
+    }
+    setLoadingId(id);
+    try {
+      await withdrawJockeyInvitation(id, reason.trim());
+      setInvitations((current) => current.map((item) =>
+        item.id === id ? { ...item, status: "Withdrawn", responseNote: reason.trim() } : item));
+      setActiveTab("withdrawn");
+      setMessage("Đã xin rút khỏi cuộc đua và thông báo cho chủ ngựa.");
+    } catch (e) { setMessage(e.message || "Không thể xin rút khỏi cuộc đua."); }
+    finally { setLoadingId(null); }
+  };
 
   const handleResponse = async (id, accept) => {
     setLoadingId(id);
@@ -72,6 +94,7 @@ function JockeyInvitationPage() {
     if (bucket === "pending") return { label: "Chờ duyệt", cls: "pending" };
     if (bucket === "accepted") return { label: "Đã chấp nhận", cls: "accepted" };
     if (bucket === "declined") return { label: "Đã từ chối", cls: "declined" };
+    if (bucket === "withdrawn") return { label: "Đã xin rút", cls: "withdrawn" };
     return { label: s || "Không rõ", cls: "" };
   };
 
@@ -80,6 +103,7 @@ function JockeyInvitationPage() {
     { key: "pending", label: "Chờ duyệt", count: pending.length },
     { key: "accepted", label: "Đã chấp nhận", count: accepted.length },
     { key: "declined", label: "Đã từ chối", count: declined.length },
+    { key: "withdrawn", label: "Đã xin rút", count: withdrawn.length },
   ];
 
   return (
@@ -146,6 +170,7 @@ function JockeyInvitationPage() {
           {filtered.map(inv => {
             const s = statusMeta(inv.status);
             const canRespond = getBucket(inv.status) === "pending";
+            const canWithdraw = getBucket(inv.status) === "accepted";
             return (
               <div key={inv.id} className={`ji-card ji-card--${s.cls}`}>
                 <div className="ji-card__main">
@@ -176,6 +201,9 @@ function JockeyInvitationPage() {
                   </button>}
                   {canRespond && <button className="ji-btn ji-btn--primary" onClick={() => handleResponse(inv.id, true)} disabled={loadingId !== null}>
                     {loadingId === inv.id ? "..." : "Chấp nhận"}
+                  </button>}
+                  {canWithdraw && <button className="ji-btn ji-btn--danger" onClick={() => handleWithdraw(inv.id)} disabled={loadingId !== null}>
+                    {loadingId === inv.id ? "..." : "Xin rút"}
                   </button>}
                   <Link to={`/jockey/invitations/${inv.id}`} className="ji-btn ji-btn--outline">Chi tiết</Link>
                 </div>

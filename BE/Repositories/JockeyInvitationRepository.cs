@@ -32,7 +32,8 @@ public class JockeyInvitationRepository : IJockeyInvitationRepository
                 i.JockeyId == jockeyId &&
                 (i.Status == JockeyInvitationStatus.Pending ||
                  i.Status == JockeyInvitationStatus.Accepted ||
-                 i.Status == JockeyInvitationStatus.Declined))
+                 i.Status == JockeyInvitationStatus.Declined ||
+                 i.Status == JockeyInvitationStatus.Withdrawn))
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();
     }
