@@ -108,8 +108,8 @@ public class WithdrawalService : IWithdrawalService
             w.Id,
             w.Amount,
             w.Status,
-            w.CreatedAt,
-            w.ProcessedAt,
+            CreatedAt = ToUtc(w.CreatedAt),
+            ProcessedAt = ToUtc(w.ProcessedAt),
             BankName = w.BankAccount?.BankName,
             AccountNumber = w.BankAccount != null ? MaskAccountNumber(w.BankAccount.AccountNumber) : null,
             AccountHolder = w.BankAccount?.AccountHolder,
@@ -125,7 +125,7 @@ public class WithdrawalService : IWithdrawalService
             w.Id,
             w.Amount,
             w.Status,
-            w.CreatedAt,
+            CreatedAt = ToUtc(w.CreatedAt),
             UserName = w.User?.FullName ?? w.User?.Email ?? "",
             BankName = w.BankAccount?.BankName,
             AccountNumber = w.BankAccount != null ? MaskAccountNumber(w.BankAccount.AccountNumber) : null,
@@ -141,8 +141,8 @@ public class WithdrawalService : IWithdrawalService
             w.Id,
             w.Amount,
             w.Status,
-            w.CreatedAt,
-            w.ProcessedAt,
+            CreatedAt = ToUtc(w.CreatedAt),
+            ProcessedAt = ToUtc(w.ProcessedAt),
             UserName = w.User?.FullName ?? w.User?.Email ?? "",
             BankName = w.BankAccount?.BankName,
             AccountNumber = w.BankAccount != null ? MaskAccountNumber(w.BankAccount.AccountNumber) : null,
@@ -185,4 +185,10 @@ public class WithdrawalService : IWithdrawalService
         if (string.IsNullOrEmpty(number) || number.Length <= 6) return number ?? "";
         return number[..3] + new string('*', number.Length - 6) + number[^3..];
     }
+
+    // DB lưu UTC trong cột timestamp; Npgsql đọc ra với Kind=Unspecified
+    // nên phải gán lại Kind=Utc để JSON serialize kèm "Z", trình duyệt hiển thị đúng giờ địa phương.
+    private static DateTime ToUtc(DateTime value) => DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+    private static DateTime? ToUtc(DateTime? value) => value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : null;
 }

@@ -787,7 +787,7 @@ export function SpectatorProfilePage() {
                                 .sort((a, b) => new Date(b.createdAt ?? b.CreatedAt ?? 0) - new Date(a.createdAt ?? a.CreatedAt ?? 0))
                                 .map((w) => (
                                 <tr key={w.id ?? w.Id}>
-                                  <td>{w.createdAt ? new Date(w.createdAt).toLocaleDateString("vi-VN") : "-"}</td>
+                                  <td>{w.createdAt ? new Date(w.createdAt).toLocaleString("vi-VN") : "-"}</td>
                                   <td>{w.bankName ?? w.BankName ?? "-"}</td>
                                   <td>{w.accountNumber ?? w.AccountNumber ?? "-"}</td>
                                   <td>{(w.amount ?? w.Amount ?? 0).toLocaleString()} điểm</td>

@@ -198,8 +198,10 @@ public class TransactionService : ITransactionService
             Status = t.Status,
             Reference = t.Reference ?? string.Empty,
             Description = t.Description ?? string.Empty,
-            CreatedAt = t.CreatedAt,
-            CompletedAt = t.CompletedAt
+            // DB lưu UTC trong cột timestamp; Npgsql đọc ra với Kind=Unspecified
+            // nên phải gán lại Kind=Utc để JSON serialize kèm "Z", trình duyệt hiển thị đúng giờ địa phương.
+            CreatedAt = DateTime.SpecifyKind(t.CreatedAt, DateTimeKind.Utc),
+            CompletedAt = t.CompletedAt.HasValue ? DateTime.SpecifyKind(t.CompletedAt.Value, DateTimeKind.Utc) : null
         }).ToList();
 
         return ServiceResult<object>.Ok(items);
