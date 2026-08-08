@@ -47,7 +47,9 @@ public class PredictionService : IPredictionService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
-        if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.RegistrationOpen)
+        if (race.Status != RaceStatus.Scheduled &&
+            race.Status != RaceStatus.RegistrationOpen &&
+            race.Status != RaceStatus.RegistrationClosed)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Cuộc đua không mở cho dự đoán");
         }

@@ -16,7 +16,7 @@ const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn r
 const getStatusMessage = (status) => {
   switch (status) {
     case "registrationopen": return "Cuộc đua đang mở đăng ký — có thể đặt cược.";
-    case "registrationclosed": return "Cuộc đua đã đóng đăng ký, chưa thể đặt cược.";
+    case "registrationclosed": return "Cuộc đua đã đóng đăng ký — vẫn có thể đặt cược.";
     case "inprogress": return "Cuộc đua đang diễn ra, đã khóa cược.";
     case "finished": return "Cuộc đua đã kết thúc, không thể đặt cược.";
     case "cancelled": return "Cuộc đua đã bị hủy.";
@@ -102,13 +102,17 @@ function SpectatorPredictionFormPage() {
         if (!cancelled) {
           setTournaments(tournamentItems);
           setRaces(raceItems);
-          if (tournamentItems.length > 0) {
-            const firstId = tournamentItems[0]?.id ?? tournamentItems[0]?.Id;
-            setSelectedTournament(firstId ?? "");
-          }
-          if (raceItems.length > 0) {
-            const firstId = raceItems[0]?.id ?? raceItems[0]?.Id;
-            setSelectedRace(firstId ?? "");
+          // Chọn race cược được đầu tiên (không phải race đầu tiên trong danh sách thô)
+          const firstBettable = raceItems.find((race) => {
+            const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
+            return status !== "finished" && status !== "cancelled" && status !== "inprogress" &&
+              status !== "awaitingresult" && status !== "resultpendingapproval";
+          });
+          if (firstBettable) {
+            const bid = firstBettable.id ?? firstBettable.Id;
+            setSelectedRace(bid);
+            const tid = firstBettable.tournamentId ?? firstBettable.TournamentId;
+            if (tid) setSelectedTournament(tid);
           }
         }
       } catch (error) {
@@ -171,8 +175,7 @@ function SpectatorPredictionFormPage() {
         // Only show races that can be bet on: Scheduled only
         const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
         if (status === "finished" || status === "cancelled" || status === "inprogress" ||
-            status === "awaitingresult" || status === "resultpendingapproval" ||
-            status === "registrationclosed") return false;
+            status === "awaitingresult" || status === "resultpendingapproval") return false;
         return true;
       })
       .map((race) => {
@@ -188,7 +191,7 @@ function SpectatorPredictionFormPage() {
           time: formatDateTime(scheduledAt),
           countdown: formatCountdown(scheduledAt),
           status,
-          canBet: status === "scheduled" || status === "registrationopen" || (isFuture && !status),
+          canBet: status === "scheduled" || status === "registrationopen" || status === "registrationclosed" || (isFuture && !status),
         };
       });
   }, [races, selectedTournament]);
@@ -249,9 +252,12 @@ function SpectatorPredictionFormPage() {
     }
   };
 
-  const tournamentName =
-    tournaments.find((t) => (t.id ?? t.Id) === selectedTournament)?.name ??
-    tournaments.find((t) => (t.id ?? t.Id) === selectedTournament)?.Name;
+  const tournamentName = useMemo(() => {
+    const race = races.find((r) => (r.id ?? r.Id) === selectedRace);
+    const tid = race?.tournamentId ?? race?.TournamentId ?? selectedTournament;
+    const t = tournaments.find((item) => (item.id ?? item.Id) === tid);
+    return [t?.name ?? t?.Name].filter(Boolean)[0];
+  }, [races, selectedRace, selectedTournament, tournaments]);
 
   return (
     <div className="pf-page">
@@ -289,6 +295,7 @@ function SpectatorPredictionFormPage() {
             value={selectedTournament}
             onChange={(e) => setSelectedTournament(e.target.value)}
           >
+            <option value="">Tất cả giải đấu</option>
             {tournaments.map((t) => (
               <option key={t.id ?? t.Id} value={t.id ?? t.Id}>
                 {t.name ?? t.Name}
@@ -302,7 +309,13 @@ function SpectatorPredictionFormPage() {
             id="pf-race"
             className="pf-select"
             value={selectedRace}
-            onChange={(e) => setSelectedRace(e.target.value)}
+            onChange={(e) => {
+              setSelectedRace(e.target.value);
+              // Đồng bộ giải đấu theo race được chọn để hiển thị đúng thông tin
+              const race = races.find((r) => (r.id ?? r.Id) === e.target.value);
+              const tid = race?.tournamentId ?? race?.TournamentId;
+              if (tid) setSelectedTournament(tid);
+            }}
           >
             {raceOptions.map((r) => (
               <option key={r.id} value={r.id}>
