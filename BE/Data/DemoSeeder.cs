@@ -88,8 +88,8 @@ public static class DemoSeeder
         var referee1 = AddUser(db, hasher, "chief.ref@email.com", "Ref@123", "Robert Thompson", UserRole.Referee, now);
         var referee2 = AddUser(db, hasher, "asst.ref@email.com", "Ref@123", "Maria Santos", UserRole.Referee, now);
 
-        var spectator1 = AddUser(db, hasher, "fan.one@email.com", "Fan@123", "Alex Johnson", UserRole.Spectator, now);
-        var spectator2 = AddUser(db, hasher, "fan.two@email.com", "Fan@123", "Jamie Williams", UserRole.Spectator, now);
+        AddUser(db, hasher, "fan.one@email.com", "Fan@123", "Alex Johnson", UserRole.Spectator, now);
+        AddUser(db, hasher, "fan.two@email.com", "Fan@123", "Jamie Williams", UserRole.Spectator, now);
 
         await db.SaveChangesAsync();
 
@@ -175,14 +175,6 @@ public static class DemoSeeder
 
         // ── HEALTH CHECKS ──
         db.HorseHealthChecks.Add(new HorseHealthCheck { Id = Guid.NewGuid(), HorseId = horses[0].Id, RaceId = race1.Id, RefereeId = refe1.Id, Status = HealthCheckStatus.Passed, CheckedAt = now.AddDays(-2).AddHours(12), Observations = "Fit and healthy", ApprovedToRace = true, Verdict = "Cleared to race" });
-        await db.SaveChangesAsync();
-
-        // ── PREDICTIONS ──
-        db.Predictions.AddRange(
-            new() { Id = Guid.NewGuid(), RaceId = race1.Id, SpectatorUserId = spectator1.Id, PredictedHorseId = horses[0].Id, Status = PredictionStatus.Won, BetAmount = 50m, Odds = 3.50m, PotentialPayout = 175m, PayoutAmount = 175m, CreatedAt = now.AddDays(-3), SettledAt = now.AddDays(-2).AddHours(16) },
-            new() { Id = Guid.NewGuid(), RaceId = race1.Id, SpectatorUserId = spectator2.Id, PredictedHorseId = horses[3].Id, Status = PredictionStatus.Lost, BetAmount = 100m, Odds = 2.10m, PotentialPayout = 210m, CreatedAt = now.AddDays(-3), SettledAt = now.AddDays(-2).AddHours(16) },
-            new() { Id = Guid.NewGuid(), RaceId = race2.Id, SpectatorUserId = spectator1.Id, PredictedHorseId = horses[4].Id, Status = PredictionStatus.Pending, BetAmount = 75m, Odds = 4.00m, PotentialPayout = 300m, CreatedAt = now }
-        );
         await db.SaveChangesAsync();
 
         // ── PRIZES ──
