@@ -15,7 +15,7 @@ const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn r
 
 const getStatusMessage = (status) => {
   switch (status) {
-    case "registrationopen": return "Cuộc đua đang mở đăng ký, chưa thể đặt cược.";
+    case "registrationopen": return "Cuộc đua đang mở đăng ký — có thể đặt cược.";
     case "registrationclosed": return "Cuộc đua đã đóng đăng ký, chưa thể đặt cược.";
     case "inprogress": return "Cuộc đua đang diễn ra, đã khóa cược.";
     case "finished": return "Cuộc đua đã kết thúc, không thể đặt cược.";
@@ -188,7 +188,7 @@ function SpectatorPredictionFormPage() {
           time: formatDateTime(scheduledAt),
           countdown: formatCountdown(scheduledAt),
           status,
-          canBet: status === "scheduled" || (isFuture && !status),
+          canBet: status === "scheduled" || status === "registrationopen" || (isFuture && !status),
         };
       });
   }, [races, selectedTournament]);
