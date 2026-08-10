@@ -11,12 +11,11 @@ import { getRaceEntries } from "../../services/refereeApi";
 import { getBalance } from "../../services/walletApi";
 import "./SpectatorPredictionFormPage.css";
 
-const statusLabels = { scheduled: "Sắp diễn ra", inprogress: "Đang diễn ra", finished: "Đã kết thúc", cancelled: "Đã hủy", awaitingresult: "Chờ kết quả", resultpendingapproval: "Chờ duyệt", resultapproved: "Đã duyệt kết quả", registrationopen: "Mở đăng ký", registrationclosed: "Đóng đăng ký" };
-
 const getStatusMessage = (status) => {
   switch (status) {
-    case "registrationopen": return "Cuộc đua đang mở đăng ký — có thể đặt cược.";
-    case "registrationclosed": return "Cuộc đua đã đóng đăng ký — vẫn có thể đặt cược.";
+    case "scheduled":
+    case "registrationopen":
+    case "registrationclosed": return "Dự đoán đã đóng trong vòng 5 phút trước giờ đua.";
     case "inprogress": return "Cuộc đua đang diễn ra, đã khóa cược.";
     case "finished": return "Cuộc đua đã kết thúc, không thể đặt cược.";
     case "cancelled": return "Cuộc đua đã bị hủy.";
@@ -55,6 +54,15 @@ const formatDateTime = (value) => {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+};
+
+const BETTING_CLOSE_BEFORE_MS = 5 * 60 * 1000;
+const BETTABLE_STATUSES = new Set(["scheduled", "registrationopen", "registrationclosed"]);
+
+const canBetOnRace = (status, scheduledAt) => {
+  if (!BETTABLE_STATUSES.has(status)) return false;
+  const startTime = new Date(scheduledAt).getTime();
+  return Number.isFinite(startTime) && startTime - Date.now() >= BETTING_CLOSE_BEFORE_MS;
 };
 
 function SpectatorPredictionFormPage() {
@@ -102,17 +110,9 @@ function SpectatorPredictionFormPage() {
         if (!cancelled) {
           setTournaments(tournamentItems);
           setRaces(raceItems);
-          // Chọn race cược được đầu tiên (không phải race đầu tiên trong danh sách thô)
-          const firstBettable = raceItems.find((race) => {
-            const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
-            return status !== "finished" && status !== "cancelled" && status !== "inprogress" &&
-              status !== "awaitingresult" && status !== "resultpendingapproval";
-          });
-          if (firstBettable) {
-            const bid = firstBettable.id ?? firstBettable.Id;
-            setSelectedRace(bid);
-            const tid = firstBettable.tournamentId ?? firstBettable.TournamentId;
-            if (tid) setSelectedTournament(tid);
+          if (tournamentItems.length > 0) {
+            const firstId = tournamentItems[0]?.id ?? tournamentItems[0]?.Id;
+            setSelectedTournament(firstId ?? "");
           }
         }
       } catch (error) {
@@ -175,7 +175,8 @@ function SpectatorPredictionFormPage() {
         // Only show races that can be bet on: Scheduled only
         const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
         if (status === "finished" || status === "cancelled" || status === "inprogress" ||
-            status === "awaitingresult" || status === "resultpendingapproval") return false;
+            status === "awaitingresult" || status === "resultpendingapproval" ||
+            status === "resultapproved") return false;
         return true;
       })
       .map((race) => {
@@ -183,18 +184,28 @@ function SpectatorPredictionFormPage() {
         const name = race?.name ?? race?.Name ?? "Cuộc đua";
         const scheduledAt = race?.scheduledAt ?? race?.ScheduledAt;
         const status = (race?.status ?? race?.Status ?? "").toLowerCase().trim();
-        // Allow betting if status is "scheduled" or if race is in the future
-        const isFuture = scheduledAt && new Date(scheduledAt) > new Date();
         return {
           id,
           name,
           time: formatDateTime(scheduledAt),
           countdown: formatCountdown(scheduledAt),
           status,
-          canBet: status === "scheduled" || status === "registrationopen" || status === "registrationclosed" || (isFuture && !status),
+          canBet: canBetOnRace(status, scheduledAt),
         };
       });
   }, [races, selectedTournament]);
+
+  useEffect(() => {
+    if (raceOptions.length === 0) {
+      setSelectedRace("");
+      return;
+    }
+
+    if (!raceOptions.some((race) => race.id === selectedRace)) {
+      const nextRace = raceOptions.find((race) => race.canBet) ?? raceOptions[0];
+      setSelectedRace(nextRace.id);
+    }
+  }, [raceOptions, selectedRace]);
 
   const selectedRaceDetails = raceOptions.find((r) => r.id === selectedRace);
 
@@ -215,6 +226,15 @@ function SpectatorPredictionFormPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setSubmitError("");
+    const bet = Number(betAmount);
+    if (!Number.isFinite(bet) || bet <= 0) {
+      setSubmitError("Số tiền cược phải lớn hơn 0.");
+      return;
+    }
+    if (walletBalance !== null && bet > walletBalance) {
+      setSubmitError("Số dư không đủ để đặt cược.");
+      return;
+    }
     if (selectedHorseId) setShowConfirmation(true);
   };
 
@@ -410,8 +430,9 @@ function SpectatorPredictionFormPage() {
               id="pf-bet"
               className="pf-input"
               type="number"
-              min="0"
+              min="1"
               step="1"
+              required
               placeholder="50"
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}

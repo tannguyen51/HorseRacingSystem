@@ -47,6 +47,8 @@ public class PredictionService : IPredictionService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
+        // Allow predictions throughout race registration, until the time-based
+        // cutoff below. This preserves the normal management lifecycle.
         if (race.Status != RaceStatus.Scheduled &&
             race.Status != RaceStatus.RegistrationOpen &&
             race.Status != RaceStatus.RegistrationClosed)
