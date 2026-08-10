@@ -47,7 +47,9 @@ public class PredictionService : IPredictionService
             return ServiceResult<object>.Fail(StatusCodes.Status404NotFound, "Không tìm thấy cuộc đua");
         }
 
-        if (race.Status != RaceStatus.Scheduled)
+        // Predictions open after the participant list is finalized. Scheduled
+        // remains supported for races that are created with entries directly.
+        if (race.Status != RaceStatus.Scheduled && race.Status != RaceStatus.RegistrationClosed)
         {
             return ServiceResult<object>.Fail(StatusCodes.Status400BadRequest, "Cuộc đua không mở cho dự đoán");
         }
